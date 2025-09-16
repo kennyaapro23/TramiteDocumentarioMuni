@@ -1,0 +1,10 @@
+/* styles already inline in component; placeholder file for separation */
+.admin-gerencias{padding:2rem}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem}
+.filters{display:flex;gap:1rem;margin-bottom:2rem}
+.filters select,.filters input{padding:0.5rem;border:1px solid #ddd;border-radius:4px}
+.table-container{background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+th,td{padding:1rem;text-align:left;border-bottom:1px solid #eee}
+.no-data{text-align:center;color:#666;font-style:italic}
+.btn-primary{background:#667eea;color:white;border:none;padding:0.75rem 1.5rem;border-radius:4px;cursor:pointer}
+.btn-primary:hover{background:#5a6fd8}

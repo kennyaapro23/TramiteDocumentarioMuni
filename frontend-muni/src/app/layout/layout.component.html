@@ -1,0 +1,183 @@
+<div class="app-shell">
+  <!-- Sidebar -->
+  <aside class="sidebar" [class.collapsed]="sidebarCollapsed">
+    <div class="sidebar-header">
+      <div class="brand" [class.collapsed]="sidebarCollapsed">
+        <div class="brand-logo">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="brand-text" *ngIf="!sidebarCollapsed">
+          <span class="brand-title">Municipalidad</span>
+          <span class="brand-subtitle">Trámites</span>
+        </div>
+      </div>
+      <button class="sidebar-toggle" (click)="toggleSidebar()">
+        <i class="toggle-icon">{{ sidebarCollapsed ? '→' : '←' }}</i>
+      </button>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-section">
+        <span class="nav-title" *ngIf="!sidebarCollapsed">Principal</span>
+        <a routerLink="/dashboard" 
+           routerLinkActive="active" 
+           class="nav-link"
+           [title]="sidebarCollapsed ? 'Dashboard' : ''">
+          <i class="nav-icon">📊</i>
+          <span class="nav-text" *ngIf="!sidebarCollapsed">Dashboard</span>
+        </a>
+        <a routerLink="/expedientes" 
+           routerLinkActive="active" 
+           class="nav-link"
+           [title]="sidebarCollapsed ? 'Expedientes' : ''">
+          <i class="nav-icon">📋</i>
+          <span class="nav-text" *ngIf="!sidebarCollapsed">Expedientes</span>
+          <span class="nav-badge" *ngIf="!sidebarCollapsed">12</span>
+        </a>
+        <a routerLink="/expedientes/nuevo" 
+           routerLinkActive="active" 
+           class="nav-link"
+           [title]="sidebarCollapsed ? 'Nuevo Expediente' : ''">
+          <i class="nav-icon">➕</i>
+          <span class="nav-text" *ngIf="!sidebarCollapsed">Nuevo Expediente</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <span class="nav-title" *ngIf="!sidebarCollapsed">Administración</span>
+        <a routerLink="/gerencias" 
+           routerLinkActive="active" 
+           class="nav-link"
+           [title]="sidebarCollapsed ? 'Gerencias' : ''">
+          <i class="nav-icon">🏢</i>
+          <span class="nav-text" *ngIf="!sidebarCollapsed">Gerencias</span>
+        </a>
+        <a routerLink="/usuarios" 
+           routerLinkActive="active" 
+           class="nav-link"
+           [title]="sidebarCollapsed ? 'Usuarios' : ''">
+          <i class="nav-icon">👥</i>
+          <span class="nav-text" *ngIf="!sidebarCollapsed">Usuarios</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-profile" [class.collapsed]="sidebarCollapsed">
+        <div class="user-avatar">
+          <img src="https://ui-avatars.com/api/?name=Usuario&background=667eea&color=fff" alt="Usuario">
+        </div>
+        <div class="user-info" *ngIf="!sidebarCollapsed">
+          <span class="user-name">Usuario Demo</span>
+          <span class="user-role">Administrador</span>
+        </div>
+        <button class="logout-btn" (click)="logout()" [title]="sidebarCollapsed ? 'Cerrar Sesión' : ''">
+          <i class="logout-icon">🚪</i>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main" [class.sidebar-collapsed]="sidebarCollapsed">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <button class="mobile-menu-toggle" (click)="toggleMobileMenu()">
+          <i class="menu-icon">☰</i>
+        </button>
+        <div class="breadcrumb">
+          <span class="breadcrumb-item">🏠</span>
+          <span class="breadcrumb-separator">/</span>
+          <span class="breadcrumb-item current">{{ getCurrentPage() }}</span>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <div class="search-container">
+          <input type="search" 
+                 placeholder="Buscar expedientes, usuarios..." 
+                 class="search-input"
+                 [(ngModel)]="searchQuery"
+                 (keyup.enter)="onSearch()">
+          <button class="search-btn" (click)="onSearch()">
+            <i class="search-icon">🔍</i>
+          </button>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="header-actions">
+          <button class="action-btn notifications" (click)="toggleNotifications()">
+            <i class="action-icon">🔔</i>
+            <span class="notification-badge" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
+          </button>
+          
+          <button class="action-btn settings" (click)="openSettings()">
+            <i class="action-icon">⚙️</i>
+          </button>
+
+          <div class="user-menu" (click)="toggleUserMenu()">
+            <div class="user-avatar-header">
+              <img src="https://ui-avatars.com/api/?name=Usuario&background=667eea&color=fff" alt="Usuario">
+            </div>
+            <div class="user-info-header">
+              <span class="user-name-header">Usuario Demo</span>
+              <span class="user-role-header">Administrador</span>
+            </div>
+            <i class="dropdown-icon">⌄</i>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="content">
+      <div class="content-wrapper">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-left">
+          <span>© 2025 Municipalidad Provincial</span>
+          <span class="separator">•</span>
+          <span>Sistema de Trámite Documentario v1.0.0</span>
+        </div>
+        <div class="footer-right">
+          <span>🌐 Conectado</span>
+          <span class="status-indicator online"></span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Mobile Sidebar Overlay -->
+  <div class="mobile-overlay" 
+       *ngIf="mobileMenuOpen" 
+       (click)="toggleMobileMenu()"></div>
+</div>
+
+<!-- Notifications Panel -->
+<div class="notifications-panel" *ngIf="notificationsOpen" [@slideIn]>
+  <div class="notifications-header">
+    <h3>Notificaciones</h3>
+    <button (click)="toggleNotifications()">✕</button>
+  </div>
+  <div class="notifications-content">
+    <div class="notification-item" *ngFor="let notification of notifications">
+      <div class="notification-icon">{{ notification.icon }}</div>
+      <div class="notification-content">
+        <div class="notification-title">{{ notification.title }}</div>
+        <div class="notification-message">{{ notification.message }}</div>
+        <div class="notification-time">{{ notification.time }}</div>
+      </div>
+    </div>
+  </div>
+</div>

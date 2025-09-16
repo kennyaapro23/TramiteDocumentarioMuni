@@ -86,22 +86,31 @@ class RolesAndPermissionsSeeder extends Seeder
             'crear_etapas_flujo',
             'editar_etapas_flujo',
             'eliminar_etapas_flujo',
-            'ver_etapas_flujo'
+            'ver_etapas_flujo',
+            
+            // Permisos de workflows personalizables
+            'gestionar_workflows',
+            'crear_workflows',
+            'editar_workflows',
+            'eliminar_workflows',
+            'ver_workflows',
+            'activar_workflows',
+            'clonar_workflows'
         ];
 
         // Crear todos los permisos
         foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
         }
 
         // Crear roles y asignar permisos
         
         // ROL: Super Administrador
-        $superAdmin = Role::firstOrCreate(['name' => 'super_admin']);
+        $superAdmin = Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
         $superAdmin->givePermissionTo(Permission::all()); // Todos los permisos
 
         // ROL: Administrador
-        $admin = Role::firstOrCreate(['name' => 'admin']);
+        $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
         $admin->givePermissionTo([
             'ver_expedientes',
             'crear_expedientes',
@@ -132,11 +141,18 @@ class RolesAndPermissionsSeeder extends Seeder
             'ver_pagos',
             'gestionar_quejas',
             'responder_quejas',
-            'escalar_quejas'
+            'escalar_quejas',
+            'gestionar_workflows',
+            'crear_workflows',
+            'editar_workflows',
+            'eliminar_workflows',
+            'ver_workflows',
+            'activar_workflows',
+            'clonar_workflows'
         ]);
 
         // ROL: Jefe de Gerencia
-        $jefeGerencia = Role::firstOrCreate(['name' => 'jefe_gerencia']);
+        $jefeGerencia = Role::firstOrCreate(['name' => 'jefe_gerencia', 'guard_name' => 'web']);
         $jefeGerencia->givePermissionTo([
             'ver_expedientes',
             'crear_expedientes',
@@ -165,11 +181,17 @@ class RolesAndPermissionsSeeder extends Seeder
             'crear_etapas_flujo',
             'editar_etapas_flujo',
             'eliminar_etapas_flujo',
-            'ver_etapas_flujo'
+            'ver_etapas_flujo',
+            'gestionar_workflows',
+            'crear_workflows',
+            'editar_workflows',
+            'ver_workflows',
+            'activar_workflows',
+            'clonar_workflows'
         ]);
 
         // ROL: Funcionario
-        $funcionario = Role::firstOrCreate(['name' => 'funcionario']);
+        $funcionario = Role::firstOrCreate(['name' => 'funcionario', 'guard_name' => 'web']);
         $funcionario->givePermissionTo([
             'ver_expedientes',
             'crear_expedientes',
@@ -185,7 +207,7 @@ class RolesAndPermissionsSeeder extends Seeder
         ]);
 
         // ROL: Funcionario Junior
-        $funcionarioJunior = Role::firstOrCreate(['name' => 'funcionario_junior']);
+        $funcionarioJunior = Role::firstOrCreate(['name' => 'funcionario_junior', 'guard_name' => 'web']);
         $funcionarioJunior->givePermissionTo([
             'ver_expedientes',
             'editar_expedientes',
@@ -196,7 +218,7 @@ class RolesAndPermissionsSeeder extends Seeder
         ]);
 
         // ROL: Ciudadano
-        $ciudadano = Role::firstOrCreate(['name' => 'ciudadano']);
+        $ciudadano = Role::firstOrCreate(['name' => 'ciudadano', 'guard_name' => 'web']);
         $ciudadano->givePermissionTo([
             'crear_expedientes',
             'ver_expedientes', // Solo sus propios expedientes
@@ -206,7 +228,7 @@ class RolesAndPermissionsSeeder extends Seeder
         ]);
 
         // ROL: Supervisor
-        $supervisor = Role::firstOrCreate(['name' => 'supervisor']);
+        $supervisor = Role::firstOrCreate(['name' => 'supervisor', 'guard_name' => 'web']);
         $supervisor->givePermissionTo([
             'ver_expedientes',
             'editar_expedientes',
@@ -223,7 +245,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'ver_pagos',
             'gestionar_quejas',
             'responder_quejas',
-            'escalar_quejas'
+            'escalar_quejas',
+            'ver_workflows'
         ]);
 
         $this->command->info('Roles y permisos creados exitosamente');

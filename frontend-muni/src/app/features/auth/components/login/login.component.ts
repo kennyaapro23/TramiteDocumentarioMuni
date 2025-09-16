@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
 import { LoginRequest } from '../../../../shared/models';
@@ -8,9 +8,9 @@ import { LoginRequest } from '../../../../shared/models';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
   private readonly fb = inject(FormBuilder);
@@ -22,6 +22,7 @@ export class LoginComponent {
   
   // Component state
   public showPassword = false;
+  public rememberMe = false;
   public errorMessage = '';
   public appVersion = '1.0.0';
 
@@ -74,11 +75,11 @@ export class LoginComponent {
     const credentials: LoginRequest = this.loginForm.value;
 
     this.authService.login(credentials).subscribe({
-      next: (response) => {
-        if (response.success) {
+      next: (user) => {
+        if (user) {
           this.handleSuccessfulLogin();
         } else {
-          this.handleLoginError(response.message || 'Error en el inicio de sesión');
+          this.handleLoginError('Error en el inicio de sesión');
         }
       },
       error: (error) => {
@@ -235,5 +236,14 @@ export class LoginComponent {
       event.preventDefault();
       this.onSubmit();
     }
+  }
+
+  /**
+   * Handle forgot password link
+   */
+  public onForgotPassword(event: Event): void {
+    event.preventDefault();
+    // TODO: Implement forgot password functionality
+    alert('Funcionalidad de recuperación de contraseña próximamente disponible.\n\nPor ahora, contacte al administrador del sistema.');
   }
 }

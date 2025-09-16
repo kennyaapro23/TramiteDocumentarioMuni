@@ -8,6 +8,9 @@ use App\Http\Controllers\AdminGerenciaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\MesaPartesController;
 use App\Http\Controllers\RolePermissionController;
+use App\Http\Controllers\CustomWorkflowController;
+use App\Http\Controllers\CustomWorkflowStepController;
+use App\Http\Controllers\CustomWorkflowTransitionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -88,6 +91,42 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}/history', [ExpedientController::class, 'getHistory']);
         Route::post('/{id}/assign', [ExpedientController::class, 'assignToUser']);
         Route::post('/{id}/change-status', [ExpedientController::class, 'changeStatus']);
+    });
+    
+    // Workflows Personalizables - Gestión completa de workflows
+    Route::prefix('custom-workflows')->group(function () {
+        Route::get('/', [CustomWorkflowController::class, 'index'])->middleware('permission:gestionar_workflows');
+        Route::post('/', [CustomWorkflowController::class, 'store'])->middleware('permission:gestionar_workflows');
+        Route::get('/{id}', [CustomWorkflowController::class, 'show'])->middleware('permission:gestionar_workflows');
+        Route::put('/{id}', [CustomWorkflowController::class, 'update'])->middleware('permission:gestionar_workflows');
+        Route::delete('/{id}', [CustomWorkflowController::class, 'destroy'])->middleware('permission:gestionar_workflows');
+        
+        // Activar/desactivar workflow
+        Route::post('/{id}/toggle', [CustomWorkflowController::class, 'toggleActive'])->middleware('permission:gestionar_workflows');
+        
+        // Clonar workflow
+        Route::post('/{id}/clone', [CustomWorkflowController::class, 'clone'])->middleware('permission:gestionar_workflows');
+        
+        // Obtener workflows por tipo
+        Route::get('/tipo/{tipo}', [CustomWorkflowController::class, 'getByType'])->middleware('permission:gestionar_workflows');
+    });
+    
+    // Pasos de Workflows Personalizables
+    Route::prefix('custom-workflow-steps')->group(function () {
+        Route::get('/', [CustomWorkflowStepController::class, 'index'])->middleware('permission:gestionar_workflows');
+        Route::post('/', [CustomWorkflowStepController::class, 'store'])->middleware('permission:gestionar_workflows');
+        Route::get('/{id}', [CustomWorkflowStepController::class, 'show'])->middleware('permission:gestionar_workflows');
+        Route::put('/{id}', [CustomWorkflowStepController::class, 'update'])->middleware('permission:gestionar_workflows');
+        Route::delete('/{id}', [CustomWorkflowStepController::class, 'destroy'])->middleware('permission:gestionar_workflows');
+    });
+    
+    // Transiciones de Workflows Personalizables
+    Route::prefix('custom-workflow-transitions')->group(function () {
+        Route::get('/', [CustomWorkflowTransitionController::class, 'index'])->middleware('permission:gestionar_workflows');
+        Route::post('/', [CustomWorkflowTransitionController::class, 'store'])->middleware('permission:gestionar_workflows');
+        Route::get('/{id}', [CustomWorkflowTransitionController::class, 'show'])->middleware('permission:gestionar_workflows');
+        Route::put('/{id}', [CustomWorkflowTransitionController::class, 'update'])->middleware('permission:gestionar_workflows');
+        Route::delete('/{id}', [CustomWorkflowTransitionController::class, 'destroy'])->middleware('permission:gestionar_workflows');
     });
     
     // Gerencias - Administración de gerencias

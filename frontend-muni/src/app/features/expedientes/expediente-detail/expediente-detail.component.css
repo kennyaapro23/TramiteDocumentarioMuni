@@ -1,0 +1,6 @@
+.expediente-detail{background:white;padding:20px;border-radius:8px}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.meta{color:#718096}
+.section{margin-bottom:16px}
+.solicitante h2,.descripcion h2,.documentos h2,.historial h2{margin:0 0 8px 0}
+.badge.pending{background:#fff7ed;color:#dd6b20;padding:6px 8px;border-radius:6px}
