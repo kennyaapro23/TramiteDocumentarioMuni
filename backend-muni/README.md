@@ -1,61 +1,195 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🏛️ Sistema de Trámite Documentario Municipal
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Descripción del Proyecto
 
-## About Laravel
+Sistema integral de gestión de expedientes municipales desarrollado en **Laravel 11** que permite a ciudadanos registrar solicitudes de trámites y a funcionarios municipales procesarlas según sus roles y permisos específicos.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## ✨ Características Principales
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **🔐 Autenticación y Autorización**: Sistema robusto con Sanctum y Spatie Permissions
+- **📋 Gestión de Expedientes**: Flujo completo desde registro hasta resolución
+- **🏢 Arquitectura de Gerencias**: Modelo unificado de gerencias y subgerencias
+- **📄 Gestión Documental**: Carga y gestión de documentos por expediente
+- **📊 Historial y Auditoría**: Trazabilidad completa de todas las acciones
+- **🔄 Workflow Dinámico**: Flujos configurables según tipo de trámite
+- **📱 API RESTful**: Endpoints documentados para integración con frontend
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🚀 Tecnologías Utilizadas
 
-## Learning Laravel
+- **Backend**: Laravel 11
+- **Base de Datos**: SQLite (configurable a MySQL/PostgreSQL)
+- **Autenticación**: Laravel Sanctum
+- **Permisos**: Spatie Laravel Permission
+- **Documentación**: Markdown documentado
+- **Testing**: PHPUnit
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 📦 Instalación
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Prerrequisitos
+- PHP >= 8.2
+- Composer
+- Node.js y npm (para assets)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Pasos de Instalación
 
-## Laravel Sponsors
+1. **Clonar el repositorio**
+```bash
+git clone [repository-url]
+cd backend-muni
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+2. **Instalar dependencias**
+```bash
+composer install
+npm install
+```
 
-### Premium Partners
+3. **Configurar environment**
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+4. **Configurar base de datos**
+```bash
+# Editar .env con tus credenciales de BD
+php artisan migrate --seed
+```
 
-## Contributing
+5. **Generar datos de prueba**
+```bash
+php artisan db:seed --class=GerenciaSeeder
+php artisan db:seed --class=RolePermissionSeeder
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+6. **Iniciar servidor**
+```bash
+php artisan serve
+```
 
-## Code of Conduct
+## 🏗️ Arquitectura del Sistema
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Modelos Principales
+- **User**: Usuarios del sistema con roles específicos
+- **Gerencia**: Estructura organizacional unificada
+- **Expediente**: Trámites y solicitudes ciudadanas
+- **DocumentoExpediente**: Archivos adjuntos
+- **HistorialExpediente**: Auditoría de cambios
 
-## Security Vulnerabilities
+### Roles del Sistema
+- **Mesa de Partes**: Registro y derivación inicial
+- **Gerente Urbano**: Revisión técnica especializada
+- **Inspector**: Inspecciones de campo
+- **Secretaria General**: Revisión legal y resoluciones
+- **Alcalde**: Firma de actos administrativos mayores
+- **Admin**: Gestión completa del sistema
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 🔄 Flujo de Trabajo
 
-## License
+### 1. Ciudadano
+- Registra solicitud de trámite
+- Sube documentos requeridos
+- Recibe número de expediente
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 2. Mesa de Partes
+- Valida requisitos mínimos
+- Deriva a gerencia correspondiente
+- Puede rechazar si no cumple requisitos
+
+### 3. Gerencia/Subgerencia
+- Realiza revisión técnica
+- Ejecuta inspecciones (si aplica)
+- Determina si requiere revisión legal
+
+### 4. Secretaría General
+- Revisión legal cuando es requerida
+- Emite resoluciones
+- Determina si requiere firma alcalde
+
+### 5. Alcalde
+- Firma actos administrativos mayores
+- Resoluciones de alto impacto
+
+## 📚 Documentación
+
+**📖 [DOCUMENTACIÓN COMPLETA](./DOCUMENTACION_COMPLETA.md)** - Toda la información del sistema en un solo lugar
+
+La documentación completa incluye:
+- ✅ **Instalación y configuración** paso a paso
+- ✅ **Arquitectura del sistema** completa
+- ✅ **API RESTful** con todos los endpoints
+- ✅ **Sistema de permisos** detallado
+- ✅ **Instrucciones de prueba** exhaustivas
+- ✅ **Estado de implementación** actual
+
+### 🎯 Enlaces Rápidos
+- **Archivos de prueba**: `test_api.html` y `test_mesa_partes_api.html`
+- **Backend**: `http://localhost:8000`
+- **API**: `http://localhost:8000/api`
+
+## 🧪 Testing
+
+```bash
+# Ejecutar todas las pruebas
+php artisan test
+
+# Ejecutar pruebas específicas
+php artisan test --filter ExpedienteTest
+```
+
+## 📱 Endpoints Principales
+
+```
+GET    /api/expedientes          # Listar expedientes
+POST   /api/expedientes          # Crear expediente
+GET    /api/expedientes/{id}     # Ver expediente
+PUT    /api/expedientes/{id}     # Actualizar expediente
+POST   /api/expedientes/{id}/derivar   # Derivar expediente
+POST   /api/expedientes/{id}/documents # Subir documentos
+```
+
+## 🔧 Configuración
+
+### Variables de Entorno Importantes
+```env
+DB_CONNECTION=sqlite
+DB_DATABASE=database/database.sqlite
+
+SANCTUM_STATEFUL_DOMAINS=localhost:4200
+SESSION_DOMAIN=localhost
+```
+
+### Estados de Expedientes
+- `pendiente`: Recién creado
+- `en_revision`: En proceso de revisión
+- `revision_tecnica`: Revisión técnica en curso
+- `revision_legal`: Revisión legal requerida
+- `resolucion_emitida`: Resolución emitida
+- `firmado`: Firmado por autoridad
+- `notificado`: Notificado al ciudadano
+- `completado`: Proceso terminado
+- `rechazado`: Rechazado por no cumplir requisitos
+
+## 🤝 Contribución
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+
+## 👥 Equipo de Desarrollo
+
+Desarrollado para la gestión municipal de trámites documentarios.
+
+---
+
+### 🚀 Enlaces Rápidos
+
+- **Backend API**: `http://localhost:8000/api`
+- **Documentación**: Ver archivos .md en el directorio raíz
+- **Pruebas**: `test_api.html` y `test_mesa_partes_api.html`
