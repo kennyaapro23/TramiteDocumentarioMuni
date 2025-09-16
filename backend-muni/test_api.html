@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API Laravel</title>
+</head>
+<body>
+    <h1>Test API Laravel</h1>
+    
+    <div>
+        <h2>Login</h2>
+        <button onclick="testLogin()">Probar Login</button>
+        <div id="loginResult"></div>
+    </div>
+    
+    <div>
+        <h2>Obtener Usuario</h2>
+        <button onclick="testGetUser()">Obtener Usuario</button>
+        <div id="userResult"></div>
+    </div>
+    
+    <div>
+        <h2>Obtener Expedientes</h2>
+        <button onclick="testGetExpedientes()">Obtener Expedientes</button>
+        <div id="expedientesResult"></div>
+    </div>
+
+    <script>
+        let authToken = '';
+        
+        async function testLogin() {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@municipalidad.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                document.getElementById('loginResult').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                
+                if (data.success && data.data.token) {
+                    authToken = data.data.token;
+                    console.log('Token obtenido:', authToken);
+                }
+            } catch (error) {
+                document.getElementById('loginResult').innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+            }
+        }
+        
+        async function testGetUser() {
+            if (!authToken) {
+                document.getElementById('userResult').innerHTML = '<p style="color: orange;">Primero debes hacer login</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/auth/user', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Accept': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                document.getElementById('userResult').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('userResult').innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+            }
+        }
+        
+        async function testGetExpedientes() {
+            if (!authToken) {
+                document.getElementById('expedientesResult').innerHTML = '<p style="color: orange;">Primero debes hacer login</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/expedientes', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Accept': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                document.getElementById('expedientesResult').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('expedientesResult').innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+            }
+        }
+    </script>
+</body>
+</html>
