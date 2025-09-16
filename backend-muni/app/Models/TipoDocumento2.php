@@ -12,7 +12,7 @@ class TipoDocumento extends Model
 
     protected $fillable = [
         'nombre',
-        'descripcion',
+        'descripcion', 
         'codigo',
         'campos_requeridos',
         'requiere_firma',

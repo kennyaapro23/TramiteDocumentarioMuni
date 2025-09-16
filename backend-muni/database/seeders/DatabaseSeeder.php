@@ -22,8 +22,10 @@ class DatabaseSeeder extends Seeder
             UsersSeeder::class,                // Tercero: usuarios
             ProceduresSeeder::class,           // Cuarto: procedimientos TUPA (necesita gerencias)
             WorkflowRulesSeeder::class,        // Quinto: reglas de flujo (necesita gerencias y usuarios)
-            WorkflowStepsSeeder::class,        // Sexto: etapas de flujo por gerencia
+            // WorkflowStepsSeeder::class,        // Sexto: etapas de flujo por gerencia (tabla removida)
             ExpedientesSeeder::class,          // Séptimo: expedientes (necesita usuarios y procedimientos)
+            TipoDocumentoSeeder::class,        // Octavo: tipos de documentos
+            TipoTramiteSeeder::class,          // Noveno: tipos de trámites
         ]);
 
         $this->command->info('');

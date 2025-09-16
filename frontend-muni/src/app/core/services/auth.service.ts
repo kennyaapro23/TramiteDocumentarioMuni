@@ -1,135 +1,116 @@
-import { Injectable, signal, computed } from '@angular/core';
-import { Observable, BehaviorSubject, of } from 'rxjs';
-import { tap, catchError, map } from 'rxjs/operators';
-import { HttpBaseService } from './http-base.service';
-import { ApiConfig } from './api-config';
+import { Injectable, inject, signal } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { Observable, BehaviorSubject, tap, catchError, of, throwError } from 'rxjs';
 import { LoginRequest, LoginResponse, User } from '../models';
+import { environment } from '../../../environments/environment';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
-  private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
+  private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
 
-  // Signals para estado reactivo
-  private _currentUser = signal<User | null>(null);
-  private _isAuthenticated = signal<boolean>(false);
-  private _isLoading = signal<boolean>(false);
+  // Use environment config
+  private readonly baseUrl = `${environment.apiConfig.baseUrl}${environment.apiConfig.apiPrefix}`;
 
-  // Computed signals
-  public currentUser = computed(() => this._currentUser());
-  public isAuthenticated = computed(() => this._isAuthenticated());
-  public isLoading = computed(() => this._isLoading());
+  // Toggle mock mode (set to false to use backend)
+  private readonly mockMode = false; // <<<<<< CAMBIA A true si quieres modo mock
 
-  // Observables para compatibilidad
-  public currentUser$ = this.currentUserSubject.asObservable();
-  public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
+  // Signals
+  private readonly _currentUser = signal<User | null>(null);
+  private readonly _isAuthenticated = signal<boolean>(false);
+  readonly currentUser = this._currentUser.asReadonly();
+  readonly isAuthenticated = this._isAuthenticated.asReadonly();
 
-  constructor(private httpBase: HttpBaseService) {
-    this.initializeAuth();
-  }
+  private readonly userSubject = new BehaviorSubject<User | null>(null);
+  readonly user$ = this.userSubject.asObservable();
 
-  private initializeAuth(): void {
-    const token = localStorage.getItem(ApiConfig.auth.tokenKey);
-    if (token) {
-      this.loadUserProfile();
+  // Mock users (se queda igual por si reactivas mock)
+  private mockUsers = [
+    { id: 1, name: 'Administrador', email: 'admin@muni.gob.pe', password: '123456', permissions: [
+      { id: 1, name: 'gestionar-usuarios', guard_name: 'web' },
+      { id: 2, name: 'ver-reportes', guard_name: 'web' },
+      { id: 3, name: 'crear-tramites', guard_name: 'web' },
+      { id: 4, name: 'gestionar-tramites', guard_name: 'web' }
+    ]},
+    { id: 2, name: 'Mesa de Partes', email: 'mesa@muni.gob.pe', password: '123456', permissions: [
+      { id: 5, name: 'acceso-mesa-partes', guard_name: 'web' },
+      { id: 6, name: 'registrar-documentos', guard_name: 'web' },
+      { id: 7, name: 'derivar-tramites', guard_name: 'web' }
+    ]},
+    { id: 3, name: 'Usuario Regular', email: 'user@muni.gob.pe', password: '123456', permissions: [
+      { id: 8, name: 'crear-tramites', guard_name: 'web' }
+    ]}
+  ];
+
+  constructor() { this.restoreSession(); }
+
+  private restoreSession(): void {
+    const token = localStorage.getItem(environment.storage.tokenKey);
+    const userData = localStorage.getItem(environment.storage.userKey);
+    if (token && userData) {
+      try {
+        const user = JSON.parse(userData) as User;
+        this._currentUser.set(user);
+        this._isAuthenticated.set(true);
+        this.userSubject.next(user);
+      } catch { this.logout().subscribe(); }
     }
   }
 
-  login(credentials: LoginRequest): Observable<User> {
-    this._isLoading.set(true);
-    
-    return this.httpBase.post<LoginResponse>(ApiConfig.endpoints.auth.login, credentials).pipe(
-      tap(response => {
-        if (response.token && response.user) {
-          this.setAuthData(response.token, response.user);
-        }
-        this._isLoading.set(false);
-      }),
-      map(response => response.user),
-      catchError(error => {
-        this._isLoading.set(false);
-        throw error;
-      })
+  login(credentials: LoginRequest): Observable<LoginResponse> {
+    if (this.mockMode) return this.mockLogin(credentials);
+
+    const url = `${this.baseUrl}${environment.apiConfig.authEndpoints.login}`;
+    return this.http.post<LoginResponse>(url, credentials).pipe(
+      tap(res => this.setAuthData(res)),
+      catchError(err => this.handleHttpError(err))
     );
   }
 
-  logout(): Observable<any> {
-    return this.httpBase.post(ApiConfig.endpoints.auth.logout).pipe(
-      tap(() => {
-        this.clearAuthData();
-      }),
-      catchError(() => {
-        // Incluso si el logout en el servidor falla, limpiamos localmente
-        this.clearAuthData();
-        return of(null);
-      })
-    );
+  private mockLogin(credentials: LoginRequest): Observable<LoginResponse> {
+    const user = this.mockUsers.find(u => u.email === credentials.email && u.password === credentials.password);
+    if (!user) return throwError(() => new Error('Credenciales inválidas (mock)'));
+    const { password, ...userWithoutPassword } = user as any;
+    const response: LoginResponse = {
+      access_token: 'mock_token_' + Date.now(),
+      token_type: 'Bearer',
+      expires_in: 3600,
+      user: userWithoutPassword
+    };
+    this.setAuthData(response);
+    return of(response);
   }
 
-  loadUserProfile(): Observable<User> {
-    return this.httpBase.get<User>(ApiConfig.endpoints.auth.profile).pipe(
-      tap(user => {
-        this.setUser(user);
-      }),
-      catchError(error => {
-        // Si el token es inválido, limpiamos la sesión
-        if (error.status === 401) {
-          this.clearAuthData();
-        }
-        throw error;
-      })
-    );
-  }
-
-  private setAuthData(token: string, user: User): void {
-    localStorage.setItem(ApiConfig.auth.tokenKey, token);
-    this.setUser(user);
-  }
-
-  private setUser(user: User): void {
-    this._currentUser.set(user);
+  private setAuthData(loginResponse: LoginResponse): void {
+    localStorage.setItem(environment.storage.tokenKey, loginResponse.access_token);
+    localStorage.setItem(environment.storage.userKey, JSON.stringify(loginResponse.user));
+    this._currentUser.set(loginResponse.user);
     this._isAuthenticated.set(true);
-    this.currentUserSubject.next(user);
-    this.isAuthenticatedSubject.next(true);
+    this.userSubject.next(loginResponse.user);
   }
 
-  private clearAuthData(): void {
-    localStorage.removeItem(ApiConfig.auth.tokenKey);
+  logout(): Observable<boolean> {
+    localStorage.removeItem(environment.storage.tokenKey);
+    localStorage.removeItem(environment.storage.userKey);
     this._currentUser.set(null);
     this._isAuthenticated.set(false);
-    this.currentUserSubject.next(null);
-    this.isAuthenticatedSubject.next(false);
-  }
-
-  getToken(): string | null {
-    return localStorage.getItem(ApiConfig.auth.tokenKey);
+    this.userSubject.next(null);
+    return of(true);
   }
 
   hasPermission(permission: string): boolean {
-    const user = this._currentUser();
-    if (!user || !user.permissions) return false;
-    
-    return user.permissions.some(p => p.name === permission);
+    return (this._currentUser()?.permissions || []).some(p => p.name === permission);
   }
 
-  hasRole(role: string): boolean {
-    const user = this._currentUser();
-    if (!user || !user.roles) return false;
-    
-    return user.roles.some(r => r.name === role);
-  }
+  getToken(): string | null { return localStorage.getItem(environment.storage.tokenKey); }
 
-  hasAnyPermission(permissions: string[]): boolean {
-    return permissions.some(permission => this.hasPermission(permission));
-  }
-
-  hasAllPermissions(permissions: string[]): boolean {
-    return permissions.every(permission => this.hasPermission(permission));
-  }
-
-  hasAnyRole(roles: string[]): boolean {
-    return roles.some(role => this.hasRole(role));
+  private handleHttpError(error: HttpErrorResponse) {
+    let message = 'Error de autenticación';
+    if (error.status === 0) message = 'No se pudo conectar con el servidor';
+    else if (error.status === 400) message = error.error?.message || 'Solicitud inválida';
+    else if (error.status === 401) message = 'Credenciales incorrectas';
+    else if (error.status >= 500) message = 'Error interno del servidor';
+    return throwError(() => new Error(message));
   }
 }

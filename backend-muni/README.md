@@ -1,554 +1,1104 @@
-# 🏛️ Sistema de Trámite Documentario Municipal
+# 📋 API del Sistema de Trámites Documentarios Municipal# 🏛️ Sistema de Trámite Documentario Municipal
 
-## 📋 Descripción
+
+
+## 🚀 Estado del Servidor## 📋 Descripción
+
+**Servidor activo:** `http://127.0.0.1:8000`
 
 Sistema integral de gestión de expedientes municipales desarrollado en **Laravel 11** con **workflows personalizables**. Permite a ciudadanos registrar solicitudes y a funcionarios procesarlas según roles y permisos específicos.
 
 ---
 
-## ✨ Características Principales del Sistema
-
-### 🔐 **Seguridad y Autenticación Completa**
-- **Laravel Sanctum** para tokens API seguros
-- **59 permisos granulares** con Spatie Permission
-- **7 roles predefinidos** con jerarquía de permisos
-- **Middleware de autorización** en todas las rutas protegidas
-- **Guards web y api** configurados
-
-### 👥 **Gestión Completa de Usuarios y Roles**
-- ✅ **CRUD de usuarios** con validaciones
-- ✅ **Creación y edición de roles** personalizados
-- ✅ **Asignación de permisos** granular por usuario/rol
-- ✅ **Gestión de estados** (activo/inactivo)
-- ✅ **Campos personalizados**: teléfono, cargo, gerencia
-- ✅ **Cambio de contraseñas** seguro
-- ✅ **Verificación de email** disponible
-
-### 🏢 **Arquitectura de Gerencias Jerárquica**
-- ✅ **Creación de gerencias** principales
-- ✅ **Subgerencias ilimitadas** (estructura padre-hijo)
-- ✅ **Asignación de usuarios** a múltiples gerencias
-- ✅ **Flujos específicos** por tipo de gerencia
-- ✅ **Estadísticas por gerencia** individuales
-- ✅ **Jerarquía completa** visualizable
-
-### 📋 **Gestión Avanzada de Expedientes**
-- ✅ **CRUD completo** con validaciones
-- ✅ **Estados dinámicos** según workflow asignado
-- ✅ **Derivaciones entre gerencias** con trazabilidad
-- ✅ **Asignación a funcionarios** específicos
-- ✅ **Historial completo** de cambios y movimientos
-- ✅ **Gestión documental** integrada (carga de archivos)
-- ✅ **Búsqueda avanzada** por múltiples criterios
-- ✅ **Exportación de datos** (Excel, PDF)
-- ✅ **Prioridades** y estados personalizados
-
-### 🔄 **Workflows Personalizables Avanzados** ⭐ **NUEVO**
-- ✅ **Creación visual** desde la interfaz web
-- ✅ **Pasos configurables**: Inicio, Proceso, Decisión, Fin
-- ✅ **Transiciones condicionales** con reglas JSON
-- ✅ **Activación/Desactivación** dinámica de workflows
-- ✅ **Clonación** de workflows existentes
-- ✅ **Múltiples tipos**: Expediente, Trámite, Proceso
-- ✅ **Configuración JSON** para pasos y transiciones
-- ✅ **API REST completa** para integración frontend
-
-### 📝 **Mesa de Partes Completa**
-- ✅ **Registro de documentos** de entrada
-- ✅ **Códigos de seguimiento** únicos automáticos
-- ✅ **Consulta pública** por código de seguimiento
-- ✅ **Tipos de documento** configurables
-- ✅ **Tipos de trámite** con documentos requeridos
-- ✅ **Derivación automática** según reglas
-- ✅ **Observaciones** y seguimiento de estados
-
-### 📊 **Reportes y Estadísticas**
-- ✅ **Dashboard administrativo** con métricas
-- ✅ **Estadísticas por gerencia** individuales
-- ✅ **Reportes de expedientes** (creados, procesados, tiempos)
-- ✅ **Estadísticas de usuarios** y actividad
-- ✅ **Métricas de mesa de partes** y recepción
-
 ---
 
-## 🎯 Funcionalidades Detalladas del Administrador
+## 📑 Índice de Endpoints
 
-### 👤 **Gestión de Usuarios**
+## ✨ Características Principales del Sistema
+
+### 🔑 [Autenticación](#autenticacion)
+
+### 👥 [Usuarios](#usuarios)### 🔐 **Seguridad y Autenticación Completa**
+
+### 🏢 [Gerencias](#gerencias)- **Laravel Sanctum** para tokens API seguros
+
+### 📄 [Expedientes](#expedientes)- **59 permisos granulares** con Spatie Permission
+
+### 📋 [Mesa de Partes](#mesa-de-partes)- **7 roles predefinidos** con jerarquía de permisos
+
+### 🔄 [Workflows Personalizables](#workflows)- **Middleware de autorización** en todas las rutas protegidas
+
+### 👮‍♂️ [Roles y Permisos](#roles-y-permisos)- **Guards web y api** configurados
+
+### 📊 [Catálogos](#catalogos)
+
+### 👥 **Gestión Completa de Usuarios y Roles**
+
+---- ✅ **CRUD de usuarios** con validaciones
+
+- ✅ **Creación y edición de roles** personalizados
+
+## 🔑 Autenticación {#autenticacion}- ✅ **Asignación de permisos** granular por usuario/rol
+
+- ✅ **Gestión de estados** (activo/inactivo)
+
+### Login- ✅ **Campos personalizados**: teléfono, cargo, gerencia
+
+```http- ✅ **Cambio de contraseñas** seguro
+
+POST /api/auth/login- ✅ **Verificación de email** disponible
+
+Content-Type: application/json
+
+### 🏢 **Arquitectura de Gerencias Jerárquica**
+
+{- ✅ **Creación de gerencias** principales
+
+    "email": "admin@municipalidad.gob.pe",- ✅ **Subgerencias ilimitadas** (estructura padre-hijo)
+
+    "password": "admin123"- ✅ **Asignación de usuarios** a múltiples gerencias
+
+}- ✅ **Flujos específicos** por tipo de gerencia
+
+```- ✅ **Estadísticas por gerencia** individuales
+
+- ✅ **Jerarquía completa** visualizable
+
+**Respuesta exitosa:**
+
+```json### 📋 **Gestión Avanzada de Expedientes**
+
+{- ✅ **CRUD completo** con validaciones
+
+    "success": true,- ✅ **Estados dinámicos** según workflow asignado
+
+    "data": {- ✅ **Derivaciones entre gerencias** con trazabilidad
+
+        "user": {- ✅ **Asignación a funcionarios** específicos
+
+            "id": 1,- ✅ **Historial completo** de cambios y movimientos
+
+            "name": "Administrador Principal",- ✅ **Gestión documental** integrada (carga de archivos)
+
+            "email": "admin@municipalidad.gob.pe",- ✅ **Búsqueda avanzada** por múltiples criterios
+
+            "roles": ["admin"]- ✅ **Exportación de datos** (Excel, PDF)
+
+        },- ✅ **Prioridades** y estados personalizados
+
+        "token": "1|abcd1234efgh5678ijkl9012mnop3456"
+
+    }### 🔄 **Workflows Personalizables Avanzados** ⭐ **NUEVO**
+
+}- ✅ **Creación visual** desde la interfaz web
+
+```- ✅ **Pasos configurables**: Inicio, Proceso, Decisión, Fin
+
+- ✅ **Transiciones condicionales** con reglas JSON
+
+### Registro- ✅ **Activación/Desactivación** dinámica de workflows
+
+```http- ✅ **Clonación** de workflows existentes
+
+POST /api/auth/register- ✅ **Múltiples tipos**: Expediente, Trámite, Proceso
+
+Content-Type: application/json- ✅ **Configuración JSON** para pasos y transiciones
+
+- ✅ **API REST completa** para integración frontend
+
+{
+
+    "name": "Juan Pérez",### 📝 **Mesa de Partes Completa**
+
+    "email": "juan.perez@municipalidad.gob.pe",- ✅ **Registro de documentos** de entrada
+
+    "password": "password123",- ✅ **Códigos de seguimiento** únicos automáticos
+
+    "password_confirmation": "password123",- ✅ **Consulta pública** por código de seguimiento
+
+    "gerencia_id": 2- ✅ **Tipos de documento** configurables
+
+}- ✅ **Tipos de trámite** con documentos requeridos
+
+```- ✅ **Derivación automática** según reglas
+
+- ✅ **Observaciones** y seguimiento de estados
+
+### Obtener Usuario Autenticado
+
+```http### 📊 **Reportes y Estadísticas**
+
+GET /api/auth/user- ✅ **Dashboard administrativo** con métricas
+
+Authorization: Bearer {token}- ✅ **Estadísticas por gerencia** individuales
+
+```- ✅ **Reportes de expedientes** (creados, procesados, tiempos)
+
+- ✅ **Estadísticas de usuarios** y actividad
+
+### Logout- ✅ **Métricas de mesa de partes** y recepción
+
+```http
+
+POST /api/auth/logout---
+
+Authorization: Bearer {token}
+
+```## 🎯 Funcionalidades Detalladas del Administrador
+
+
+
+---### 👤 **Gestión de Usuarios**
+
 El administrador puede realizar las siguientes acciones:
 
+## 👥 Usuarios {#usuarios}
+
 #### **Crear Usuarios**
-```http
-POST /api/usuarios
-{
-    "name": "Juan Pérez",
-    "email": "juan@municipalidad.com",
+
+### Listar Usuarios```http
+
+```httpPOST /api/usuarios
+
+GET /api/usuarios{
+
+Authorization: Bearer {token}    "name": "Juan Pérez",
+
+```    "email": "juan@municipalidad.com",
+
     "password": "password123",
-    "telefono": "+51987654321",
-    "cargo": "Funcionario de Licencias",
-    "activo": true
+
+### Crear Usuario    "telefono": "+51987654321",
+
+```http    "cargo": "Funcionario de Licencias",
+
+POST /api/usuarios    "activo": true
+
+Authorization: Bearer {token}}
+
+Content-Type: application/json```
+
+
+
+{#### **Asignar Roles a Usuarios**
+
+    "name": "María García",```http
+
+    "email": "maria.garcia@municipalidad.gob.pe",POST /api/usuarios/{user}/roles
+
+    "password": "password123",{
+
+    "gerencia_id": 3,    "role": "funcionario"
+
+    "telefono": "987654321",}
+
+    "cargo": "Especialista en Licencias"```
+
 }
-```
 
-#### **Asignar Roles a Usuarios**
+```#### **Asignar Permisos Específicos**
+
 ```http
-POST /api/usuarios/{user}/roles
-{
-    "role": "funcionario"
+
+### Obtener UsuarioPOST /api/usuarios/{user}/permissions
+
+```http{
+
+GET /api/usuarios/{id}    "permissions": ["crear_expedientes", "derivar_expediente"]
+
+Authorization: Bearer {token}}
+
+``````
+
+
+
+### Actualizar Usuario#### **Sincronizar Permisos**
+
+```http```http
+
+PUT /api/usuarios/{id}POST /api/usuarios/{user}/permissions/sync
+
+Authorization: Bearer {token}{
+
+Content-Type: application/json    "permissions": ["ver_expedientes", "crear_expedientes", "editar_expedientes"]
+
 }
-```
 
-#### **Asignar Permisos Específicos**
-```http
-POST /api/usuarios/{user}/permissions
-{
-    "permissions": ["crear_expedientes", "derivar_expediente"]
-}
-```
+{```
 
-#### **Sincronizar Permisos**
-```http
-POST /api/usuarios/{user}/permissions/sync
-{
-    "permissions": ["ver_expedientes", "crear_expedientes", "editar_expedientes"]
-}
-```
+    "name": "María García Actualizada",
 
-### 🎭 **Gestión de Roles y Permisos**
+    "telefono": "987654322",### 🎭 **Gestión de Roles y Permisos**
 
-#### **Crear Roles Personalizados**
-```http
+    "cargo": "Jefe de Licencias"
+
+}#### **Crear Roles Personalizados**
+
+``````http
+
 POST /api/roles
-{
-    "name": "Supervisor de Licencias",
-    "guard_name": "web",
-    "permissions": ["ver_expedientes", "aprobar_expediente"]
-}
+
+### Asignar Rol{
+
+```http    "name": "Supervisor de Licencias",
+
+POST /api/usuarios/{id}/roles    "guard_name": "web",
+
+Authorization: Bearer {token}    "permissions": ["ver_expedientes", "aprobar_expediente"]
+
+Content-Type: application/json}
+
 ```
 
-#### **Crear Permisos Personalizados**
-```http
-POST /api/permissions
 {
-    "name": "revisar_licencias_comerciales",
+
+    "role": "funcionario"#### **Crear Permisos Personalizados**
+
+}```http
+
+```POST /api/permissions
+
+{
+
+---    "name": "revisar_licencias_comerciales",
+
     "guard_name": "web"
-}
+
+## 🏢 Gerencias {#gerencias}}
+
 ```
 
-#### **Editar Roles Existentes**
-```http
-PUT /api/roles/{role}
-{
+### Listar Gerencias
+
+```http#### **Editar Roles Existentes**
+
+GET /api/gerencias```http
+
+Authorization: Bearer {token}PUT /api/roles/{role}
+
+```{
+
     "name": "Supervisor de Licencias Actualizado",
-    "permissions": ["ver_expedientes", "aprobar_expediente", "rechazar_expediente"]
+
+### Crear Gerencia    "permissions": ["ver_expedientes", "aprobar_expediente", "rechazar_expediente"]
+
+```http}
+
+POST /api/gerencias```
+
+Authorization: Bearer {token}
+
+Content-Type: application/json### 🏢 **Gestión de Gerencias**
+
+
+
+{#### **Crear Gerencias Principales**
+
+    "nombre": "Gerencia de Medio Ambiente",```http
+
+    "codigo": "GMA",POST /api/gerencias
+
+    "descripcion": "Encargada de temas ambientales",{
+
+    "tipo": "gerencia",    "nombre": "Gerencia de Desarrollo Urbano",
+
+    "gerencia_padre_id": 1,    "codigo": "GDU",
+
+    "activo": true    "descripcion": "Encargada del desarrollo urbano municipal",
+
+}    "tipo": "operativa",
+
+```    "activo": true
+
 }
-```
 
-### 🏢 **Gestión de Gerencias**
+### Obtener Gerencia```
 
-#### **Crear Gerencias Principales**
 ```http
-POST /api/gerencias
+
+GET /api/gerencias/{id}#### **Crear Subgerencias**
+
+Authorization: Bearer {token}```http
+
+```POST /api/gerencias
+
 {
-    "nombre": "Gerencia de Desarrollo Urbano",
-    "codigo": "GDU",
-    "descripcion": "Encargada del desarrollo urbano municipal",
-    "tipo": "operativa",
-    "activo": true
-}
-```
 
-#### **Crear Subgerencias**
-```http
-POST /api/gerencias
-{
-    "nombre": "Subgerencia de Licencias",
-    "codigo": "SGL",
-    "descripcion": "Manejo de licencias de funcionamiento",
-    "tipo": "subgerencia",
-    "parent_id": 1,
-    "activo": true
-}
-```
+### Actualizar Gerencia    "nombre": "Subgerencia de Licencias",
 
-#### **Asignar Usuarios a Gerencias**
-```http
+```http    "codigo": "SGL",
+
+PUT /api/gerencias/{id}    "descripcion": "Manejo de licencias de funcionamiento",
+
+Authorization: Bearer {token}    "tipo": "subgerencia",
+
+Content-Type: application/json    "parent_id": 1,
+
+    "activo": true
+
+{}
+
+    "nombre": "Gerencia de Medio Ambiente y Salud",```
+
+    "descripcion": "Encargada de temas ambientales y de salud pública"
+
+}#### **Asignar Usuarios a Gerencias**
+
+``````http
+
 POST /api/gerencias/{gerencia}/usuarios
-{
-    "user_id": 5,
-    "cargo_especifico": "Especialista en Licencias"
-}
-```
 
-#### **Obtener Jerarquía Completa**
-```http
-GET /api/gerencias/jerarquia
+### Obtener Subgerencias{
+
+```http    "user_id": 5,
+
+GET /api/gerencias/{id}/subgerencias    "cargo_especifico": "Especialista en Licencias"
+
+Authorization: Bearer {token}}
+
+``````
+
+
+
+### Obtener Usuarios de Gerencia#### **Obtener Jerarquía Completa**
+
+```http```http
+
+GET /api/gerencias/{id}/usuariosGET /api/gerencias/jerarquia
+
+Authorization: Bearer {token}```
+
 ```
 
 ### � **Gestión de Expedientes**
 
-#### **Derivar Expedientes Entre Gerencias**
-```http
-POST /api/expedientes/{expediente}/derivar
-{
-    "gerencia_destino_id": 2,
-    "usuario_destino_id": 8,
-    "observaciones": "Requiere revisión técnica especializada",
-    "prioridad": "alta"
-}
-```
-
-#### **Aprobar/Rechazar Expedientes**
-```http
-POST /api/expedientes/{expediente}/aprobar
-{
-    "observaciones": "Expediente aprobado según normativa vigente",
-    "documento_resolution": "RES-2025-001"
-}
-
-POST /api/expedientes/{expediente}/rechazar
-{
-    "motivo": "Documentación incompleta",
-    "observaciones": "Falta certificado de zonificación"
-}
-```
-
-#### **Subir Documentos**
-```http
-POST /api/expedientes/{expediente}/documentos
-Content-Type: multipart/form-data
-{
-    "archivo": [archivo],
-    "tipo_documento": "resolucion",
-    "descripcion": "Resolución de aprobación"
-}
-```
-
-### 🔄 **Gestión de Workflows Personalizables**
-
-#### **Crear Workflow Completo**
-```http
-POST /api/custom-workflows
-{
-    "nombre": "Flujo de Licencias Comerciales",
-    "descripcion": "Proceso completo para licencias de funcionamiento",
-    "tipo": "expediente",
-    "activo": true
-}
-```
-
-#### **Crear Pasos del Workflow**
-```http
-POST /api/custom-workflow-steps
-{
-    "custom_workflow_id": 1,
-    "nombre": "Revisión Inicial",
-    "descripcion": "Verificación de documentos básicos",
-    "tipo": "proceso",
-    "orden": 1,
-    "configuracion": {
-        "requiere_aprobacion": true,
-        "tiempo_limite_dias": 5,
-        "usuarios_autorizados": ["funcionario", "supervisor"]
-    },
-    "activo": true
-}
-```
-
-#### **Crear Transiciones**
-```http
-POST /api/custom-workflow-transitions
-{
-    "custom_workflow_id": 1,
-    "from_step_id": 1,
-    "to_step_id": 2,
-    "nombre": "Aprobar Revisión",
-    "descripcion": "Transición cuando la revisión es aprobada",
-    "condicion": {
-        "estado_anterior": "revision_inicial",
-        "accion": "aprobar",
-        "rol_requerido": "supervisor"
-    },
-    "orden": 1,
-    "activo": true
-}
-```
-
-#### **Clonar Workflows**
-```http
-POST /api/custom-workflows/{id}/clone
-{
-    "nuevo_nombre": "Flujo de Licencias Comerciales - Copia",
-    "modificaciones": {
-        "tipo": "tramite"
-    }
-}
-```
-
-### 📝 **Gestión de Mesa de Partes**
-
-#### **Configurar Tipos de Trámite**
-```http
-POST /api/tipos-tramite
-{
-    "nombre": "Licencia de Funcionamiento",
-    "codigo": "LF",
-    "descripcion": "Trámite para obtener licencia comercial",
-    "documentos_requeridos": [
-        "DNI del solicitante",
-        "Certificado de zonificación",
-        "Plano de distribución"
-    ],
-    "costo": 150.00,
-    "tiempo_respuesta_dias": 15
-}
-```
-
-#### **Derivar Documentos Automáticamente**
-```http
-POST /api/mesa-partes/{id}/derivar
-{
-    "gerencia_destino_id": 2,
-    "usuario_asignado_id": 5,
-    "prioridad": "normal",
-    "observaciones": "Derivado según tipo de trámite"
-}
-```
-
 ---
 
-## 🚀 Tecnologías
+#### **Derivar Expedientes Entre Gerencias**
+
+## 📄 Expedientes {#expedientes}```http
+
+POST /api/expedientes/{expediente}/derivar
+
+### Listar Expedientes{
+
+```http    "gerencia_destino_id": 2,
+
+GET /api/expedientes    "usuario_destino_id": 8,
+
+Authorization: Bearer {token}    "observaciones": "Requiere revisión técnica especializada",
+
+```    "prioridad": "alta"
+
+}
+
+### Crear Expediente```
+
+```http
+
+POST /api/expedientes#### **Aprobar/Rechazar Expedientes**
+
+Authorization: Bearer {token}```http
+
+Content-Type: application/jsonPOST /api/expedientes/{expediente}/aprobar
+
+{
+
+{    "observaciones": "Expediente aprobado según normativa vigente",
+
+    "numero_expediente": "EXP-2025-000001",    "documento_resolution": "RES-2025-001"
+
+    "asunto": "Solicitud de Licencia de Funcionamiento",}
+
+    "tipo_tramite_id": 1,
+
+    "solicitante_nombre": "Carlos Mendoza",POST /api/expedientes/{expediente}/rechazar
+
+    "solicitante_email": "carlos.mendoza@email.com",{
+
+    "solicitante_telefono": "987654321",    "motivo": "Documentación incompleta",
+
+    "solicitante_dni": "12345678",    "observaciones": "Falta certificado de zonificación"
+
+    "gerencia_id": 2,}
+
+    "prioridad": "normal",```
+
+    "observaciones": "Documentos completos"
+
+}#### **Subir Documentos**
+
+``````http
+
+POST /api/expedientes/{expediente}/documentos
+
+### Obtener ExpedienteContent-Type: multipart/form-data
+
+```http{
+
+GET /api/expedientes/{id}    "archivo": [archivo],
+
+Authorization: Bearer {token}    "tipo_documento": "resolucion",
+
+```    "descripcion": "Resolución de aprobación"
+
+}
+
+### Actualizar Expediente```
+
+```http
+
+PUT /api/expedientes/{id}### 🔄 **Gestión de Workflows Personalizables**
+
+Authorization: Bearer {token}
+
+Content-Type: application/json#### **Crear Workflow Completo**
+
+```http
+
+{POST /api/custom-workflows
+
+    "asunto": "Solicitud de Licencia de Funcionamiento - Actualizada",{
+
+    "observaciones": "Documentos completos y revisados"    "nombre": "Flujo de Licencias Comerciales",
+
+}    "descripcion": "Proceso completo para licencias de funcionamiento",
+
+```    "tipo": "expediente",
+
+    "activo": true
+
+### Derivar Expediente}
+
+```http```
+
+POST /api/expedientes/{id}/derivar
+
+Authorization: Bearer {token}#### **Crear Pasos del Workflow**
+
+Content-Type: application/json```http
+
+POST /api/custom-workflow-steps
+
+{{
+
+    "gerencia_destino_id": 3,    "custom_workflow_id": 1,
+
+    "usuario_destino_id": 5,    "nombre": "Revisión Inicial",
+
+    "observaciones": "Derivado para evaluación técnica"    "descripcion": "Verificación de documentos básicos",
+
+}    "tipo": "proceso",
+
+```    "orden": 1,
+
+    "configuracion": {
+
+### Aprobar Expediente        "requiere_aprobacion": true,
+
+```http        "tiempo_limite_dias": 5,
+
+POST /api/expedientes/{id}/aprobar        "usuarios_autorizados": ["funcionario", "supervisor"]
+
+Authorization: Bearer {token}    },
+
+Content-Type: application/json    "activo": true
+
+}
+
+{```
+
+    "observaciones": "Expediente aprobado conforme a normativa"
+
+}#### **Crear Transiciones**
+
+``````http
+
+POST /api/custom-workflow-transitions
+
+### Rechazar Expediente{
+
+```http    "custom_workflow_id": 1,
+
+POST /api/expedientes/{id}/rechazar    "from_step_id": 1,
+
+Authorization: Bearer {token}    "to_step_id": 2,
+
+Content-Type: application/json    "nombre": "Aprobar Revisión",
+
+    "descripcion": "Transición cuando la revisión es aprobada",
+
+{    "condicion": {
+
+    "motivo": "Documentación incompleta",        "estado_anterior": "revision_inicial",
+
+    "observaciones": "Falta certificado de zonificación"        "accion": "aprobar",
+
+}        "rol_requerido": "supervisor"
+
+```    },
+
+    "orden": 1,
+
+### Subir Documento    "activo": true
+
+```http}
+
+POST /api/expedientes/{id}/documentos```
+
+Authorization: Bearer {token}
+
+Content-Type: multipart/form-data#### **Clonar Workflows**
+
+```http
+
+{POST /api/custom-workflows/{id}/clone
+
+    "file": [archivo],{
+
+    "tipo_documento": "licencia",    "nuevo_nombre": "Flujo de Licencias Comerciales - Copia",
+
+    "descripcion": "Licencia de funcionamiento aprobada"    "modificaciones": {
+
+}        "tipo": "tramite"
+
+```    }
+
+}
+
+---```
+
+
+
+## 📋 Mesa de Partes {#mesa-de-partes}### 📝 **Gestión de Mesa de Partes**
+
+
+
+### Listar Mesa de Partes#### **Configurar Tipos de Trámite**
+
+```http```http
+
+GET /api/mesa-partesPOST /api/tipos-tramite
+
+Authorization: Bearer {token}{
+
+```    "nombre": "Licencia de Funcionamiento",
+
+    "codigo": "LF",
+
+### Crear Registro en Mesa de Partes    "descripcion": "Trámite para obtener licencia comercial",
+
+```http    "documentos_requeridos": [
+
+POST /api/mesa-partes        "DNI del solicitante",
+
+Authorization: Bearer {token}        "Certificado de zonificación",
+
+Content-Type: application/json        "Plano de distribución"
+
+    ],
+
+{    "costo": 150.00,
+
+    "tipo_documento_id": 1,    "tiempo_respuesta_dias": 15
+
+    "tipo_tramite_id": 1,}
+
+    "remitente_nombre": "Ana López",```
+
+    "remitente_email": "ana.lopez@email.com",
+
+    "remitente_telefono": "987654321",#### **Derivar Documentos Automáticamente**
+
+    "remitente_dni": "87654321",```http
+
+    "asunto": "Solicitud de certificado de numeración",POST /api/mesa-partes/{id}/derivar
+
+    "folio_inicio": 1,{
+
+    "folio_fin": 5,    "gerencia_destino_id": 2,
+
+    "observaciones": "Documentos en original",    "usuario_asignado_id": 5,
+
+    "gerencia_destino_id": 2    "prioridad": "normal",
+
+}    "observaciones": "Derivado según tipo de trámite"
+
+```}
+
+```
+
+### Obtener Registro
+
+```http---
+
+GET /api/mesa-partes/{id}
+
+Authorization: Bearer {token}## 🚀 Tecnologías
+
+```
 
 - **Backend**: Laravel 11
-- **Base de Datos**: SQLite/MySQL
-- **Autenticación**: Laravel Sanctum
-- **Permisos**: Spatie Laravel Permission
-- **Documentación**: Markdown completo
+
+### Derivar Documento- **Base de Datos**: SQLite/MySQL
+
+```http- **Autenticación**: Laravel Sanctum
+
+POST /api/mesa-partes/{id}/derivar- **Permisos**: Spatie Laravel Permission
+
+Authorization: Bearer {token}- **Documentación**: Markdown completo
+
+Content-Type: application/json
 
 ---
 
-## 📦 Instalación Rápida
+{
 
-```bash
-# 1. Instalar dependencias
+    "gerencia_destino_id": 3,## 📦 Instalación Rápida
+
+    "observaciones": "Derivado para evaluación"
+
+}```bash
+
+```# 1. Instalar dependencias
+
 composer install
 
-# 2. Configurar environment
-cp .env.example .env
-php artisan key:generate
+### Consulta Pública por Código
 
-# 3. Configurar base de datos en .env
-DB_CONNECTION=mysql
-DB_DATABASE=tramite_muni
-DB_USERNAME=usuario
+```http# 2. Configurar environment
+
+GET /api/mesa-partes/consultar/{codigoSeguimiento}cp .env.example .env
+
+```php artisan key:generate
+
+
+
+**Ejemplo:**# 3. Configurar base de datos en .env
+
+```httpDB_CONNECTION=mysql
+
+GET /api/mesa-partes/consultar/MP-2025-000001DB_DATABASE=tramite_muni
+
+```DB_USERNAME=usuario
+
 DB_PASSWORD=password
 
+---
+
 # 4. Ejecutar migraciones y seeders
-php artisan migrate
+
+## 🔄 Workflows Personalizables {#workflows}php artisan migrate
+
 php artisan db:seed
 
-# 5. Crear enlace simbólico para storage
-php artisan storage:link
+### Listar Workflows
 
-# 6. Iniciar servidor
+```http# 5. Crear enlace simbólico para storage
+
+GET /api/custom-workflowsphp artisan storage:link
+
+Authorization: Bearer {token}
+
+```# 6. Iniciar servidor
+
 php artisan serve
-```
 
----
+### Crear Workflow```
 
-## 🌐 URLs de Prueba
+```http
 
-### **Interfaz Administrativa**
-```
-http://localhost:8000/test_admin.html
-```
+POST /api/custom-workflows---
 
-### **API de Expedientes**
-```
-http://localhost:8000/test_api.html
-```
+Authorization: Bearer {token}
 
-### **Mesa de Partes**
-```
+Content-Type: application/json## 🌐 URLs de Prueba
+
+
+
+{### **Interfaz Administrativa**
+
+    "nombre": "Proceso de Licencia de Funcionamiento",```
+
+    "descripcion": "Workflow para licencias comerciales",http://localhost:8000/test_admin.html
+
+    "tipo": "expediente",```
+
+    "gerencia_id": 2,
+
+    "activo": true,### **API de Expedientes**
+
+    "configuracion": {```
+
+        "tiempo_limite_dias": 15,http://localhost:8000/test_api.html
+
+        "requiere_aprobacion": true```
+
+    }
+
+}### **Mesa de Partes**
+
+``````
+
 http://localhost:8000/test_mesa_partes_api.html
-```
 
----
+### Obtener Workflow```
 
-## 👤 Usuarios de Prueba
+```http
 
-| Rol | Email | Password | Permisos |
-|-----|-------|----------|----------|
-| Super Admin | `superadmin@example.com` | `password` | Todos (59 permisos) |
-| Admin | `admin@example.com` | `password` | Gestión completa + workflows |
-| Jefe de Gerencia | `jefe@example.com` | `password` | Gestión de gerencia + workflows básicos |
+GET /api/custom-workflows/{id}---
+
+Authorization: Bearer {token}
+
+```## 👤 Usuarios de Prueba
+
+
+
+### Crear Paso de Workflow| Rol | Email | Password | Permisos |
+
+```http|-----|-------|----------|----------|
+
+POST /api/custom-workflow-steps| Super Admin | `superadmin@example.com` | `password` | Todos (59 permisos) |
+
+Authorization: Bearer {token}| Admin | `admin@example.com` | `password` | Gestión completa + workflows |
+
+Content-Type: application/json| Jefe de Gerencia | `jefe@example.com` | `password` | Gestión de gerencia + workflows básicos |
+
 | Funcionario | `funcionario@example.com` | `password` | Procesamiento de expedientes |
-| Ciudadano | `ciudadano@example.com` | `password` | Creación y consulta |
 
----
+{| Ciudadano | `ciudadano@example.com` | `password` | Creación y consulta |
 
-## 📱 API Endpoints Completos
+    "custom_workflow_id": 1,
 
-### 🔐 **Autenticación** (`/api/auth/*`)
-```http
-POST   /api/auth/login                    # Login
-POST   /api/auth/register                 # Registro
-POST   /api/auth/logout                   # Logout
-GET    /api/auth/user                     # Usuario actual
-POST   /api/auth/refresh                  # Refresh token
-POST   /api/auth/change-password          # Cambiar contraseña
+    "nombre": "Revisión Inicial",---
+
+    "descripcion": "Revisión de documentos",
+
+    "orden": 1,## 📱 API Endpoints Completos
+
+    "tipo": "manual",
+
+    "responsable_rol": "funcionario",### 🔐 **Autenticación** (`/api/auth/*`)
+
+    "tiempo_limite_horas": 48,```http
+
+    "configuracion": {POST   /api/auth/login                    # Login
+
+        "campos_requeridos": ["observaciones"],POST   /api/auth/register                 # Registro
+
+        "puede_rechazar": truePOST   /api/auth/logout                   # Logout
+
+    }GET    /api/auth/user                     # Usuario actual
+
+}POST   /api/auth/refresh                  # Refresh token
+
+```POST   /api/auth/change-password          # Cambiar contraseña
+
 GET    /api/auth/check-email              # Verificar email
-```
 
-### 👥 **Gestión de Usuarios** (`/api/usuarios/*`)
+---```
+
+
+
+## 👮‍♂️ Roles y Permisos {#roles-y-permisos}### 👥 **Gestión de Usuarios** (`/api/usuarios/*`)
+
 ```http
-GET    /api/usuarios                      # Listar usuarios
-POST   /api/usuarios                      # Crear usuario
-GET    /api/usuarios/{id}                 # Obtener usuario
-PUT    /api/usuarios/{id}                 # Actualizar usuario
-DELETE /api/usuarios/{id}                 # Eliminar usuario
+
+### Listar RolesGET    /api/usuarios                      # Listar usuarios
+
+```httpPOST   /api/usuarios                      # Crear usuario
+
+GET /api/rolesGET    /api/usuarios/{id}                 # Obtener usuario
+
+Authorization: Bearer {token}PUT    /api/usuarios/{id}                 # Actualizar usuario
+
+```DELETE /api/usuarios/{id}                 # Eliminar usuario
+
 POST   /api/usuarios/{id}/estado          # Cambiar estado
-POST   /api/usuarios/{id}/roles           # Asignar rol
-DELETE /api/usuarios/{id}/roles/{role}    # Remover rol
-POST   /api/usuarios/{id}/permissions     # Asignar permisos
-POST   /api/usuarios/{id}/permissions/sync # Sincronizar permisos
-POST   /api/usuarios/{id}/password        # Cambiar contraseña
+
+### Crear RolPOST   /api/usuarios/{id}/roles           # Asignar rol
+
+```httpDELETE /api/usuarios/{id}/roles/{role}    # Remover rol
+
+POST /api/rolesPOST   /api/usuarios/{id}/permissions     # Asignar permisos
+
+Authorization: Bearer {token}POST   /api/usuarios/{id}/permissions/sync # Sincronizar permisos
+
+Content-Type: application/jsonPOST   /api/usuarios/{id}/password        # Cambiar contraseña
+
 GET    /api/usuarios/role/{role}          # Usuarios por rol
-GET    /api/usuarios/gerencia/{gerencia}  # Usuarios por gerencia
-```
 
-### 🎭 **Roles y Permisos** (`/api/roles/*`, `/api/permissions/*`)
-```http
-GET    /api/roles                         # Listar roles
+{GET    /api/usuarios/gerencia/{gerencia}  # Usuarios por gerencia
+
+    "name": "especialista_licencias",```
+
+    "guard_name": "web",
+
+    "permissions": ["ver_expediente", "editar_expediente", "derivar_expediente"]### 🎭 **Roles y Permisos** (`/api/roles/*`, `/api/permissions/*`)
+
+}```http
+
+```GET    /api/roles                         # Listar roles
+
 POST   /api/roles                         # Crear rol
-GET    /api/roles/{role}                  # Obtener rol
-PUT    /api/roles/{role}                  # Actualizar rol
-DELETE /api/roles/{role}                  # Eliminar rol
 
-GET    /api/permissions                   # Listar permisos
+### Listar PermisosGET    /api/roles/{role}                  # Obtener rol
+
+```httpPUT    /api/roles/{role}                  # Actualizar rol
+
+GET /api/permissionsDELETE /api/roles/{role}                  # Eliminar rol
+
+Authorization: Bearer {token}
+
+```GET    /api/permissions                   # Listar permisos
+
 POST   /api/permissions                   # Crear permiso
-GET    /api/permissions/{permission}      # Obtener permiso
-PUT    /api/permissions/{permission}      # Actualizar permiso
-DELETE /api/permissions/{permission}      # Eliminar permiso
-```
+
+### Crear PermisoGET    /api/permissions/{permission}      # Obtener permiso
+
+```httpPUT    /api/permissions/{permission}      # Actualizar permiso
+
+POST /api/permissionsDELETE /api/permissions/{permission}      # Eliminar permiso
+
+Authorization: Bearer {token}```
+
+Content-Type: application/json
 
 ### 🏢 **Gerencias** (`/api/gerencias/*`)
-```http
-GET    /api/gerencias                     # Listar gerencias
-POST   /api/gerencias                     # Crear gerencia
-GET    /api/gerencias/{id}                # Obtener gerencia
-PUT    /api/gerencias/{id}                # Actualizar gerencia
+
+{```http
+
+    "name": "generar_reporte_avanzado",GET    /api/gerencias                     # Listar gerencias
+
+    "guard_name": "web"POST   /api/gerencias                     # Crear gerencia
+
+}GET    /api/gerencias/{id}                # Obtener gerencia
+
+```PUT    /api/gerencias/{id}                # Actualizar gerencia
+
 DELETE /api/gerencias/{id}                # Eliminar gerencia
-POST   /api/gerencias/{id}/estado         # Cambiar estado
+
+---POST   /api/gerencias/{id}/estado         # Cambiar estado
+
 GET    /api/gerencias/{id}/subgerencias   # Obtener subgerencias
-GET    /api/gerencias/{id}/usuarios       # Usuarios de gerencia
+
+## 📊 Catálogos {#catalogos}GET    /api/gerencias/{id}/usuarios       # Usuarios de gerencia
+
 POST   /api/gerencias/{id}/usuarios       # Asignar usuario
-DELETE /api/gerencias/{id}/usuarios/{user} # Remover usuario
-GET    /api/gerencias/jerarquia           # Jerarquía completa
-GET    /api/gerencias/tipo/{tipo}         # Gerencias por tipo
+
+### Tipos de DocumentoDELETE /api/gerencias/{id}/usuarios/{user} # Remover usuario
+
+```httpGET    /api/gerencias/jerarquia           # Jerarquía completa
+
+GET /api/tipos-documentoGET    /api/gerencias/tipo/{tipo}         # Gerencias por tipo
+
+``````
+
+
+
+**Respuesta:**### 📋 **Expedientes** (`/api/expedientes/*`)
+
+```json```http
+
+{GET    /api/expedientes                   # Listar expedientes
+
+    "data": [POST   /api/expedientes                   # Crear expediente
+
+        {GET    /api/expedientes/{id}              # Obtener expediente
+
+            "id": 1,PUT    /api/expedientes/{id}              # Actualizar expediente
+
+            "nombre": "Solicitud Simple",DELETE /api/expedientes/{id}              # Eliminar expediente
+
+            "codigo": "SOL-001",POST   /api/expedientes/{id}/derivar      # Derivar expediente
+
+            "descripcion": "Solicitud de trámite simple",POST   /api/expedientes/{id}/aprobar      # Aprobar expediente
+
+            "requiere_firma": true,POST   /api/expedientes/{id}/rechazar     # Rechazar expediente
+
+            "vigencia_dias": 30POST   /api/expedientes/{id}/documentos   # Subir documento
+
+        }GET    /api/expedientes/{id}/history      # Historial de cambios
+
+    ]POST   /api/expedientes/{id}/assign       # Asignar a usuario
+
+}GET    /api/expedientes/estadisticas      # Estadísticas
+
+```GET    /api/expedientes/exportar          # Exportar datos
+
 ```
 
-### 📋 **Expedientes** (`/api/expedientes/*`)
-```http
-GET    /api/expedientes                   # Listar expedientes
-POST   /api/expedientes                   # Crear expediente
-GET    /api/expedientes/{id}              # Obtener expediente
-PUT    /api/expedientes/{id}              # Actualizar expediente
-DELETE /api/expedientes/{id}              # Eliminar expediente
-POST   /api/expedientes/{id}/derivar      # Derivar expediente
-POST   /api/expedientes/{id}/aprobar      # Aprobar expediente
-POST   /api/expedientes/{id}/rechazar     # Rechazar expediente
-POST   /api/expedientes/{id}/documentos   # Subir documento
-GET    /api/expedientes/{id}/history      # Historial de cambios
-POST   /api/expedientes/{id}/assign       # Asignar a usuario
-GET    /api/expedientes/estadisticas      # Estadísticas
-GET    /api/expedientes/exportar          # Exportar datos
-```
+### Tipos de Trámite
 
-### 🔄 **Workflows Personalizables** ⭐ (`/api/custom-workflows/*`)
-```http
-GET    /api/custom-workflows              # Listar workflows
+```http### 🔄 **Workflows Personalizables** ⭐ (`/api/custom-workflows/*`)
+
+GET /api/tipos-tramite```http
+
+```GET    /api/custom-workflows              # Listar workflows
+
 POST   /api/custom-workflows              # Crear workflow
-GET    /api/custom-workflows/{id}         # Obtener workflow
-PUT    /api/custom-workflows/{id}         # Actualizar workflow
-DELETE /api/custom-workflows/{id}         # Eliminar workflow
-POST   /api/custom-workflows/{id}/toggle  # Activar/desactivar
-POST   /api/custom-workflows/{id}/clone   # Clonar workflow
-GET    /api/custom-workflows/tipo/{tipo}  # Por tipo
 
-# Pasos de Workflow
-GET    /api/custom-workflow-steps         # Listar pasos
-POST   /api/custom-workflow-steps         # Crear paso
-GET    /api/custom-workflow-steps/{id}    # Obtener paso
-PUT    /api/custom-workflow-steps/{id}    # Actualizar paso
-DELETE /api/custom-workflow-steps/{id}    # Eliminar paso
+**Respuesta:**GET    /api/custom-workflows/{id}         # Obtener workflow
 
-# Transiciones de Workflow
-GET    /api/custom-workflow-transitions   # Listar transiciones
-POST   /api/custom-workflow-transitions   # Crear transición
-GET    /api/custom-workflow-transitions/{id} # Obtener transición
+```jsonPUT    /api/custom-workflows/{id}         # Actualizar workflow
+
+{DELETE /api/custom-workflows/{id}         # Eliminar workflow
+
+    "data": [POST   /api/custom-workflows/{id}/toggle  # Activar/desactivar
+
+        {POST   /api/custom-workflows/{id}/clone   # Clonar workflow
+
+            "id": 1,GET    /api/custom-workflows/tipo/{tipo}  # Por tipo
+
+            "nombre": "Licencia de Funcionamiento",
+
+            "codigo": "LF-001",# Pasos de Workflow
+
+            "costo": 125.50,GET    /api/custom-workflow-steps         # Listar pasos
+
+            "tiempo_estimado_dias": 15,POST   /api/custom-workflow-steps         # Crear paso
+
+            "gerencia": {GET    /api/custom-workflow-steps/{id}    # Obtener paso
+
+                "id": 2,PUT    /api/custom-workflow-steps/{id}    # Actualizar paso
+
+                "nombre": "Gerencia de Desarrollo Económico"DELETE /api/custom-workflow-steps/{id}    # Eliminar paso
+
+            }
+
+        }# Transiciones de Workflow
+
+    ]GET    /api/custom-workflow-transitions   # Listar transiciones
+
+}POST   /api/custom-workflow-transitions   # Crear transición
+
+```GET    /api/custom-workflow-transitions/{id} # Obtener transición
+
 PUT    /api/custom-workflow-transitions/{id} # Actualizar transición
-DELETE /api/custom-workflow-transitions/{id} # Eliminar transición
-```
 
-### 📝 **Mesa de Partes** (`/api/mesa-partes/*`)
+### Gerencias (Público)DELETE /api/custom-workflow-transitions/{id} # Eliminar transición
+
+```http```
+
+GET /api/gerencias
+
+```### 📝 **Mesa de Partes** (`/api/mesa-partes/*`)
+
 ```http
-GET    /api/mesa-partes                   # Listar documentos
+
+---GET    /api/mesa-partes                   # Listar documentos
+
 POST   /api/mesa-partes                   # Crear documento
-GET    /api/mesa-partes/{id}              # Obtener documento
+
+## 🔐 Autenticación Bearer TokenGET    /api/mesa-partes/{id}              # Obtener documento
+
 PUT    /api/mesa-partes/{id}              # Actualizar documento
-POST   /api/mesa-partes/{id}/derivar      # Derivar documento
+
+Todas las rutas protegidas requieren el token en el header:POST   /api/mesa-partes/{id}/derivar      # Derivar documento
+
 POST   /api/mesa-partes/{id}/observar     # Agregar observación
-GET    /api/mesa-partes/tipos/tramites    # Tipos de trámite
-GET    /api/mesa-partes/tipos/documentos  # Tipos de documento
-GET    /api/mesa-partes/reportes/estadisticas # Estadísticas
+
+```httpGET    /api/mesa-partes/tipos/tramites    # Tipos de trámite
+
+Authorization: Bearer 1|abcd1234efgh5678ijkl9012mnop3456GET    /api/mesa-partes/tipos/documentos  # Tipos de documento
+
+```GET    /api/mesa-partes/reportes/estadisticas # Estadísticas
+
 ```
 
 ---
+
+---
+
+## 👥 Usuarios de Prueba
 
 ## 🗄️ Base de Datos Completa
 
-### 📊 **Tablas Principales**
-- `users` - Usuarios del sistema con roles y permisos
-- `expedientes` - Expedientes municipales con workflows
-- `custom_workflows` ⭐ - Workflows personalizables
-- `custom_workflow_steps` ⭐ - Pasos de workflow
-- `custom_workflow_transitions` ⭐ - Transiciones de workflow
-- `gerencias` - Estructura jerárquica de gerencias
-- `mesa_partes` - Documentos de entrada y seguimiento
-- `roles` / `permissions` - Sistema de permisos granular
+| Email | Contraseña | Rol | Gerencia |
 
-### 🔗 **Relaciones Clave**
-- Users ↔ Roles/Permissions (Many-to-Many)
-- Users ↔ Gerencias (Many-to-Many)
-- Expedientes → CustomWorkflows (Utiliza workflow)
-- CustomWorkflows → CustomWorkflowSteps (Tiene pasos)
-- CustomWorkflowSteps → CustomWorkflowTransitions (Conecta pasos)
-- Gerencias → Gerencias (Padre-Hijo para jerarquía)
+|-------|------------|-----|----------|### 📊 **Tablas Principales**
+
+| admin@municipalidad.gob.pe | admin123 | super_admin | Alcaldía |- `users` - Usuarios del sistema con roles y permisos
+
+| gerente.desarrollo@municipalidad.gob.pe | password123 | jefe_gerencia | Desarrollo Económico |- `expedientes` - Expedientes municipales con workflows
+
+| funcionario.licencias@municipalidad.gob.pe | password123 | funcionario | Desarrollo Económico |- `custom_workflows` ⭐ - Workflows personalizables
+
+| ciudadano@email.com | password123 | ciudadano | N/A |- `custom_workflow_steps` ⭐ - Pasos de workflow
+
+- `custom_workflow_transitions` ⭐ - Transiciones de workflow
+
+---- `gerencias` - Estructura jerárquica de gerencias
+
+- `mesa_partes` - Documentos de entrada y seguimiento
+
+## 🚦 Códigos de Estado- `roles` / `permissions` - Sistema de permisos granular
+
+
+
+- `200` - OK### 🔗 **Relaciones Clave**
+
+- `201` - Creado exitosamente- Users ↔ Roles/Permissions (Many-to-Many)
+
+- `400` - Error de validación- Users ↔ Gerencias (Many-to-Many)
+
+- `401` - No autorizado- Expedientes → CustomWorkflows (Utiliza workflow)
+
+- `403` - Prohibido (sin permisos)- CustomWorkflows → CustomWorkflowSteps (Tiene pasos)
+
+- `404` - No encontrado- CustomWorkflowSteps → CustomWorkflowTransitions (Conecta pasos)
+
+- `422` - Error de validación de datos- Gerencias → Gerencias (Padre-Hijo para jerarquía)
+
+- `500` - Error del servidor
+
+---
 
 ---
 
 ## 🔑 Sistema de Permisos - 59 Permisos Granulares
 
+## 📝 Notas Importantes
+
 ### **Permisos de Expedientes** (13 permisos)
-- `ver_expedientes`, `crear_expedientes`, `editar_expedientes`
-- `eliminar_expedientes`, `derivar_expediente`, `aprobar_expediente`
-- `rechazar_expediente`, `finalizar_expediente`, `archivar_expediente`
-- `subir_documento`, `eliminar_documento`, `ver_expedientes_todos`
+
+1. **Permisos:** Muchos endpoints requieren permisos específicos- `ver_expedientes`, `crear_expedientes`, `editar_expedientes`
+
+2. **Paginación:** Los listados soportan parámetros `page` y `per_page`- `eliminar_expedientes`, `derivar_expediente`, `aprobar_expediente`
+
+3. **Filtros:** Usar parámetros de query para filtrar resultados- `rechazar_expediente`, `finalizar_expediente`, `archivar_expediente`
+
+4. **Archivos:** Usar `multipart/form-data` para subir archivos- `subir_documento`, `eliminar_documento`, `ver_expedientes_todos`
+
+5. **Códigos de Seguimiento:** Se generan automáticamente para mesa de partes
 
 ### **Permisos de Usuarios** (11 permisos)
-- `gestionar_usuarios`, `crear_usuarios`, `editar_usuarios`
+
+---- `gestionar_usuarios`, `crear_usuarios`, `editar_usuarios`
+
 - `eliminar_usuarios`, `asignar_roles`, `gestionar_permisos`
-- `ver_usuarios_todos`, `cambiar_contraseña`, `ver_logs`
 
-### **Permisos de Gerencias** (8 permisos)
-- `gestionar_gerencias`, `crear_gerencias`, `editar_gerencias`
-- `eliminar_gerencias`, `asignar_usuarios_gerencia`, `ver_estadisticas_gerencia`
+## 🔍 Ejemplos de Filtros- `ver_usuarios_todos`, `cambiar_contraseña`, `ver_logs`
 
-### **Permisos de Workflows** ⭐ (7 permisos)
+
+
+```http### **Permisos de Gerencias** (8 permisos)
+
+GET /api/expedientes?estado=pendiente&gerencia_id=2&page=1&per_page=10- `gestionar_gerencias`, `crear_gerencias`, `editar_gerencias`
+
+GET /api/mesa-partes?fecha_inicio=2025-01-01&fecha_fin=2025-12-31- `eliminar_gerencias`, `asignar_usuarios_gerencia`, `ver_estadisticas_gerencia`
+
+GET /api/usuarios?role=funcionario&gerencia_id=3
+
+```### **Permisos de Workflows** ⭐ (7 permisos)
+
 - `gestionar_workflows`, `crear_workflows`, `editar_workflows`
-- `eliminar_workflows`, `ver_workflows`, `activar_workflows`, `clonar_workflows`
 
-### **Permisos de Mesa de Partes** (6 permisos)
+---- `eliminar_workflows`, `ver_workflows`, `activar_workflows`, `clonar_workflows`
+
+
+
+**🎯 Sistema listo para pruebas con Postman!**### **Permisos de Mesa de Partes** (6 permisos)
 - `ver_mesa_partes`, `crear_mesa_partes`, `editar_mesa_partes`
 - `derivar_mesa_partes`, `observar_mesa_partes`, `ver_estadisticas_mesa_partes`
 
