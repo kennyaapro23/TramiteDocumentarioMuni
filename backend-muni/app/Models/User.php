@@ -22,7 +22,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'gerencia_id', // Agregar relación con gerencia
+        'gerencia_id',
+        'activo',
+        'telefono',
+        'cargo'
     ];
 
     /**
@@ -45,6 +48,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'activo' => 'boolean'
         ];
     }
 
@@ -52,6 +56,18 @@ class User extends Authenticatable
     public function gerencia()
     {
         return $this->belongsTo(Gerencia::class);
+    }
+
+    // Relación con expedientes asignados
+    public function expedientesAsignados()
+    {
+        return $this->hasMany(Expediente::class, 'usuario_asignado_id');
+    }
+
+    // Relación con expedientes registrados
+    public function expedientesRegistrados()
+    {
+        return $this->hasMany(Expediente::class, 'usuario_registro_id');
     }
 
     // Métodos de negocio

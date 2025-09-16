@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class AdminGerenciaController extends Controller
 {
@@ -298,6 +301,335 @@ class AdminGerenciaController extends Controller
         return response()->json([
             'success' => true,
             'data' => $estadisticas
+        ]);
+    }
+
+    // ===================================================================
+    // MÉTODOS DE GESTIÓN DE USUARIOS
+    // ===================================================================
+
+    /**
+     * Listar todos los usuarios
+     */
+    public function getUsuarios(Request $request): JsonResponse
+    {
+        $query = User::with(['gerencia', 'roles', 'permissions']);
+
+        // Filtros opcionales
+        if ($request->has('gerencia_id')) {
+            $query->where('gerencia_id', $request->gerencia_id);
+        }
+
+        if ($request->has('role')) {
+            $query->whereHas('roles', function($q) use ($request) {
+                $q->where('name', $request->role);
+            });
+        }
+
+        if ($request->has('activo')) {
+            $query->where('activo', $request->boolean('activo'));
+        }
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        $usuarios = $query->paginate($request->get('per_page', 15));
+
+        return response()->json([
+            'success' => true,
+            'data' => $usuarios
+        ]);
+    }
+
+    /**
+     * Crear nuevo usuario
+     */
+    public function createUsuario(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6',
+            'gerencia_id' => 'nullable|exists:gerencias,id',
+            'roles' => 'nullable|array',
+            'roles.*' => 'exists:roles,name',
+            'activo' => 'boolean'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'gerencia_id' => $request->gerencia_id,
+                'activo' => $request->get('activo', true)
+            ]);
+
+            // Asignar roles si se proporcionan
+            if ($request->has('roles')) {
+                $user->assignRole($request->roles);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Usuario creado exitosamente',
+                'data' => $user->load(['gerencia', 'roles'])
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al crear usuario: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtener usuario específico
+     */
+    public function getUsuario(User $user): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $user->load(['gerencia', 'roles', 'permissions'])
+        ]);
+    }
+
+    /**
+     * Actualizar usuario
+     */
+    public function updateUsuario(Request $request, User $user): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:users,email,' . $user->id,
+            'password' => 'sometimes|string|min:6',
+            'gerencia_id' => 'sometimes|nullable|exists:gerencias,id',
+            'activo' => 'sometimes|boolean'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $updateData = $request->only(['name', 'email', 'gerencia_id', 'activo']);
+            
+            if ($request->has('password')) {
+                $updateData['password'] = Hash::make($request->password);
+            }
+
+            $user->update($updateData);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Usuario actualizado exitosamente',
+                'data' => $user->load(['gerencia', 'roles'])
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar usuario: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Eliminar usuario
+     */
+    public function deleteUsuario(User $user): JsonResponse
+    {
+        try {
+            // Verificar si el usuario tiene expedientes asignados
+            if ($user->expedientesAsignados()->count() > 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se puede eliminar el usuario porque tiene expedientes asignados'
+                ], 400);
+            }
+
+            $user->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Usuario eliminado exitosamente'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar usuario: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Asignar rol a usuario
+     */
+    public function asignarRol(Request $request, User $user): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'role' => 'required|exists:roles,name'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $user->assignRole($request->role);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Rol asignado exitosamente',
+                'data' => $user->load(['roles'])
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al asignar rol: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Remover rol de usuario
+     */
+    public function removerRol(User $user, Role $role): JsonResponse
+    {
+        try {
+            $user->removeRole($role);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Rol removido exitosamente',
+                'data' => $user->load(['roles'])
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al remover rol: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Asignar permisos a usuario
+     */
+    public function asignarPermisos(Request $request, User $user): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'permissions' => 'required|array',
+            'permissions.*' => 'exists:permissions,name'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $user->givePermissionTo($request->permissions);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Permisos asignados exitosamente',
+                'data' => $user->load(['permissions'])
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al asignar permisos: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Cambiar contraseña de usuario
+     */
+    public function cambiarContraseñaUsuario(Request $request, User $user): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'password' => 'required|string|min:6|confirmed'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $user->update([
+                'password' => Hash::make($request->password)
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Contraseña actualizada exitosamente'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al cambiar contraseña: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtener roles disponibles
+     */
+    public function getRoles(): JsonResponse
+    {
+        $roles = Role::all();
+
+        return response()->json([
+            'success' => true,
+            'data' => $roles
+        ]);
+    }
+
+    /**
+     * Obtener permisos disponibles
+     */
+    public function getPermissions(): JsonResponse
+    {
+        $permissions = Permission::all()->groupBy('guard_name');
+
+        return response()->json([
+            'success' => true,
+            'data' => $permissions
         ]);
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Controllers\ExpedienteController;
 use App\Http\Controllers\AdminGerenciaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\MesaPartesController;
+use App\Http\Controllers\RolePermissionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -142,6 +143,28 @@ Route::middleware('auth:sanctum')->group(function () {
         // Roles y permisos
         Route::get('/roles', [AdminGerenciaController::class, 'getRoles'])->middleware('permission:gestionar_usuarios');
         Route::get('/permissions', [AdminGerenciaController::class, 'getPermissions'])->middleware('permission:gestionar_usuarios');
+    });
+
+    // Roles y Permisos - Administración completa
+    Route::prefix('roles')->middleware('permission:gestionar_usuarios')->group(function () {
+        Route::get('/', [RolePermissionController::class, 'getRoles']);
+        Route::post('/', [RolePermissionController::class, 'createRole']);
+        Route::get('/{role}', [RolePermissionController::class, 'getRole']);
+        Route::put('/{role}', [RolePermissionController::class, 'updateRole']);
+        Route::delete('/{role}', [RolePermissionController::class, 'deleteRole']);
+    });
+
+    Route::prefix('permissions')->middleware('permission:gestionar_usuarios')->group(function () {
+        Route::get('/', [RolePermissionController::class, 'getPermissions']);
+        Route::post('/', [RolePermissionController::class, 'createPermission']);
+        Route::get('/{permission}', [RolePermissionController::class, 'getPermission']);
+        Route::put('/{permission}', [RolePermissionController::class, 'updatePermission']);
+        Route::delete('/{permission}', [RolePermissionController::class, 'deletePermission']);
+    });
+
+    // Estadísticas del sistema
+    Route::prefix('admin')->middleware('permission:administrar_sistema')->group(function () {
+        Route::get('/roles-permissions/stats', [RolePermissionController::class, 'getStats']);
     });
     
     // Middleware de roles para funciones administrativas
