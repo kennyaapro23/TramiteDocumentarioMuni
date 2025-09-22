@@ -3,616 +3,609 @@
 @section('title', 'Gestión de Roles y Permisos')
 
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <!-- Gestión de Roles -->
-        <div class="col-lg-6">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-user-tag me-2"></i>Roles del Sistema
-                    </h5>
-                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#roleModal">
-                        <i class="fas fa-plus me-2"></i>Nuevo Rol
-                    </button>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Rol</th>
-                                    <th>Usuarios</th>
-                                    <th>Permisos</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($roles as $role)
-                                <tr>
-                                    <td>
-                                        <strong>{{ $role->name }}</strong>
-                                        @if($role->description)
-                                        <br><small class="text-muted">{{ $role->description }}</small>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-info">{{ $role->users_count }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-success">{{ $role->permissions_count }}</span>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <button class="btn btn-sm btn-outline-primary" onclick="editRole({{ $role->id }})">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-info" onclick="viewRolePermissions({{ $role->id }})">
-                                                <i class="fas fa-shield-alt"></i>
-                                            </button>
-                                            @if(!in_array($role->name, ['Super Admin', 'Admin']))
-                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteRole({{ $role->id }})">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="4" class="text-center py-3">
-                                        <i class="fas fa-user-tag fa-2x text-muted mb-2 d-block"></i>
-                                        No hay roles definidos
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+<div class="py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="md:flex md:items-center md:justify-between mb-8">
+            <div class="flex-1 min-w-0">
+                <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+                    <svg class="inline-block h-8 w-8 text-municipal-600 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    Roles y Permisos
+                </h2>
+                <p class="mt-1 text-sm text-gray-500">
+                    Configura roles y asigna permisos para controlar el acceso al sistema
+                </p>
+            </div>
+            <div class="mt-4 flex md:mt-0 md:ml-4 space-x-3">
+                <button type="button" 
+                        onclick="openCreateRoleModal()"
+                        class="inline-flex items-center px-4 py-2 border border-municipal-600 rounded-md shadow-sm text-sm font-medium text-municipal-600 bg-white hover:bg-municipal-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-municipal-500">
+                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Nuevo Rol
+                </button>
+                <button type="button" 
+                        onclick="openCreatePermissionModal()"
+                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-municipal-600 hover:bg-municipal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-municipal-500">
+                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    Nuevo Permiso
+                </button>
             </div>
         </div>
 
-        <!-- Gestión de Permisos -->
-        <div class="col-lg-6">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-shield-alt me-2"></i>Permisos del Sistema
-                    </h5>
-                    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#permissionModal">
-                        <i class="fas fa-plus me-2"></i>Nuevo Permiso
-                    </button>
-                </div>
-                <div class="card-body">
-                    <!-- Filtro por categoría -->
-                    <div class="mb-3">
-                        <select class="form-select form-select-sm" id="categoryFilter">
-                            <option value="">Todas las categorías</option>
-                            @foreach($categorias_permisos as $categoria)
-                            <option value="{{ $categoria }}">{{ ucfirst($categoria) }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Permiso</th>
-                                    <th>Categoría</th>
-                                    <th>Roles</th>
-                                    <th>Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody id="permissionsTable">
-                                @forelse($permisos->groupBy('category') as $categoria => $permisos_categoria)
-                                <tr class="table-active">
-                                    <td colspan="4"><strong>{{ ucfirst($categoria) }}</strong></td>
-                                </tr>
-                                @foreach($permisos_categoria as $permission)
-                                <tr data-category="{{ $categoria }}">
-                                    <td>
-                                        <small>{{ $permission->name }}</small>
-                                        @if($permission->description)
-                                        <br><small class="text-muted">{{ $permission->description }}</small>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-secondary">{{ $categoria }}</span>
-                                    </td>
-                                    <td>
-                                        @foreach($permission->roles as $role)
-                                        <span class="badge bg-primary me-1">{{ $role->name }}</span>
-                                        @endforeach
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-sm btn-outline-primary" onclick="editPermission({{ $permission->id }})">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                @endforeach
-                                @empty
-                                <tr>
-                                    <td colspan="4" class="text-center py-3">
-                                        <i class="fas fa-shield-alt fa-2x text-muted mb-2 d-block"></i>
-                                        No hay permisos definidos
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Matriz de Roles y Permisos -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-table me-2"></i>Matriz de Roles y Permisos
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-sm">
-                            <thead>
-                                <tr>
-                                    <th style="min-width: 200px;">Permiso</th>
-                                    @foreach($roles as $role)
-                                    <th class="text-center" style="writing-mode: vertical-lr; transform: rotate(180deg);">
-                                        {{ $role->name }}
-                                    </th>
-                                    @endforeach
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($permisos->groupBy('category') as $categoria => $permisos_categoria)
-                                <tr class="table-secondary">
-                                    <td colspan="{{ count($roles) + 1 }}">
-                                        <strong>{{ ucfirst($categoria) }}</strong>
-                                    </td>
-                                </tr>
-                                @foreach($permisos_categoria as $permission)
-                                <tr>
-                                    <td>
-                                        <small>{{ $permission->name }}</small>
-                                        @if($permission->description)
-                                        <br><small class="text-muted">{{ $permission->description }}</small>
-                                        @endif
-                                    </td>
-                                    @foreach($roles as $role)
-                                    <td class="text-center">
-                                        <div class="form-check d-flex justify-content-center">
-                                            <input class="form-check-input" type="checkbox" 
-                                                   id="perm_{{ $permission->id }}_role_{{ $role->id }}"
-                                                   {{ $role->hasPermissionTo($permission->name) ? 'checked' : '' }}
-                                                   onchange="toggleRolePermission({{ $role->id }}, {{ $permission->id }}, this.checked)"
-                                                   {{ in_array($role->name, ['Super Admin', 'Admin']) && $permission->category === 'sistema' ? 'disabled' : '' }}>
-                                        </div>
-                                    </td>
-                                    @endforeach
-                                </tr>
-                                @endforeach
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal para Crear/Editar Rol -->
-<div class="modal fade" id="roleModal" tabindex="-1" aria-labelledby="roleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <form id="roleForm">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="roleModalLabel">Nuevo Rol</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="roleId" name="id">
-                    
-                    <div class="mb-3">
-                        <label for="roleName" class="form-label">Nombre del Rol *</label>
-                        <input type="text" class="form-control" id="roleName" name="name" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="roleDescription" class="form-label">Descripción</label>
-                        <textarea class="form-control" id="roleDescription" name="description" rows="3"></textarea>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Permisos del Rol</label>
-                        <div class="row">
-                            @foreach($permisos->groupBy('category') as $categoria => $permisos_categoria)
-                            <div class="col-12 mb-3">
-                                <div class="card">
-                                    <div class="card-header py-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input category-check" type="checkbox" 
-                                                   id="category_{{ $categoria }}" data-category="{{ $categoria }}">
-                                            <label class="form-check-label fw-bold" for="category_{{ $categoria }}">
-                                                {{ ucfirst($categoria) }}
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="card-body py-2">
-                                        <div class="row">
-                                            @foreach($permisos_categoria as $permission)
-                                            <div class="col-md-6">
-                                                <div class="form-check">
-                                                    <input class="form-check-input permission-check" 
-                                                           type="checkbox" 
-                                                           value="{{ $permission->name }}" 
-                                                           id="role_perm_{{ $permission->id }}" 
-                                                           name="permissions[]"
-                                                           data-category="{{ $categoria }}">
-                                                    <label class="form-check-label" for="role_perm_{{ $permission->id }}">
-                                                        {{ $permission->name }}
-                                                    </label>
-                                                </div>
-                                            </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                </div>
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                </svg>
                             </div>
-                            @endforeach
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">Total Roles</dt>
+                                <dd class="text-lg font-medium text-gray-900">7</dd>
+                            </dl>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-2"></i>Guardar Rol
-                    </button>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">Total Permisos</dt>
+                                <dd class="text-lg font-medium text-gray-900">59</dd>
+                            </dl>
+                        </div>
+                    </div>
                 </div>
-            </form>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">Roles Activos</dt>
+                                <dd class="text-lg font-medium text-gray-900">7</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">Usuarios Asignados</dt>
+                                <dd class="text-lg font-medium text-gray-900">156</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="mb-8">
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                    <button onclick="showTab('roles')" id="roles-tab" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                        <svg class="h-5 w-5 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                        Roles (7)
+                    </button>
+                    <button onclick="showTab('permissions')" id="permissions-tab" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                        <svg class="h-5 w-5 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        Permisos (59)
+                    </button>
+                    <button onclick="showTab('matrix')" id="matrix-tab" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                        <svg class="h-5 w-5 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+                        </svg>
+                        Matriz de Permisos
+                    </button>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Tab Content: Roles -->
+        <div id="roles-content" class="tab-content">
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <!-- Role Card: Super Admin -->
+                <div class="bg-white overflow-hidden shadow rounded-lg border-l-4 border-purple-400">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Super Admin</dt>
+                                    <dd class="flex items-center">
+                                        <div class="text-lg font-medium text-gray-900">3 usuarios</div>
+                                        <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                            Crítico
+                                        </span>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <p class="text-sm text-gray-600">Acceso completo al sistema, puede gestionar todo</p>
+                            <div class="mt-3 flex items-center text-sm text-gray-500">
+                                <svg class="flex-shrink-0 mr-1.5 h-4 w-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                59 permisos asignados
+                            </div>
+                        </div>
+
+                        <div class="mt-4 flex space-x-2">
+                            <button onclick="editRole('super_admin')" class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-municipal-500">
+                                <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Editar
+                            </button>
+                            <button onclick="viewRolePermissions('super_admin')" class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-municipal-300 shadow-sm text-sm leading-4 font-medium rounded-md text-municipal-700 bg-municipal-50 hover:bg-municipal-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-municipal-500">
+                                <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                Ver
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Role Card: Admin -->
+                <div class="bg-white overflow-hidden shadow rounded-lg border-l-4 border-blue-400">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Administrador</dt>
+                                    <dd class="flex items-center">
+                                        <div class="text-lg font-medium text-gray-900">12 usuarios</div>
+                                        <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            Alto
+                                        </span>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <p class="text-sm text-gray-600">Gestión administrativa y configuración del sistema</p>
+                            <div class="mt-3 flex items-center text-sm text-gray-500">
+                                <svg class="flex-shrink-0 mr-1.5 h-4 w-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                45 permisos asignados
+                            </div>
+                        </div>
+
+                        <div class="mt-4 flex space-x-2">
+                            <button onclick="editRole('admin')" class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-municipal-500">
+                                <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Editar
+                            </button>
+                            <button onclick="viewRolePermissions('admin')" class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-municipal-300 shadow-sm text-sm leading-4 font-medium rounded-md text-municipal-700 bg-municipal-50 hover:bg-municipal-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-municipal-500">
+                                <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                Ver
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Role Card: Jefe de Gerencia -->
+                <div class="bg-white overflow-hidden shadow rounded-lg border-l-4 border-green-400">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Jefe de Gerencia</dt>
+                                    <dd class="flex items-center">
+                                        <div class="text-lg font-medium text-gray-900">25 usuarios</div>
+                                        <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            Medio
+                                        </span>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <p class="text-sm text-gray-600">Supervisión de área y gestión de expedientes</p>
+                            <div class="mt-3 flex items-center text-sm text-gray-500">
+                                <svg class="flex-shrink-0 mr-1.5 h-4 w-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                32 permisos asignados
+                            </div>
+                        </div>
+
+                        <div class="mt-4 flex space-x-2">
+                            <button onclick="editRole('jefe_gerencia')" class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-municipal-500">
+                                <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Editar
+                            </button>
+                            <button onclick="viewRolePermissions('jefe_gerencia')" class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-municipal-300 shadow-sm text-sm leading-4 font-medium rounded-md text-municipal-700 bg-municipal-50 hover:bg-municipal-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-municipal-500">
+                                <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                Ver
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Role Card: Funcionario -->
+                <div class="bg-white overflow-hidden shadow rounded-lg border-l-4 border-yellow-400">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Funcionario</dt>
+                                    <dd class="flex items-center">
+                                        <div class="text-lg font-medium text-gray-900">89 usuarios</div>
+                                        <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            Medio
+                                        </span>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <p class="text-sm text-gray-600">Procesamiento y seguimiento de trámites</p>
+                            <div class="mt-3 flex items-center text-sm text-gray-500">
+                                <svg class="flex-shrink-0 mr-1.5 h-4 w-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                18 permisos asignados
+                            </div>
+                        </div>
+
+                        <div class="mt-4 flex space-x-2">
+                            <button onclick="editRole('funcionario')" class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-municipal-500">
+                                <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Editar
+                            </button>
+                            <button onclick="viewRolePermissions('funcionario')" class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-municipal-300 shadow-sm text-sm leading-4 font-medium rounded-md text-municipal-700 bg-municipal-50 hover:bg-municipal-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-municipal-500">
+                                <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                Ver
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add más roles aquí... -->
+            </div>
+        </div>
+
+        <!-- Tab Content: Permissions -->
+        <div id="permissions-content" class="tab-content hidden">
+            <div class="bg-white shadow overflow-hidden sm:rounded-md">
+                <div class="px-4 py-5 sm:px-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Lista de Permisos del Sistema</h3>
+                    <p class="mt-1 max-w-2xl text-sm text-gray-500">Permisos organizados por módulo y funcionalidad</p>
+                </div>
+                
+                <!-- Permissions organized by module -->
+                <div class="border-t border-gray-200">
+                    <!-- Módulo: Usuarios -->
+                    <div class="bg-gray-50 px-4 py-3 border-b">
+                        <h4 class="text-sm font-medium text-gray-900 flex items-center">
+                            <svg class="h-5 w-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                            </svg>
+                            Gestión de Usuarios (8 permisos)
+                        </h4>
+                    </div>
+                    <div class="bg-white">
+                        <ul class="divide-y divide-gray-200">
+                            <li class="px-4 py-3 flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <span class="text-sm text-gray-900">users.create</span>
+                                    <span class="ml-2 text-xs text-gray-500">Crear usuarios</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Activo</span>
+                                    <button class="text-blue-600 hover:text-blue-900 text-sm">Editar</button>
+                                </div>
+                            </li>
+                            <li class="px-4 py-3 flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <span class="text-sm text-gray-900">users.read</span>
+                                    <span class="ml-2 text-xs text-gray-500">Ver usuarios</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Activo</span>
+                                    <button class="text-blue-600 hover:text-blue-900 text-sm">Editar</button>
+                                </div>
+                            </li>
+                            <li class="px-4 py-3 flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <span class="text-sm text-gray-900">users.update</span>
+                                    <span class="ml-2 text-xs text-gray-500">Actualizar usuarios</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Activo</span>
+                                    <button class="text-blue-600 hover:text-blue-900 text-sm">Editar</button>
+                                </div>
+                            </li>
+                            <li class="px-4 py-3 flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <span class="text-sm text-gray-900">users.delete</span>
+                                    <span class="ml-2 text-xs text-gray-500">Eliminar usuarios</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Activo</span>
+                                    <button class="text-blue-600 hover:text-blue-900 text-sm">Editar</button>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Módulo: Expedientes -->
+                    <div class="bg-gray-50 px-4 py-3 border-b border-t">
+                        <h4 class="text-sm font-medium text-gray-900 flex items-center">
+                            <svg class="h-5 w-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Gestión de Expedientes (12 permisos)
+                        </h4>
+                    </div>
+                    <div class="bg-white">
+                        <ul class="divide-y divide-gray-200">
+                            <li class="px-4 py-3 flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <span class="text-sm text-gray-900">expedientes.create</span>
+                                    <span class="ml-2 text-xs text-gray-500">Crear expedientes</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Activo</span>
+                                    <button class="text-blue-600 hover:text-blue-900 text-sm">Editar</button>
+                                </div>
+                            </li>
+                            <li class="px-4 py-3 flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <span class="text-sm text-gray-900">expedientes.read</span>
+                                    <span class="ml-2 text-xs text-gray-500">Ver expedientes</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Activo</span>
+                                    <button class="text-blue-600 hover:text-blue-900 text-sm">Editar</button>
+                                </div>
+                            </li>
+                            <li class="px-4 py-3 flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <span class="text-sm text-gray-900">expedientes.update</span>
+                                    <span class="ml-2 text-xs text-gray-500">Actualizar expedientes</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Activo</span>
+                                    <button class="text-blue-600 hover:text-blue-900 text-sm">Editar</button>
+                                </div>
+                            </li>
+                            <li class="px-4 py-3 flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <span class="text-sm text-gray-900">expedientes.delete</span>
+                                    <span class="ml-2 text-xs text-gray-500">Eliminar expedientes</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Activo</span>
+                                    <button class="text-blue-600 hover:text-blue-900 text-sm">Editar</button>
+                                </div>
+                            </li>
+                            <li class="px-4 py-3 flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <span class="text-sm text-gray-900">expedientes.aprobar</span>
+                                    <span class="ml-2 text-xs text-gray-500">Aprobar expedientes</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Activo</span>
+                                    <button class="text-blue-600 hover:text-blue-900 text-sm">Editar</button>
+                                </div>
+                            </li>
+                            <li class="px-4 py-3 flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <span class="text-sm text-gray-900">expedientes.derivar</span>
+                                    <span class="ml-2 text-xs text-gray-500">Derivar expedientes</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Activo</span>
+                                    <button class="text-blue-600 hover:text-blue-900 text-sm">Editar</button>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Matrix -->
+        <div id="matrix-content" class="tab-content hidden">
+            <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+                <div class="px-4 py-5 sm:px-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Matriz de Roles y Permisos</h3>
+                    <p class="mt-1 max-w-2xl text-sm text-gray-500">Vista completa de qué permisos tiene cada rol</p>
+                </div>
+                <div class="border-t border-gray-200 overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50">Permiso</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Super Admin</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Admin</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Jefe Gerencia</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Funcionario</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Funcionario Jr</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ciudadano</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 sticky left-0 bg-white">users.create</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <svg class="h-5 w-5 text-green-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <svg class="h-5 w-5 text-green-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <svg class="h-5 w-5 text-red-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <svg class="h-5 w-5 text-red-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <svg class="h-5 w-5 text-red-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <svg class="h-5 w-5 text-red-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </td>
+                            </tr>
+                            <!-- Add more rows here... -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Modal para Crear/Editar Permiso -->
-<div class="modal fade" id="permissionModal" tabindex="-1" aria-labelledby="permissionModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="permissionForm">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="permissionModalLabel">Nuevo Permiso</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="permissionId" name="id">
-                    
-                    <div class="mb-3">
-                        <label for="permissionName" class="form-label">Nombre del Permiso *</label>
-                        <input type="text" class="form-control" id="permissionName" name="name" required>
-                        <small class="form-text text-muted">Ej: usuarios.crear, expedientes.editar</small>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="permissionCategory" class="form-label">Categoría *</label>
-                        <select class="form-select" id="permissionCategory" name="category" required>
-                            <option value="">Seleccionar categoría</option>
-                            @foreach($categorias_permisos as $categoria)
-                            <option value="{{ $categoria }}">{{ ucfirst($categoria) }}</option>
-                            @endforeach
-                            <option value="custom">Nueva categoría...</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3" id="customCategoryGroup" style="display: none;">
-                        <label for="customCategory" class="form-label">Nueva Categoría</label>
-                        <input type="text" class="form-control" id="customCategory" name="custom_category">
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="permissionDescription" class="form-label">Descripción</label>
-                        <textarea class="form-control" id="permissionDescription" name="description" rows="3"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-save me-2"></i>Guardar Permiso
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 @endsection
 
 @push('scripts')
 <script>
-    let roleModal, permissionModal;
-
-    document.addEventListener('DOMContentLoaded', function() {
-        roleModal = new bootstrap.Modal(document.getElementById('roleModal'));
-        permissionModal = new bootstrap.Modal(document.getElementById('permissionModal'));
-
-        setupCategoryFilters();
-        setupCategoryChecks();
-        setupForms();
+// Tab functionality
+function showTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
     });
-
-    function setupCategoryFilters() {
-        document.getElementById('categoryFilter').addEventListener('change', function() {
-            const selectedCategory = this.value;
-            const rows = document.querySelectorAll('#permissionsTable tr[data-category]');
-            
-            rows.forEach(row => {
-                const category = row.dataset.category;
-                row.style.display = (!selectedCategory || category === selectedCategory) ? '' : 'none';
-            });
-        });
-
-        document.getElementById('permissionCategory').addEventListener('change', function() {
-            const customGroup = document.getElementById('customCategoryGroup');
-            customGroup.style.display = this.value === 'custom' ? 'block' : 'none';
-        });
-    }
-
-    function setupCategoryChecks() {
-        // Manejar selección de categorías completas
-        document.querySelectorAll('.category-check').forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                const category = this.dataset.category;
-                const permissionChecks = document.querySelectorAll(`input[data-category="${category}"].permission-check`);
-                
-                permissionChecks.forEach(permCheck => {
-                    permCheck.checked = this.checked;
-                });
-            });
-        });
-
-        // Actualizar estado de categoría cuando cambian permisos individuales
-        document.querySelectorAll('.permission-check').forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                const category = this.dataset.category;
-                const categoryCheck = document.querySelector(`#category_${category}`);
-                const categoryPermissions = document.querySelectorAll(`input[data-category="${category}"].permission-check`);
-                const checkedPermissions = document.querySelectorAll(`input[data-category="${category}"].permission-check:checked`);
-                
-                if (checkedPermissions.length === 0) {
-                    categoryCheck.checked = false;
-                    categoryCheck.indeterminate = false;
-                } else if (checkedPermissions.length === categoryPermissions.length) {
-                    categoryCheck.checked = true;
-                    categoryCheck.indeterminate = false;
-                } else {
-                    categoryCheck.checked = false;
-                    categoryCheck.indeterminate = true;
-                }
-            });
-        });
-    }
-
-    function setupForms() {
-        document.getElementById('roleForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            saveRole();
-        });
-
-        document.getElementById('permissionForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            savePermission();
-        });
-    }
-
-    function editRole(roleId) {
-        fetch(`/api/roles/${roleId}`)
-            .then(response => response.json())
-            .then(role => {
-                document.getElementById('roleModalLabel').textContent = 'Editar Rol';
-                document.getElementById('roleId').value = role.id;
-                document.getElementById('roleName').value = role.name;
-                document.getElementById('roleDescription').value = role.description || '';
-
-                // Marcar permisos del rol
-                document.querySelectorAll('input[name="permissions[]"]').forEach(checkbox => {
-                    checkbox.checked = role.permissions.some(perm => perm.name === checkbox.value);
-                });
-
-                // Actualizar estado de categorías
-                document.querySelectorAll('.permission-check').forEach(checkbox => {
-                    checkbox.dispatchEvent(new Event('change'));
-                });
-
-                roleModal.show();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showAlert('Error al cargar los datos del rol', 'danger');
-            });
-    }
-
-    function editPermission(permissionId) {
-        fetch(`/api/permisos/${permissionId}`)
-            .then(response => response.json())
-            .then(permission => {
-                document.getElementById('permissionModalLabel').textContent = 'Editar Permiso';
-                document.getElementById('permissionId').value = permission.id;
-                document.getElementById('permissionName').value = permission.name;
-                document.getElementById('permissionCategory').value = permission.category;
-                document.getElementById('permissionDescription').value = permission.description || '';
-
-                permissionModal.show();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showAlert('Error al cargar los datos del permiso', 'danger');
-            });
-    }
-
-    function deleteRole(roleId) {
-        if (confirm('¿Estás seguro de eliminar este rol? Los usuarios asignados perderán este rol.')) {
-            fetch(`/api/roles/${roleId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showAlert('Rol eliminado correctamente', 'success');
-                    location.reload();
-                } else {
-                    showAlert('Error al eliminar el rol', 'danger');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showAlert('Error al procesar la solicitud', 'danger');
-            });
-        }
-    }
-
-    function toggleRolePermission(roleId, permissionId, hasPermission) {
-        const action = hasPermission ? 'asignar' : 'revocar';
-        
-        fetch(`/api/roles/${roleId}/permisos`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({
-                permission_id: permissionId,
-                action: action
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (!data.success) {
-                showAlert('Error al actualizar el permiso', 'danger');
-                // Revertir checkbox
-                document.getElementById(`perm_${permissionId}_role_${roleId}`).checked = !hasPermission;
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showAlert('Error al procesar la solicitud', 'danger');
-            // Revertir checkbox
-            document.getElementById(`perm_${permissionId}_role_${roleId}`).checked = !hasPermission;
-        });
-    }
-
-    function saveRole() {
-        const formData = new FormData(document.getElementById('roleForm'));
-        const roleId = document.getElementById('roleId').value;
-        const isEdit = roleId !== '';
-
-        const url = isEdit ? `/api/roles/${roleId}` : '/api/roles';
-        const method = isEdit ? 'PUT' : 'POST';
-
-        fetch(url, {
-            method: method,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showAlert(`Rol ${isEdit ? 'actualizado' : 'creado'} correctamente`, 'success');
-                roleModal.hide();
-                location.reload();
-            } else {
-                showAlert(data.message || 'Error al guardar el rol', 'danger');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showAlert('Error al procesar la solicitud', 'danger');
-        });
-    }
-
-    function savePermission() {
-        const formData = new FormData(document.getElementById('permissionForm'));
-        const permissionId = document.getElementById('permissionId').value;
-        const isEdit = permissionId !== '';
-
-        // Si es categoría personalizada, usar el valor del campo custom
-        const categorySelect = document.getElementById('permissionCategory');
-        if (categorySelect.value === 'custom') {
-            formData.set('category', document.getElementById('customCategory').value);
-        }
-
-        const url = isEdit ? `/api/permisos/${permissionId}` : '/api/permisos';
-        const method = isEdit ? 'PUT' : 'POST';
-
-        fetch(url, {
-            method: method,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showAlert(`Permiso ${isEdit ? 'actualizado' : 'creado'} correctamente`, 'success');
-                permissionModal.hide();
-                location.reload();
-            } else {
-                showAlert(data.message || 'Error al guardar el permiso', 'danger');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showAlert('Error al procesar la solicitud', 'danger');
-        });
-    }
-
-    function viewRolePermissions(roleId) {
-        // Implementar vista detallada de permisos del rol
-        fetch(`/api/roles/${roleId}/permisos`)
-            .then(response => response.json())
-            .then(data => {
-                // Crear modal o expandir vista con detalles
-                console.log('Permisos del rol:', data);
-            });
-    }
-
-    function showAlert(message, type) {
-        const alertHtml = `
-            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        `;
-        document.querySelector('.container-fluid').insertAdjacentHTML('afterbegin', alertHtml);
-    }
-
-    // Limpiar formularios al abrir modales
-    document.getElementById('roleModal').addEventListener('show.bs.modal', function () {
-        if (!event.relatedTarget || !event.relatedTarget.dataset.roleId) {
-            document.getElementById('roleForm').reset();
-            document.getElementById('roleModalLabel').textContent = 'Nuevo Rol';
-            document.getElementById('roleId').value = '';
-        }
+    
+    // Remove active state from all tabs
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('border-municipal-500', 'text-municipal-600');
+        button.classList.add('border-transparent', 'text-gray-500');
     });
+    
+    // Show selected tab content
+    document.getElementById(tabName + '-content').classList.remove('hidden');
+    
+    // Add active state to selected tab
+    const activeTab = document.getElementById(tabName + '-tab');
+    activeTab.classList.remove('border-transparent', 'text-gray-500');
+    activeTab.classList.add('border-municipal-500', 'text-municipal-600');
+}
 
-    document.getElementById('permissionModal').addEventListener('show.bs.modal', function () {
-        if (!event.relatedTarget || !event.relatedTarget.dataset.permissionId) {
-            document.getElementById('permissionForm').reset();
-            document.getElementById('permissionModalLabel').textContent = 'Nuevo Permiso';
-            document.getElementById('permissionId').value = '';
-            document.getElementById('customCategoryGroup').style.display = 'none';
-        }
-    });
+// Initialize first tab as active
+document.addEventListener('DOMContentLoaded', function() {
+    showTab('roles');
+});
+
+function viewRolePermissions(roleName) {
+    console.log('Viewing permissions for role:', roleName);
+}
 </script>
+@endpush
+
+@include('roles.partials.create-modal')
+
+@push('scripts')
+<script src="{{ asset('js/admin-functions.js') }}"></script>
 @endpush

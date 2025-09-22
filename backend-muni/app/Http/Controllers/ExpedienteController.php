@@ -20,7 +20,92 @@ class ExpedienteController extends Controller
     /**
      * Display a listing of expedientes.
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
+    {
+        // Si es request AJAX o API, devolver JSON
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return $this->indexApi($request);
+        }
+
+        // Para vistas web, devolver vista
+        $user = auth()->user();
+        
+        $query = Expediente::with([
+            'gerencia', 
+            'gerenciaPadre', 
+            'usuarioRegistro',
+            'documentos'
+        ]);
+
+        // Filtros por permisos y gerencia del usuario
+        if ($user->hasRole('mesa_partes')) {
+            $query->where('usuario_registro_id', $user->id);
+        } elseif ($user->hasRole('gerente_urbano') || $user->hasRole('inspector')) {
+            if ($user->gerencia_id) {
+                $query->where(function($q) use ($user) {
+                    $q->where('gerencia_id', $user->gerencia_id)
+                      ->orWhere('gerencia_padre_id', $user->gerencia_id);
+                });
+            }
+        } elseif ($user->hasRole('secretaria_general')) {
+            $query->where('requiere_informe_legal', true);
+        } elseif ($user->hasRole('alcalde')) {
+            $query->where('es_acto_administrativo_mayor', true);
+        }
+
+        // Aplicar filtros de búsqueda
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('numero_expediente', 'like', "%{$search}%")
+                  ->orWhere('asunto', 'like', "%{$search}%")
+                  ->orWhere('ciudadano_nombre', 'like', "%{$search}%")
+                  ->orWhere('ciudadano_dni', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('estado')) {
+            $query->where('estado', $request->estado);
+        }
+
+        if ($request->filled('gerencia_id')) {
+            $query->where('gerencia_id', $request->gerencia_id);
+        }
+
+        if ($request->filled('fecha_desde')) {
+            $query->whereDate('created_at', '>=', $request->fecha_desde);
+        }
+
+        if ($request->filled('fecha_hasta')) {
+            $query->whereDate('created_at', '<=', $request->fecha_hasta);
+        }
+
+        $expedientes = $query->orderBy('created_at', 'desc')->paginate(15);
+        
+        // Estadísticas
+        $stats = [
+            'pendientes' => Expediente::where('estado', 'pendiente')->count(),
+            'en_proceso' => Expediente::where('estado', 'en_proceso')->count(),
+            'resueltos' => Expediente::whereIn('estado', ['aprobado', 'rechazado'])->count(),
+        ];
+
+        $gerencias = Gerencia::where('activo', true)->get();
+        $tipos_tramite = \App\Models\TipoTramite::where('activo', true)->get();
+        $workflows = \App\Models\WorkflowRule::where('activo', true)->get();
+
+        return view('expedientes.index', compact(
+            'expedientes', 
+            'gerencias', 
+            'tipos_tramite', 
+            'workflows',
+            'stats'
+        ));
+    }
+
+    /**
+     * API version of index method
+     */
+    private function indexApi(Request $request): JsonResponse
     {
         $user = auth()->user();
         
@@ -80,7 +165,7 @@ class ExpedienteController extends Controller
     /**
      * Store a newly created expediente (Ciudadano registra solicitud).
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'solicitante_nombre' => 'required|string|max:255',
@@ -99,6 +184,13 @@ class ExpedienteController extends Controller
         ]);
 
         if ($validator->fails()) {
+            // Si es una solicitud web, redirigir con errores
+            if (!request()->wantsJson() && !request()->is('api/*')) {
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput();
+            }
+            
             return response()->json([
                 'success' => false,
                 'errors' => $validator->errors()
@@ -155,6 +247,12 @@ class ExpedienteController extends Controller
 
             DB::commit();
 
+            // Si es una solicitud web, redirigir con éxito
+            if (!request()->wantsJson() && !request()->is('api/*')) {
+                return redirect()->route('expedientes.show', $expediente->id)
+                    ->with('success', 'Expediente registrado exitosamente. Número: ' . $numero);
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Expediente registrado exitosamente',
@@ -167,6 +265,14 @@ class ExpedienteController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+            
+            // Si es una solicitud web, redirigir con error
+            if (!request()->wantsJson() && !request()->is('api/*')) {
+                return redirect()->back()
+                    ->with('error', 'Error al registrar expediente: ' . $e->getMessage())
+                    ->withInput();
+            }
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Error al registrar expediente: ' . $e->getMessage()
@@ -177,7 +283,7 @@ class ExpedienteController extends Controller
     /**
      * Display the specified expediente.
      */
-    public function show(Expediente $expediente): JsonResponse
+    public function show(Expediente $expediente)
     {
         $expediente->load([
             'gerencia', 
@@ -191,16 +297,22 @@ class ExpedienteController extends Controller
             'historial.usuario'
         ]);
 
-        return response()->json([
-            'success' => true,
-            'data' => $expediente
-        ]);
+        // Si es una solicitud de API, devolver JSON
+        if (request()->wantsJson() || request()->is('api/*')) {
+            return response()->json([
+                'success' => true,
+                'data' => $expediente
+            ]);
+        }
+
+        // Si es una solicitud web, devolver vista
+        return view('expedientes.show', compact('expediente'));
     }
 
     /**
      * Update the specified expediente.
      */
-    public function update(Request $request, Expediente $expediente): JsonResponse
+    public function update(Request $request, Expediente $expediente)
     {
         $validator = Validator::make($request->all(), [
             'asunto' => 'sometimes|string|max:500',
@@ -209,6 +321,13 @@ class ExpedienteController extends Controller
         ]);
 
         if ($validator->fails()) {
+            // Si es una solicitud web, redirigir con errores
+            if (!request()->wantsJson() && !request()->is('api/*')) {
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput();
+            }
+            
             return response()->json([
                 'success' => false,
                 'errors' => $validator->errors()
@@ -220,6 +339,12 @@ class ExpedienteController extends Controller
         $expediente->update($request->only(['asunto', 'descripcion', 'observaciones']));
 
         $this->registrarHistorial($expediente, 'actualizar', $estadoAnterior, $expediente->estado, 'Expediente actualizado');
+
+        // Si es una solicitud web, redirigir con éxito
+        if (!request()->wantsJson() && !request()->is('api/*')) {
+            return redirect()->route('expedientes.show', $expediente->id)
+                ->with('success', 'Expediente actualizado exitosamente');
+        }
 
         return response()->json([
             'success' => true,
@@ -630,5 +755,35 @@ class ExpedienteController extends Controller
             'success' => true,
             'data' => $estadisticas
         ]);
+    }
+    
+    /**
+     * Show the form for creating a new expediente (Web view)
+     */
+    public function create()
+    {
+        $gerencias = Gerencia::where('estado', 'activo')->get();
+        $tiposTramite = TipoTramite::where('estado', 'activo')->get();
+        $tiposDocumento = TipoDocumento::where('estado', 'activo')->get();
+        
+        return view('expedientes.create', compact('gerencias', 'tiposTramite', 'tiposDocumento'));
+    }
+    
+    /**
+     * Show the form for editing the specified expediente (Web view)
+     */
+    public function edit($id)
+    {
+        $expediente = Expediente::with([
+            'gerencia',
+            'tipoTramite',
+            'documentos.tipoDocumento'
+        ])->findOrFail($id);
+        
+        $gerencias = Gerencia::where('estado', 'activo')->get();
+        $tiposTramite = TipoTramite::where('estado', 'activo')->get();
+        $tiposDocumento = TipoDocumento::where('estado', 'activo')->get();
+        
+        return view('expedientes.edit', compact('expediente', 'gerencias', 'tiposTramite', 'tiposDocumento'));
     }
 }

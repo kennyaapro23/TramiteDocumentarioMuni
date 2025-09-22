@@ -89,10 +89,12 @@ class TipoDocumentoSeeder extends Seeder
         ];
 
         foreach ($tipos as $tipo) {
-            TipoDocumento::create($tipo);
+            TipoDocumento::updateOrCreate(
+                ['codigo' => $tipo['codigo']],
+                $tipo
+            );
         }
 
-        $this->command->info('Tipos de documentos creados exitosamente');
-        $this->command->info('Total: ' . count($tipos) . ' tipos de documentos');
+        $this->command?->info('TipoDocumentoSeeder: upsert completado (' . count($tipos) . ' registros).');
     }
 }

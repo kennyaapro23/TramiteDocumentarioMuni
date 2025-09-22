@@ -12,30 +12,42 @@ class GerenciaController extends Controller
     /**
      * Display a listing of gerencias.
      */
-    public function index(): JsonResponse
+    public function index()
     {
         $gerencias = Gerencia::with('subgerencias')
                             ->activas()
                             ->ordenadas()
                             ->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => $gerencias
-        ]);
+        // Si es una solicitud de API, devolver JSON
+        if (request()->wantsJson() || request()->is('api/*')) {
+            return response()->json([
+                'success' => true,
+                'data' => $gerencias
+            ]);
+        }
+
+        // Si es una solicitud web, devolver vista
+        return view('gerencias.index', compact('gerencias'));
     }
 
     /**
      * Display the specified gerencia.
      */
-    public function show(Gerencia $gerencia): JsonResponse
+    public function show(Gerencia $gerencia)
     {
         $gerencia->load('subgerencias.activas');
 
-        return response()->json([
-            'success' => true,
-            'data' => $gerencia
-        ]);
+        // Si es una solicitud de API, devolver JSON
+        if (request()->wantsJson() || request()->is('api/*')) {
+            return response()->json([
+                'success' => true,
+                'data' => $gerencia
+            ]);
+        }
+
+        // Si es una solicitud web, devolver vista
+        return view('gerencias.show', compact('gerencia'));
     }
 
     /**

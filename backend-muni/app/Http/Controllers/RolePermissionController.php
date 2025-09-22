@@ -210,8 +210,17 @@ class RolePermissionController extends Controller
     /**
      * Obtener permiso específico
      */
-    public function getPermission(Permission $permission): JsonResponse
+    public function getPermission($permissionName): JsonResponse
     {
+        $permission = Permission::where('name', $permissionName)->first();
+        
+        if (!$permission) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Permiso no encontrado'
+            ], 404);
+        }
+        
         return response()->json([
             'success' => true,
             'data' => $permission
@@ -221,8 +230,17 @@ class RolePermissionController extends Controller
     /**
      * Actualizar permiso
      */
-    public function updatePermission(Request $request, Permission $permission): JsonResponse
+    public function updatePermission(Request $request, $permissionName): JsonResponse
     {
+        $permission = Permission::where('name', $permissionName)->first();
+        
+        if (!$permission) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Permiso no encontrado'
+            ], 404);
+        }
+        
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|unique:permissions,name,' . $permission->id
         ]);
@@ -254,8 +272,17 @@ class RolePermissionController extends Controller
     /**
      * Eliminar permiso
      */
-    public function deletePermission(Permission $permission): JsonResponse
+    public function deletePermission($permissionName): JsonResponse
     {
+        $permission = Permission::where('name', $permissionName)->first();
+        
+        if (!$permission) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Permiso no encontrado'
+            ], 404);
+        }
+        
         try {
             // Verificar si el permiso está asignado a roles o usuarios
             if ($permission->roles()->count() > 0 || $permission->users()->count() > 0) {

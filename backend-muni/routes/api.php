@@ -16,7 +16,35 @@ use App\Http\Controllers\CustomWorkflowTransitionController;
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
+| Convenciones:
+| - Rutas públicas: prefijo /public o recursos abiertos de solo lectura
+| - Rutas de formularios/catálogos abiertos: /form-data/* (solo desarrollo)
+| - Rutas autenticadas: protegidas con auth:sanctum
+| - Rutas administrativas: permisos o roles específicos
+| - Evitar nuevos endpoints mezclando idiomas (/expedients vs /expedientes)
+|   mantener ambos por compatibilidad pero favorecer /expedientes (ES) o
+|   /expedients (EN) según estandarización futura.
+| - Debug: NO usar en producción (marcadas como DEBUG ONLY)
 */
+
+// -------------------------------------------------------------------------
+// Health & Meta
+// -------------------------------------------------------------------------
+Route::get('/health', function() {
+    return response()->json([
+        'status' => 'ok',
+        'time' => now(),
+        'app' => config('app.name'),
+        'env' => config('app.env')
+    ]);
+});
+
+Route::get('/version', function() {
+    return response()->json([
+        'version' => app()->version(),
+        'php' => PHP_VERSION
+    ]);
+});
 
 // Rutas públicas
 Route::prefix('public')->group(function () {
@@ -29,12 +57,106 @@ Route::prefix('public')->group(function () {
     Route::get('/tipos-tramite', [MesaPartesController::class, 'getTiposTramite']);
 });
 
-// Rutas de catálogos (sin autenticación para facilitar desarrollo)
-Route::get('/mesa-partes', [MesaPartesController::class, 'index']);
+// Rutas de catálogos autenticados (movidas a sección protegida)
+// NOTA: Estas rutas se movieron a la sección autenticada para evitar conflictos
 Route::get('/tipos-documento', [MesaPartesController::class, 'getTiposDocumento']);
 Route::get('/tipos-tramite', [MesaPartesController::class, 'getTiposTramite']);
-Route::get('/gerencias', function() {
-    return response()->json(['data' => \App\Models\Gerencia::all()]);
+Route::middleware('auth:sanctum')->get('/gerencias', function() {
+    return response()->json(['success' => true, 'data' => \App\Models\Gerencia::all()]);
+});
+
+// Ruta de prueba simple
+Route::get('/test', function() {
+    return response()->json(['message' => 'API funcionando', 'timestamp' => now()]);
+});
+
+// Ruta para verificar usuarios (solo para desarrollo) - DEBUG ONLY
+Route::get('/debug/users', function() {
+    $users = \App\Models\User::select('id', 'name', 'email', 'estado', 'gerencia_id')->get();
+    return response()->json(['users' => $users]);
+});
+
+// Ruta para probar credenciales específicas - DEBUG ONLY
+Route::post('/debug/test-login', function(\Illuminate\Http\Request $request) {
+    try {
+        $user = \App\Models\User::where('email', $request->email)->first();
+        if (!$user) {
+            return response()->json(['error' => 'Usuario no encontrado']);
+        }
+        
+        $passwordCheck = \Illuminate\Support\Facades\Hash::check($request->password, $user->password);
+        
+        return response()->json([
+            'user_found' => true,
+            'email' => $user->email,
+            'estado' => $user->estado ?? 'no_estado_field',
+            'password_valid' => $passwordCheck,
+            'user_data' => $user->toArray()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Exception: ' . $e->getMessage(),
+            'line' => $e->getLine(),
+            'file' => $e->getFile()
+        ]);
+    }
+});
+
+// Login simplificado para debug - DEBUG ONLY
+Route::post('/debug/simple-login', function(\Illuminate\Http\Request $request) {
+    try {
+        $credentials = $request->only('email', 'password');
+        
+        if (\Illuminate\Support\Facades\Auth::attempt($credentials)) {
+            $user = \Illuminate\Support\Facades\Auth::user();
+            $token = $user->createToken('auth-token')->plainTextToken;
+            
+            return response()->json([
+                'success' => true,
+                'user' => $user,
+                'token' => $token
+            ]);
+        }
+        
+        return response()->json(['error' => 'Credenciales inválidas']);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Exception: ' . $e->getMessage(),
+            'line' => $e->getLine(),
+            'file' => $e->getFile()
+        ]);
+    }
+});
+
+// Rutas GET para datos de formularios (sin autenticación para facilitar desarrollo) - NO PRODUCCIÓN
+Route::get('/form-data/gerencias', function() {
+    $gerencias = \App\Models\Gerencia::select('id', 'nombre', 'codigo')->where('activo', true)->get();
+    return response()->json(['data' => $gerencias]);
+});
+
+Route::get('/form-data/usuarios', function() {
+    $usuarios = \App\Models\User::select('id', 'name', 'email', 'gerencia_id')->get();
+    return response()->json(['data' => $usuarios]);
+});
+
+Route::get('/form-data/tipos-tramite', function() {
+    $tipos = \App\Models\TipoTramite::select('id', 'nombre', 'codigo', 'gerencia_id', 'costo')->where('activo', true)->get();
+    return response()->json(['data' => $tipos]);
+});
+
+Route::get('/form-data/tipos-documento', function() {
+    $tipos = \App\Models\TipoDocumento::select('id', 'nombre', 'codigo', 'requiere_firma')->where('activo', true)->get();
+    return response()->json(['data' => $tipos]);
+});
+
+Route::get('/form-data/roles', function() {
+    $roles = \Spatie\Permission\Models\Role::select('id', 'name')->get();
+    return response()->json(['data' => $roles]);
+});
+
+Route::get('/form-data/permisos', function() {
+    $permisos = \Spatie\Permission\Models\Permission::select('id', 'name')->get();
+    return response()->json(['data' => $permisos]);
 });
 
 // Rutas de autenticación
@@ -129,28 +251,32 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [CustomWorkflowTransitionController::class, 'destroy'])->middleware('permission:gestionar_workflows');
     });
     
-    // Gerencias - Administración de gerencias
+    // Gerencias - Administración de gerencias (usando controlador correcto)
+    Route::get('/gerencias', function() {
+        return response()->json(['success' => true, 'data' => \App\Models\Gerencia::all()]);
+    });
+    
     Route::prefix('gerencias')->group(function () {
-        Route::get('/', [AdminGerenciaController::class, 'index'])->middleware('permission:gestionar_gerencias');
-        Route::get('/all', [AdminGerenciaController::class, 'getAll'])->middleware('permission:gestionar_gerencias');
-        Route::post('/', [AdminGerenciaController::class, 'store'])->middleware('permission:gestionar_gerencias');
-        Route::get('/{gerencia}', [AdminGerenciaController::class, 'show'])->middleware('permission:gestionar_gerencias');
-        Route::put('/{gerencia}', [AdminGerenciaController::class, 'update'])->middleware('permission:gestionar_gerencias');
-        Route::delete('/{gerencia}', [AdminGerenciaController::class, 'destroy'])->middleware('permission:gestionar_gerencias');
+        Route::get('/admin', [AdminGerenciaController::class, 'index'])->middleware('permission:gestionar_gerencias');
+        Route::get('/admin/all', [AdminGerenciaController::class, 'getAll'])->middleware('permission:gestionar_gerencias');
+        Route::post('/admin', [AdminGerenciaController::class, 'store'])->middleware('permission:gestionar_gerencias');
+        Route::get('/admin/{gerencia}', [AdminGerenciaController::class, 'show'])->middleware('permission:gestionar_gerencias');
+        Route::put('/admin/{gerencia}', [AdminGerenciaController::class, 'update'])->middleware('permission:gestionar_gerencias');
+        Route::delete('/admin/{gerencia}', [AdminGerenciaController::class, 'destroy'])->middleware('permission:gestionar_gerencias');
         
-        // Acciones específicas
-        Route::post('/{gerencia}/estado', [AdminGerenciaController::class, 'cambiarEstado'])->middleware('permission:gestionar_gerencias');
-        Route::get('/{gerencia}/subgerencias', [AdminGerenciaController::class, 'getSubgerencias'])->middleware('permission:gestionar_gerencias');
-        Route::get('/{gerencia}/usuarios', [AdminGerenciaController::class, 'getUsuarios'])->middleware('permission:gestionar_gerencias');
-        Route::post('/{gerencia}/usuarios', [AdminGerenciaController::class, 'asignarUsuario'])->middleware('permission:gestionar_gerencias');
-        Route::delete('/{gerencia}/usuarios/{user}', [AdminGerenciaController::class, 'removerUsuario'])->middleware('permission:gestionar_gerencias');
-        Route::get('/{gerencia}/estadisticas', [AdminGerenciaController::class, 'getEstadisticas'])->middleware('permission:gestionar_gerencias');
+        // Acciones específicas (con prefijo admin)
+        Route::post('/admin/{gerencia}/estado', [AdminGerenciaController::class, 'cambiarEstado'])->middleware('permission:gestionar_gerencias');
+        Route::get('/admin/{gerencia}/subgerencias', [AdminGerenciaController::class, 'getSubgerencias'])->middleware('permission:gestionar_gerencias');
+        Route::get('/admin/{gerencia}/usuarios', [AdminGerenciaController::class, 'getUsuarios'])->middleware('permission:gestionar_gerencias');
+        Route::post('/admin/{gerencia}/usuarios', [AdminGerenciaController::class, 'asignarUsuario'])->middleware('permission:gestionar_gerencias');
+        Route::delete('/admin/{gerencia}/usuarios/{user}', [AdminGerenciaController::class, 'removerUsuario'])->middleware('permission:gestionar_gerencias');
+        Route::get('/admin/{gerencia}/estadisticas', [AdminGerenciaController::class, 'getEstadisticas'])->middleware('permission:gestionar_gerencias');
         
-        // Endpoints adicionales
-        Route::get('/tipo/{tipo}', [AdminGerenciaController::class, 'getPorTipo'])->middleware('permission:gestionar_gerencias');
-        Route::get('/flujos-disponibles', [AdminGerenciaController::class, 'getFlujosDisponibles'])->middleware('permission:gestionar_gerencias');
-        Route::get('/jerarquia', [AdminGerenciaController::class, 'getJerarquia'])->middleware('permission:gestionar_gerencias');
-        Route::get('/{gerencia}/puede-manejar/{tipoTramite}', [AdminGerenciaController::class, 'puedeManejarTramite'])->middleware('permission:gestionar_gerencias');
+        // Endpoints adicionales (con prefijo admin)
+        Route::get('/admin/tipo/{tipo}', [AdminGerenciaController::class, 'getPorTipo'])->middleware('permission:gestionar_gerencias');
+        Route::get('/admin/flujos-disponibles', [AdminGerenciaController::class, 'getFlujosDisponibles'])->middleware('permission:gestionar_gerencias');
+        Route::get('/admin/jerarquia', [AdminGerenciaController::class, 'getJerarquia'])->middleware('permission:gestionar_gerencias');
+        Route::get('/admin/{gerencia}/puede-manejar/{tipoTramite}', [AdminGerenciaController::class, 'puedeManejarTramite'])->middleware('permission:gestionar_gerencias');
     });
     
     // Usuarios - Administración de usuarios
@@ -221,7 +347,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
-// Rutas de Mesa de Partes
+// Rutas de Mesa de Partes (autenticadas)
 Route::middleware('auth:sanctum')->prefix('mesa-partes')->group(function () {
     // CRUD principal
     Route::get('/', [MesaPartesController::class, 'index'])->middleware('permission:ver_mesa_partes');
@@ -244,3 +370,14 @@ Route::middleware('auth:sanctum')->prefix('mesa-partes')->group(function () {
 
 // Ruta pública para consulta de seguimiento
 Route::get('/mesa-partes/consultar/{codigoSeguimiento}', [MesaPartesController::class, 'consultarPorCodigo']);
+
+// -------------------------------------------------------------------------
+// Fallback 404 JSON (debe ir al final para no interferir)
+// -------------------------------------------------------------------------
+Route::fallback(function() {
+    return response()->json([
+        'success' => false,
+        'message' => 'Endpoint no encontrado. Verifique la ruta o método.',
+        'hint' => 'Use /health para comprobar estado base o revise documentación.'
+    ], 404);
+});

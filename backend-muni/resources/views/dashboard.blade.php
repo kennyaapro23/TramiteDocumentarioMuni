@@ -3,243 +3,155 @@
 @section('title', 'Dashboard')
 
 @section('content')
-<div class="container-fluid">
-    <!-- Stats Cards -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stat-card info">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <div class="text-white-50 small">Total Expedientes</div>
-                            <div class="h2 text-white">{{ $stats['expedientes_total'] }}</div>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-folder-open fa-2x text-white-50"></i>
-                        </div>
-                    </div>
-                </div>
+<div class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center">
+                <h1 class="text-3xl font-bold text-gray-900">
+                    Bienvenido, {{ Auth::user()->name }}
+                </h1>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out">
+                        Cerrar Sesión
+                    </button>
+                </form>
             </div>
         </div>
+    </header>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stat-card warning">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <div class="text-white-50 small">Pendientes</div>
-                            <div class="h2 text-white">{{ $stats['expedientes_pendientes'] }}</div>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-clock fa-2x text-white-50"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stat-card success">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <div class="text-white-50 small">Usuarios Activos</div>
-                            <div class="h2 text-white">{{ $stats['usuarios_activos'] }}</div>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-users fa-2x text-white-50"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stat-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <div class="text-white-50 small">Workflows Activos</div>
-                            <div class="h2 text-white">{{ $stats['workflows_activos'] }}</div>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-project-diagram fa-2x text-white-50"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <!-- Expedientes Recientes -->
-        <div class="col-xl-8 col-lg-7">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-history me-2"></i>Expedientes Recientes
-                    </h5>
-                    <a href="{{ route('expedientes.index') }}" class="btn btn-sm btn-outline-primary">Ver Todos</a>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Número</th>
-                                    <th>Asunto</th>
-                                    <th>Estado</th>
-                                    <th>Gerencia</th>
-                                    <th>Fecha</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($expedientes_recientes as $expediente)
-                                <tr>
-                                    <td>
-                                        <strong>{{ $expediente->numero_expediente }}</strong>
-                                    </td>
-                                    <td>{{ Str::limit($expediente->asunto, 40) }}</td>
-                                    <td>
-                                        <span class="badge bg-{{ $expediente->estado == 'pendiente' ? 'warning' : ($expediente->estado == 'aprobado' ? 'success' : 'secondary') }}">
-                                            {{ ucfirst($expediente->estado) }}
-                                        </span>
-                                    </td>
-                                    <td>{{ $expediente->gerencia->nombre ?? 'Sin asignar' }}</td>
-                                    <td>{{ $expediente->created_at->format('d/m/Y') }}</td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="5" class="text-center py-4 text-muted">
-                                        <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
-                                        No hay expedientes recientes
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Panel de Accesos Rápidos -->
-        <div class="col-xl-4 col-lg-5">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-bolt me-2"></i>Accesos Rápidos
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{{ route('expedientes.create') }}" class="btn btn-primary">
-                            <i class="fas fa-plus me-2"></i>Nuevo Expediente
-                        </a>
-                        <a href="{{ route('workflows.create') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-sitemap me-2"></i>Crear Workflow
-                        </a>
-                        <a href="{{ route('usuarios.create') }}" class="btn btn-outline-success">
-                            <i class="fas fa-user-plus me-2"></i>Nuevo Usuario
-                        </a>
-                        <a href="{{ route('gerencias.create') }}" class="btn btn-outline-info">
-                            <i class="fas fa-building me-2"></i>Nueva Gerencia
-                        </a>
-                        <a href="{{ route('reportes.index') }}" class="btn btn-outline-warning">
-                            <i class="fas fa-chart-bar me-2"></i>Ver Reportes
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Resumen del Sistema -->
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-info-circle me-2"></i>Resumen del Sistema
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-6 mb-3">
-                            <div class="border-end">
-                                <h4 class="text-primary">{{ $stats['gerencias_total'] }}</h4>
-                                <small class="text-muted">Gerencias</small>
+    <!-- Main Content -->
+    <main>
+        <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <div class="px-4 py-6 sm:px-0">
+                <!-- Welcome Card -->
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="sm:flex sm:items-center sm:justify-between">
+                            <div>
+                                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                    Panel de Control
+                                </h3>
+                                <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                                    Sistema de Gestión Documental - Municipalidad
+                                </p>
+                            </div>
+                            <div class="mt-5 sm:mt-0 sm:ml-6 sm:flex-shrink-0">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="h-8 w-8 bg-green-500 rounded-full flex items-center justify-center">
+                                            <svg class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-900">Sistema Activo</p>
+                                        <p class="text-sm text-gray-500">Conectado</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-6 mb-3">
-                            <h4 class="text-success">{{ $stats['workflows_total'] }}</h4>
-                            <small class="text-muted">Workflows</small>
-                        </div>
-                        <div class="col-6">
-                            <div class="border-end">
-                                <h4 class="text-info">{{ $stats['usuarios_total'] }}</h4>
-                                <small class="text-muted">Usuarios</small>
+
+                        <!-- Quick Stats -->
+                        <div class="mt-8">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="bg-blue-50 p-4 rounded-lg">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0">
+                                            <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-500">Expedientes</div>
+                                            <div class="text-2xl font-bold text-gray-900">{{ \App\Models\Expediente::count() }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="bg-green-50 p-4 rounded-lg">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0">
+                                            <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-500">Usuarios</div>
+                                            <div class="text-2xl font-bold text-gray-900">{{ \App\Models\User::count() }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="bg-yellow-50 p-4 rounded-lg">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0">
+                                            <svg class="h-8 w-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-500">Pendientes</div>
+                                            <div class="text-2xl font-bold text-gray-900">{{ \App\Models\Expediente::where('estado', 'en_proceso')->count() }}</div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-6">
-                            <h4 class="text-warning">{{ $stats['mesa_partes_hoy'] }}</h4>
-                            <small class="text-muted">Docs. Hoy</small>
+
+                        <!-- Quick Actions -->
+                        <div class="mt-8">
+                            <h4 class="text-lg font-medium text-gray-900 mb-4">Acciones Rápidas</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <a href="#" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-md text-sm font-medium transition duration-150 ease-in-out flex items-center justify-center">
+                                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Nuevo Expediente
+                                </a>
+                                
+                                <a href="#" class="bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-md text-sm font-medium transition duration-150 ease-in-out flex items-center justify-center">
+                                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                    Buscar
+                                </a>
+                                
+                                <a href="#" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-md text-sm font-medium transition duration-150 ease-in-out flex items-center justify-center">
+                                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    Reportes
+                                </a>
+                                
+                                <a href="#" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-3 rounded-md text-sm font-medium transition duration-150 ease-in-out flex items-center justify-center">
+                                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                    Configuración
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="mt-8">
+                            <h4 class="text-lg font-medium text-gray-900 mb-4">Actividad Reciente</h4>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <div class="text-center text-gray-500 py-4">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                                    </svg>
+                                    <p class="mt-2 text-sm">No hay actividad reciente</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Gráfico de Estadísticas -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-chart-line me-2"></i>Estadísticas Mensuales
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="statsChart" width="100" height="30"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
+    </main>
 </div>
 @endsection
-
-@push('scripts')
-<script>
-    // Configurar gráfico de estadísticas
-    const ctx = document.getElementById('statsChart').getContext('2d');
-    const statsChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'],
-            datasets: [{
-                label: 'Expedientes Creados',
-                data: [12, 19, 8, 15, 25, 22],
-                borderColor: 'rgb(52, 152, 219)',
-                backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                tension: 0.4
-            }, {
-                label: 'Expedientes Resueltos',
-                data: [8, 15, 12, 18, 20, 25],
-                borderColor: 'rgb(76, 175, 80)',
-                backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-</script>
-@endpush

@@ -3,108 +3,294 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use App\Models\Expediente;
-use App\Models\Gerencia;
-use App\Models\CustomWorkflow;
-use App\Models\MesaParte;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
+use Illuminate\Support\Facades\DB;
 
 class WebController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth')->except(['login', 'showLogin']);
+        $this->middleware('auth')->except(['showLogin', 'login']);
     }
 
-    // Página de login
+    /**
+     * Show login form
+     */
     public function showLogin()
     {
         return view('auth.login');
     }
 
-    // Dashboard principal
+    /**
+     * Handle login
+     */
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
+            
+            // Si es una request AJAX, devolver JSON
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Login exitoso',
+                    'redirect' => route('dashboard')
+                ]);
+            }
+            
+            return redirect()->intended(route('dashboard'));
+        }
+
+        // Si es una request AJAX, devolver JSON con errores
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Credenciales incorrectas',
+                'errors' => [
+                    'email' => ['Las credenciales proporcionadas no coinciden con nuestros registros.']
+                ]
+            ], 422);
+        }
+
+        return back()->withErrors([
+            'email' => 'Las credenciales proporcionadas no coinciden con nuestros registros.',
+        ])->onlyInput('email');
+    }
+
+    /**
+     * Handle logout
+     */
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect()->route('login');
+    }
+
+    /**
+     * Show dashboard
+     */
     public function dashboard()
     {
         $stats = [
-            'expedientes_total' => Expediente::count(),
-            'expedientes_pendientes' => Expediente::where('estado', 'pendiente')->count(),
-            'usuarios_total' => User::count(),
-            'usuarios_activos' => User::where('activo', true)->count(),
-            'gerencias_total' => Gerencia::count(),
-            'workflows_total' => CustomWorkflow::count(),
-            'workflows_activos' => CustomWorkflow::where('activo', true)->count(),
-            'mesa_partes_hoy' => MesaParte::whereDate('created_at', today())->count(),
+            'total_expedientes' => 0,
+            'expedientes_pendientes' => 0,
+            'expedientes_completados' => 0,
+            'usuarios_activos' => User::count(),
         ];
 
-        $expedientes_recientes = Expediente::with(['user', 'gerencia'])
-            ->latest()
-            ->take(5)
-            ->get();
+        $recent_expedientes = collect();
 
-        return view('dashboard', compact('stats', 'expedientes_recientes'));
+        return view('dashboard', compact('stats', 'recent_expedientes'));
     }
 
-    // Gestión de usuarios
+    /**
+     * Show users management
+     */
     public function usuarios()
     {
-        $usuarios = User::with('roles', 'gerencias')->paginate(20);
-        $roles = Role::all();
-        $gerencias = Gerencia::all();
-        return view('usuarios.index', compact('usuarios', 'roles', 'gerencias'));
+        return view('usuarios.index');
     }
 
-    // Gestión de roles
-    public function roles()
-    {
-        $roles = Role::with('permissions')->get();
-        $permisos = Permission::all();
-        return view('roles.index', compact('roles', 'permisos'));
-    }
-
-    // Gestión de gerencias
-    public function gerencias()
-    {
-        $gerencias = Gerencia::with('parent', 'children', 'users')->get();
-        return view('gerencias.index', compact('gerencias'));
-    }
-
-    // Gestión de expedientes
+    /**
+     * Show expedientes
+     */
     public function expedientes()
     {
-        $expedientes = Expediente::with(['user', 'gerencia', 'customWorkflow'])
-            ->paginate(20);
-        $gerencias = Gerencia::all();
-        $workflows = CustomWorkflow::where('activo', true)->get();
-        return view('expedientes.index', compact('expedientes', 'gerencias', 'workflows'));
+        return view('expedientes.index');
     }
 
-    // Gestión de workflows
-    public function workflows()
+    /**
+     * Show roles management
+     */
+    public function roles()
     {
-        $workflows = CustomWorkflow::with(['steps', 'creator'])->get();
-        return view('workflows.index', compact('workflows'));
+        return view('roles.index');
     }
 
-    // Editor de workflow
-    public function workflowEditor($id = null)
+    /**
+     * Show create expediente
+     */
+    public function createExpediente()
     {
-        $workflow = $id ? CustomWorkflow::with(['steps.transitionsFrom', 'steps.transitionsTo'])->findOrFail($id) : null;
-        return view('workflows.editor', compact('workflow'));
+        return view('expedientes.create');
     }
 
-    // Mesa de partes
+    /**
+     * Show permissions
+     */
+    public function permisos()
+    {
+        // Obtener todos los permisos agrupados por módulo
+        $permisos = \Spatie\Permission\Models\Permission::all();
+        
+        // Agrupar permisos por módulo (primera parte antes del punto)
+        $permisosPorModulo = $permisos->groupBy(function($permiso) {
+            $parts = explode('.', $permiso->name);
+            return $parts[0] ?? 'otros';
+        });
+        
+        // Estadísticas
+        $stats = [
+            'total_permisos' => $permisos->count(),
+            'permisos_activos' => $permisos->count(), // Todos activos por defecto
+            'total_modulos' => $permisosPorModulo->count(),
+            'permisos_criticos' => $permisos->filter(function($permiso) {
+                return str_contains($permiso->name, 'delete') || str_contains($permiso->name, 'admin');
+            })->count()
+        ];
+        
+        return view('permisos.index', compact('permisosPorModulo', 'stats'));
+    }
+
+    /**
+     * Show edit expediente
+     */
+    public function editExpediente($id)
+    {
+        try {
+            $expediente = Expediente::findOrFail($id);
+            return view('expedientes.edit', compact('expediente'));
+        } catch (\Exception $e) {
+            return redirect()->route('expedientes.index')->with('error', 'Expediente no encontrado.');
+        }
+    }
+
+    /**
+     * Show mesa de partes
+     */
     public function mesaPartes()
     {
-        $documentos = MesaParte::with(['tipoDocumento', 'tipoTramite', 'asignado'])
-            ->paginate(20);
-        return view('mesa-partes.index', compact('documentos'));
+        return view('mesa-partes.index');
     }
 
-    // Reportes
+    /**
+     * Show administracion
+     */
+    public function administracion()
+    {
+        return view('administracion.index');
+    }
+
+    /**
+     * Show reportes
+     */
     public function reportes()
     {
         return view('reportes.index');
+    }
+
+    /**
+     * Show configuration
+     */
+    public function configuracion()
+    {
+        return view('configuracion.index');
+    }
+
+    /**
+     * Show user profile
+     */
+    public function profile()
+    {
+        return view('profile.show');
+    }
+
+    /**
+     * Update user profile
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+        
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'current_password' => 'nullable|string',
+            'password' => 'nullable|string|min:8|confirmed',
+        ]);
+
+        // Update basic info
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+
+        // Update password if provided
+        if ($request->filled('password')) {
+            if (!$request->filled('current_password') || !Hash::check($request->current_password, $user->password)) {
+                return back()->withErrors(['current_password' => 'La contraseña actual es incorrecta.']);
+            }
+            $user->password = Hash::make($validated['password']);
+        }
+
+        $user->save();
+
+        return back()->with('success', 'Perfil actualizado exitosamente.');
+    }
+
+    /**
+     * Show welcome page (for testing routes)
+     */
+    public function welcome()
+    {
+        return view('welcome');
+    }
+
+    // Mesa de Partes methods
+    public function mesaPartesDerivacion()
+    {
+        return view('mesa-partes.derivacion');
+    }
+
+    public function mesaPartesRegistro()
+    {
+        return view('mesa-partes.registro');
+    }
+
+    // Expedientes filtering methods
+    public function expedientesPendientes()
+    {
+        return view('expedientes.pendientes');
+    }
+
+    public function expedientesProceso()
+    {
+        return view('expedientes.proceso');
+    }
+
+    public function expedientesFinalizados()
+    {
+        return view('expedientes.finalizados');
+    }
+
+    // Reportes methods
+    public function reportesExpedientes()
+    {
+        return view('reportes.expedientes');
+    }
+
+    public function reportesTramites()
+    {
+        return view('reportes.tramites');
+    }
+
+    public function reportesTiempos()
+    {
+        return view('reportes.tiempos');
+    }
+
+    // Settings method
+    public function settings()
+    {
+        return view('settings.index');
     }
 }

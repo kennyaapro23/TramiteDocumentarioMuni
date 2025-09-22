@@ -26,6 +26,12 @@ class TipoDocumento extends Model
         'activo' => 'boolean'
     ];
 
+    // Scope para obtener solo los tipos activos
+    public function scopeActivo($query)
+    {
+        return $query->where('activo', true);
+    }
+
     public function mesaPartes(): HasMany
     {
         return $this->hasMany(MesaParte::class);

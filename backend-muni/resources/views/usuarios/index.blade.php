@@ -3,491 +3,443 @@
 @section('title', 'Gestión de Usuarios')
 
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="card-title mb-0">
-                        <i class="fas fa-users me-2"></i>Gestión de Usuarios
-                    </h4>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal">
-                        <i class="fas fa-plus me-2"></i>Nuevo Usuario
-                    </button>
+<div class="py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="md:flex md:items-center md:justify-between mb-8">
+            <div class="flex-1 min-w-0">
+                <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+                    <svg class="inline-block h-8 w-8 text-municipal-600 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                    </svg>
+                    Gestión de Usuarios
+                </h2>
+                <p class="mt-1 text-sm text-gray-500">
+                    Administra usuarios, roles y permisos del sistema municipal
+                </p>
+            </div>
+            <div class="mt-4 flex md:mt-0 md:ml-4">
+                <button type="button" 
+                        onclick="openCreateUserModal()"
+                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-municipal-600 hover:bg-municipal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-municipal-500">
+                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Nuevo Usuario
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+            <!-- Total Usuarios -->
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">Total Usuarios</dt>
+                                <dd class="text-lg font-medium text-gray-900">156</dd>
+                            </dl>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <!-- Filtros -->
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <input type="text" class="form-control" id="searchUsers" placeholder="Buscar usuarios...">
+            </div>
+
+            <!-- Usuarios Activos -->
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
                         </div>
-                        <div class="col-md-3">
-                            <select class="form-select" id="filterRole">
-                                <option value="">Todos los roles</option>
-                                @foreach($roles as $role)
-                                <option value="{{ $role->name }}">{{ $role->name }}</option>
-                                @endforeach
-                            </select>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">Usuarios Activos</dt>
+                                <dd class="text-lg font-medium text-gray-900">142</dd>
+                            </dl>
                         </div>
-                        <div class="col-md-3">
-                            <select class="form-select" id="filterGerencia">
-                                <option value="">Todas las gerencias</option>
-                                @foreach($gerencias as $gerencia)
-                                <option value="{{ $gerencia->id }}">{{ $gerencia->nombre }}</option>
-                                @endforeach
-                            </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Administradores -->
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                            </div>
                         </div>
-                        <div class="col-md-2">
-                            <select class="form-select" id="filterStatus">
-                                <option value="">Todos</option>
-                                <option value="activo">Activos</option>
-                                <option value="inactivo">Inactivos</option>
-                            </select>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">Administradores</dt>
+                                <dd class="text-lg font-medium text-gray-900">8</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Roles Disponibles -->
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">Roles Disponibles</dt>
+                                <dd class="text-lg font-medium text-gray-900">7</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white shadow rounded-lg mb-6">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <!-- Búsqueda -->
+                    <div>
+                        <label for="search" class="block text-sm font-medium text-gray-700">Buscar</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+                            <input type="text" 
+                                   id="search" 
+                                   class="focus:ring-municipal-500 focus:border-municipal-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md" 
+                                   placeholder="Buscar usuarios...">
                         </div>
                     </div>
 
-                    <!-- Tabla de Usuarios -->
-                    <div class="table-responsive">
-                        <table class="table table-hover" id="usersTable">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Avatar</th>
-                                    <th>Nombre</th>
-                                    <th>Email</th>
-                                    <th>Roles</th>
-                                    <th>Gerencia</th>
-                                    <th>Estado</th>
-                                    <th>Último Login</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($usuarios as $usuario)
-                                <tr data-user-id="{{ $usuario->id }}">
-                                    <td>{{ $usuario->id }}</td>
-                                    <td>
-                                        <img src="{{ $usuario->avatar_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($usuario->name) }}" 
-                                             class="rounded-circle" width="32" height="32" alt="Avatar">
-                                    </td>
-                                    <td>
-                                        <strong>{{ $usuario->name }}</strong>
-                                        <br>
-                                        <small class="text-muted">{{ $usuario->dni ?? 'Sin DNI' }}</small>
-                                    </td>
-                                    <td>{{ $usuario->email }}</td>
-                                    <td>
-                                        @foreach($usuario->roles as $role)
-                                        <span class="badge bg-primary me-1">{{ $role->name }}</span>
-                                        @endforeach
-                                        @if($usuario->roles->isEmpty())
-                                        <span class="badge bg-secondary">Sin rol</span>
-                                        @endif
-                                    </td>
-                                    <td>{{ $usuario->gerencia->nombre ?? 'Sin asignar' }}</td>
-                                    <td>
-                                        <span class="badge bg-{{ $usuario->estado == 'activo' ? 'success' : 'danger' }}">
-                                            {{ ucfirst($usuario->estado) }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        {{ $usuario->last_login_at ? $usuario->last_login_at->format('d/m/Y H:i') : 'Nunca' }}
-                                    </td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <button class="btn btn-sm btn-outline-primary" onclick="editUser({{ $usuario->id }})">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-info" onclick="viewUser({{ $usuario->id }})">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            @if($usuario->estado == 'activo')
-                                            <button class="btn btn-sm btn-outline-warning" onclick="toggleUserStatus({{ $usuario->id }}, 'inactivo')">
-                                                <i class="fas fa-ban"></i>
-                                            </button>
-                                            @else
-                                            <button class="btn btn-sm btn-outline-success" onclick="toggleUserStatus({{ $usuario->id }}, 'activo')">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                            @endif
-                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteUser({{ $usuario->id }})">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
+                    <!-- Filtro por Rol -->
+                    <div>
+                        <label for="role-filter" class="block text-sm font-medium text-gray-700">Rol</label>
+                        <select id="role-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-municipal-500 focus:border-municipal-500 sm:text-sm rounded-md">
+                            <option value="">Todos los roles</option>
+                            <option value="super_admin">Super Admin</option>
+                            <option value="admin">Administrador</option>
+                            <option value="jefe_gerencia">Jefe de Gerencia</option>
+                            <option value="funcionario">Funcionario</option>
+                            <option value="funcionario_junior">Funcionario Junior</option>
+                            <option value="ciudadano">Ciudadano</option>
+                        </select>
+                    </div>
+
+                    <!-- Filtro por Estado -->
+                    <div>
+                        <label for="status-filter" class="block text-sm font-medium text-gray-700">Estado</label>
+                        <select id="status-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-municipal-500 focus:border-municipal-500 sm:text-sm rounded-md">
+                            <option value="">Todos los estados</option>
+                            <option value="active">Activo</option>
+                            <option value="inactive">Inactivo</option>
+                            <option value="pending">Pendiente</option>
+                        </select>
+                    </div>
+
+                    <!-- Filtro por Gerencia -->
+                    <div>
+                        <label for="gerencia-filter" class="block text-sm font-medium text-gray-700">Gerencia</label>
+                        <select id="gerencia-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-municipal-500 focus:border-municipal-500 sm:text-sm rounded-md">
+                            <option value="">Todas las gerencias</option>
+                            <option value="alcaldia">Alcaldía</option>
+                            <option value="obras">Obras Públicas</option>
+                            <option value="finanzas">Finanzas</option>
+                            <option value="recursos">Recursos Humanos</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Botones de acción -->
+                <div class="mt-4 flex justify-between">
+                    <div class="flex space-x-2">
+                        <button type="button" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-municipal-500">
+                            <svg class="-ml-0.5 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z" />
+                            </svg>
+                            Filtros Avanzados
+                        </button>
+                        <button type="button" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-municipal-500">
+                            <svg class="-ml-0.5 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Exportar
+                        </button>
+                    </div>
+                    <button type="button" onclick="clearFilters()" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-municipal-500">
+                        Limpiar Filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-md">
+            <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Lista de Usuarios</h3>
+                    <p class="text-sm text-gray-500">Mostrando 1-20 de 156 usuarios</p>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <input type="checkbox" class="h-4 w-4 text-municipal-600 focus:ring-municipal-500 border-gray-300 rounded">
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gerencia</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Último acceso</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <!-- Usuario 1 -->
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <input type="checkbox" class="h-4 w-4 text-municipal-600 focus:ring-municipal-500 border-gray-300 rounded">
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="h-10 w-10 flex-shrink-0">
+                                        <div class="h-10 w-10 rounded-full bg-municipal-500 flex items-center justify-center">
+                                            <span class="text-sm font-medium text-white">JD</span>
                                         </div>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="9" class="text-center py-4">
-                                        <i class="fas fa-users fa-3x text-muted mb-3 d-block"></i>
-                                        <p class="text-muted">No hay usuarios registrados</p>
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Paginación -->
-                    @if($usuarios->hasPages())
-                    <div class="d-flex justify-content-center mt-3">
-                        {{ $usuarios->links() }}
-                    </div>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal para Crear/Editar Usuario -->
-<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <form id="userForm">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="userModalLabel">Nuevo Usuario</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="userId" name="id">
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="userName" class="form-label">Nombre Completo *</label>
-                                <input type="text" class="form-control" id="userName" name="name" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="userEmail" class="form-label">Email *</label>
-                                <input type="email" class="form-control" id="userEmail" name="email" required>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="userDni" class="form-label">DNI</label>
-                                <input type="text" class="form-control" id="userDni" name="dni" maxlength="8">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="userPhone" class="form-label">Teléfono</label>
-                                <input type="text" class="form-control" id="userPhone" name="phone">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="userPassword" class="form-label">Contraseña</label>
-                                <input type="password" class="form-control" id="userPassword" name="password">
-                                <small class="form-text text-muted">Deja en blanco para mantener la contraseña actual</small>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="userPasswordConfirmation" class="form-label">Confirmar Contraseña</label>
-                                <input type="password" class="form-control" id="userPasswordConfirmation" name="password_confirmation">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="userGerencia" class="form-label">Gerencia</label>
-                                <select class="form-select" id="userGerencia" name="gerencia_id">
-                                    <option value="">Seleccionar gerencia</option>
-                                    @foreach($gerencias as $gerencia)
-                                    <option value="{{ $gerencia->id }}">{{ $gerencia->nombre }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="userEstado" class="form-label">Estado</label>
-                                <select class="form-select" id="userEstado" name="estado">
-                                    <option value="activo">Activo</option>
-                                    <option value="inactivo">Inactivo</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Roles del Usuario</label>
-                        <div class="row">
-                            @foreach($roles as $role)
-                            <div class="col-md-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="{{ $role->name }}" 
-                                           id="role_{{ $role->id }}" name="roles[]">
-                                    <label class="form-check-label" for="role_{{ $role->id }}">
-                                        {{ $role->name }}
-                                    </label>
-                                    <small class="d-block text-muted">{{ $role->description ?? 'Sin descripción' }}</small>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">Juan Pérez</div>
+                                        <div class="text-sm text-gray-500">juan.perez@municipalidad.gob.pe</div>
+                                    </div>
                                 </div>
-                            </div>
-                            @endforeach
-                        </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                    Super Admin
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Alcaldía</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    Activo
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Hace 2 horas</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="flex items-center space-x-2">
+                                    <button onclick="viewUser(1)" class="text-municipal-600 hover:text-municipal-900" title="Ver usuario">
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </button>
+                                    <button onclick="editUser(1)" class="text-blue-600 hover:text-blue-900" title="Editar usuario">
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button onclick="deleteUser(1)" class="text-red-600 hover:text-red-900" title="Eliminar usuario">
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Usuario 2 -->
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <input type="checkbox" class="h-4 w-4 text-municipal-600 focus:ring-municipal-500 border-gray-300 rounded">
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="h-10 w-10 flex-shrink-0">
+                                        <div class="h-10 w-10 rounded-full bg-gray-400 flex items-center justify-center">
+                                            <span class="text-sm font-medium text-white">MG</span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">María García</div>
+                                        <div class="text-sm text-gray-500">maria.garcia@municipalidad.gob.pe</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    Jefe de Gerencia
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Obras Públicas</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    Activo
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Hace 1 día</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="flex items-center space-x-2">
+                                    <button onclick="viewUser(2)" class="text-municipal-600 hover:text-municipal-900">
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </button>
+                                    <button onclick="editUser(2)" class="text-blue-600 hover:text-blue-900">
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button onclick="deleteUser(2)" class="text-red-600 hover:text-red-900">
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Usuario 3 -->
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <input type="checkbox" class="h-4 w-4 text-municipal-600 focus:ring-municipal-500 border-gray-300 rounded">
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="h-10 w-10 flex-shrink-0">
+                                        <div class="h-10 w-10 rounded-full bg-green-500 flex items-center justify-center">
+                                            <span class="text-sm font-medium text-white">CR</span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">Carlos Rodríguez</div>
+                                        <div class="text-sm text-gray-500">carlos.rodriguez@municipalidad.gob.pe</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    Funcionario
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Mesa de Partes</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    Pendiente
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Nunca</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="flex items-center space-x-2">
+                                    <button onclick="viewUser(3)" class="text-municipal-600 hover:text-municipal-900">
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </button>
+                                    <button onclick="editUser(3)" class="text-blue-600 hover:text-blue-900">
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button onclick="deleteUser(3)" class="text-red-600 hover:text-red-900">
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div class="flex-1 flex justify-between sm:hidden">
+                    <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Anterior</a>
+                    <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Siguiente</a>
+                </div>
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Mostrando <span class="font-medium">1</span> a <span class="font-medium">20</span> de <span class="font-medium">156</span> resultados
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Anterior</span>
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </a>
+                            <a href="#" class="bg-municipal-50 border-municipal-500 text-municipal-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">1</a>
+                            <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">2</a>
+                            <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">3</a>
+                            <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">...</span>
+                            <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">8</a>
+                            <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Siguiente</span>
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </a>
+                        </nav>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-2"></i>Guardar Usuario
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Modal para Ver Detalles del Usuario -->
-<div class="modal fade" id="userViewModal" tabindex="-1" aria-labelledby="userViewModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="userViewModalLabel">Detalles del Usuario</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="userViewContent">
-                <!-- Contenido dinámico -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Incluir modales -->
+@include('usuarios.partials.create-modal')
+@include('usuarios.partials.edit-modal')
+@include('usuarios.partials.view-modal')
+
 @endsection
 
+@endsection
+
+@include('usuarios.partials.create-modal')
+
 @push('scripts')
+<script src="{{ asset('js/admin-functions.js') }}"></script>
 <script>
-    // Variables globales
-    let userModal, userViewModal;
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // Inicializar modales
-        userModal = new bootstrap.Modal(document.getElementById('userModal'));
-        userViewModal = new bootstrap.Modal(document.getElementById('userViewModal'));
-
-        // Configurar filtros en tiempo real
-        setupFilters();
-
-        // Configurar formulario de usuario
-        setupUserForm();
-    });
-
-    function setupFilters() {
-        const searchInput = document.getElementById('searchUsers');
-        const roleFilter = document.getElementById('filterRole');
-        const gerenciaFilter = document.getElementById('filterGerencia');
-        const statusFilter = document.getElementById('filterStatus');
-
-        [searchInput, roleFilter, gerenciaFilter, statusFilter].forEach(element => {
-            element.addEventListener('input', filterUsers);
-        });
-    }
-
-    function filterUsers() {
-        const searchTerm = document.getElementById('searchUsers').value.toLowerCase();
-        const roleFilter = document.getElementById('filterRole').value;
-        const gerenciaFilter = document.getElementById('filterGerencia').value;
-        const statusFilter = document.getElementById('filterStatus').value;
-
-        const rows = document.querySelectorAll('#usersTable tbody tr[data-user-id]');
-
-        rows.forEach(row => {
-            const name = row.cells[2].textContent.toLowerCase();
-            const email = row.cells[3].textContent.toLowerCase();
-            const roles = row.cells[4].textContent.toLowerCase();
-            const gerencia = row.cells[5].textContent;
-            const status = row.cells[6].textContent.toLowerCase();
-
-            const matchesSearch = name.includes(searchTerm) || email.includes(searchTerm);
-            const matchesRole = !roleFilter || roles.includes(roleFilter.toLowerCase());
-            const matchesGerencia = !gerenciaFilter || row.querySelector('[data-gerencia-id="' + gerenciaFilter + '"]');
-            const matchesStatus = !statusFilter || status.includes(statusFilter);
-
-            row.style.display = (matchesSearch && matchesRole && matchesGerencia && matchesStatus) ? '' : 'none';
-        });
-    }
-
-    function setupUserForm() {
-        document.getElementById('userForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            saveUser();
-        });
-    }
-
-    function editUser(userId) {
-        // Realizar petición AJAX para obtener datos del usuario
-        fetch(`/api/usuarios/${userId}`)
-            .then(response => response.json())
-            .then(user => {
-                document.getElementById('userModalLabel').textContent = 'Editar Usuario';
-                document.getElementById('userId').value = user.id;
-                document.getElementById('userName').value = user.name;
-                document.getElementById('userEmail').value = user.email;
-                document.getElementById('userDni').value = user.dni || '';
-                document.getElementById('userPhone').value = user.phone || '';
-                document.getElementById('userGerencia').value = user.gerencia_id || '';
-                document.getElementById('userEstado').value = user.estado;
-
-                // Marcar roles del usuario
-                document.querySelectorAll('input[name="roles[]"]').forEach(checkbox => {
-                    checkbox.checked = user.roles.some(role => role.name === checkbox.value);
-                });
-
-                userModal.show();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showAlert('Error al cargar los datos del usuario', 'danger');
-            });
-    }
-
-    function viewUser(userId) {
-        // Realizar petición AJAX para obtener detalles completos del usuario
-        fetch(`/api/usuarios/${userId}/detalles`)
-            .then(response => response.json())
-            .then(user => {
-                const content = `
-                    <div class="row">
-                        <div class="col-md-4 text-center">
-                            <img src="${user.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name)}" 
-                                 class="rounded-circle mb-3" width="120" height="120" alt="Avatar">
-                            <h5>${user.name}</h5>
-                            <p class="text-muted">${user.email}</p>
-                        </div>
-                        <div class="col-md-8">
-                            <table class="table table-borderless">
-                                <tr><th width="30%">DNI:</th><td>${user.dni || 'No especificado'}</td></tr>
-                                <tr><th>Teléfono:</th><td>${user.phone || 'No especificado'}</td></tr>
-                                <tr><th>Gerencia:</th><td>${user.gerencia ? user.gerencia.nombre : 'Sin asignar'}</td></tr>
-                                <tr><th>Estado:</th><td><span class="badge bg-${user.estado === 'activo' ? 'success' : 'danger'}">${user.estado}</span></td></tr>
-                                <tr><th>Roles:</th><td>${user.roles.map(role => '<span class="badge bg-primary me-1">' + role.name + '</span>').join('') || 'Sin roles'}</td></tr>
-                                <tr><th>Último Login:</th><td>${user.last_login_at || 'Nunca'}</td></tr>
-                                <tr><th>Registrado:</th><td>${user.created_at}</td></tr>
-                            </table>
-                        </div>
-                    </div>
-                `;
-                document.getElementById('userViewContent').innerHTML = content;
-                userViewModal.show();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showAlert('Error al cargar los detalles del usuario', 'danger');
-            });
-    }
-
-    function toggleUserStatus(userId, newStatus) {
-        if (confirm(`¿Estás seguro de ${newStatus === 'activo' ? 'activar' : 'desactivar'} este usuario?`)) {
-            fetch(`/api/usuarios/${userId}/estado`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({ estado: newStatus })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showAlert(`Usuario ${newStatus === 'activo' ? 'activado' : 'desactivado'} correctamente`, 'success');
-                    location.reload();
-                } else {
-                    showAlert('Error al cambiar el estado del usuario', 'danger');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showAlert('Error al procesar la solicitud', 'danger');
-            });
-        }
-    }
-
-    function deleteUser(userId) {
-        if (confirm('¿Estás seguro de eliminar este usuario? Esta acción no se puede deshacer.')) {
-            fetch(`/api/usuarios/${userId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showAlert('Usuario eliminado correctamente', 'success');
-                    location.reload();
-                } else {
-                    showAlert('Error al eliminar el usuario', 'danger');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showAlert('Error al procesar la solicitud', 'danger');
-            });
-        }
-    }
-
-    function saveUser() {
-        const formData = new FormData(document.getElementById('userForm'));
-        const userId = document.getElementById('userId').value;
-        const isEdit = userId !== '';
-
-        const url = isEdit ? `/api/usuarios/${userId}` : '/api/usuarios';
-        const method = isEdit ? 'PUT' : 'POST';
-
-        fetch(url, {
-            method: method,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showAlert(`Usuario ${isEdit ? 'actualizado' : 'creado'} correctamente`, 'success');
-                userModal.hide();
-                location.reload();
-            } else {
-                showAlert(data.message || 'Error al guardar el usuario', 'danger');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showAlert('Error al procesar la solicitud', 'danger');
-        });
-    }
-
-    function showAlert(message, type) {
-        const alertHtml = `
-            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        `;
-        document.querySelector('.container-fluid').insertAdjacentHTML('afterbegin', alertHtml);
-    }
-
-    // Limpiar formulario al abrir modal para nuevo usuario
-    document.getElementById('userModal').addEventListener('show.bs.modal', function (event) {
-        if (!event.relatedTarget || !event.relatedTarget.dataset.userId) {
-            document.getElementById('userForm').reset();
-            document.getElementById('userModalLabel').textContent = 'Nuevo Usuario';
-            document.getElementById('userId').value = '';
-        }
-    });
+function clearFilters() {
+    document.getElementById('search').value = '';
+    document.getElementById('role-filter').value = '';
+    document.getElementById('status-filter').value = '';
+    document.getElementById('gerencia-filter').value = '';
+}
 </script>
 @endpush

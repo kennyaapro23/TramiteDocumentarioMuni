@@ -108,10 +108,12 @@ class TipoTramiteSeeder extends Seeder
         ];
 
         foreach ($tipos as $tipo) {
-            TipoTramite::create($tipo);
+            TipoTramite::updateOrCreate(
+                ['codigo' => $tipo['codigo']],
+                $tipo
+            );
         }
 
-        $this->command->info('Tipos de trámites creados exitosamente');
-        $this->command->info('Total: ' . count($tipos) . ' tipos de trámites');
+        $this->command?->info('TipoTramiteSeeder: upsert completado (' . count($tipos) . ' registros).');
     }
 }

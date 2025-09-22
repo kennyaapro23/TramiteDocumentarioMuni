@@ -30,6 +30,12 @@ class TipoTramite extends Model
         'activo' => 'boolean'
     ];
 
+    // Scope para obtener solo los tipos activos
+    public function scopeActivo($query)
+    {
+        return $query->where('activo', true);
+    }
+
     public function gerencia(): BelongsTo
     {
         return $this->belongsTo(Gerencia::class);

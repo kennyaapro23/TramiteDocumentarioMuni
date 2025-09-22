@@ -35,7 +35,7 @@ class AuthController extends Controller
             $user = Auth::user();
             
             // Verificar si el usuario está activo
-            if ($user->estado !== 'activo') {
+            if (isset($user->estado) && $user->estado !== 'activo') {
                 Auth::logout();
                 return response()->json([
                     'success' => false,
@@ -43,17 +43,31 @@ class AuthController extends Controller
                 ], 403);
             }
 
-            // Generar token (en producción usar Sanctum o JWT)
+            // Generar token
             $token = $user->createToken('auth-token')->plainTextToken;
 
-            // Cargar relaciones necesarias
-            $user->load(['gerencia', 'roles', 'permissions']);
+            // Cargar relaciones de forma segura
+            try {
+                $user->load(['gerencia', 'roles', 'permissions']);
+                
+                // Obtener permisos del usuario de forma segura
+                $permissions = [];
+                if (method_exists($user, 'getAllPermissions')) {
+                    $permissions = $user->getAllPermissions()->pluck('name')->toArray();
+                }
+            } catch (\Exception $e) {
+                // Si falla cargar relaciones, continuar sin ellas
+                $permissions = [];
+            }
 
-            // Obtener permisos del usuario
-            $permissions = $user->getAllPermissions()->pluck('name')->toArray();
-
-            // Actualizar último acceso
-            $user->update(['ultimo_acceso' => now()]);
+            // Actualizar último acceso si el campo existe
+            try {
+                if (in_array('ultimo_acceso', $user->getFillable())) {
+                    $user->update(['ultimo_acceso' => now()]);
+                }
+            } catch (\Exception $e) {
+                // Ignorar error si no se puede actualizar
+            }
 
             return response()->json([
                 'success' => true,
@@ -67,7 +81,7 @@ class AuthController extends Controller
                         'gerencia' => $user->gerencia ? [
                             'id' => $user->gerencia->id,
                             'nombre' => $user->gerencia->nombre,
-                            'tipo' => $user->gerencia->tipo
+                            'tipo' => $user->gerencia->tipo ?? null
                         ] : null,
                         'permissions' => $permissions
                     ],
