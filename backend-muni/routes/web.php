@@ -4,8 +4,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WebController;
 use App\Http\Controllers\ExpedienteController;
 use App\Http\Controllers\GerenciaController;
+use App\Http\Controllers\TipoTramiteController;
 use App\Http\Controllers\TramiteController;
 use App\Http\Controllers\RolePermissionController;
+use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\CustomWorkflowController;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,7 +54,41 @@ Route::middleware('auth')->group(function () {
     
     // Gerencias Routes (Web Views)
     Route::resource('gerencias', GerenciaController::class);
-    
+    Route::patch('/gerencias/{gerencia}/toggle-status', [GerenciaController::class, 'toggleStatus'])->name('gerencias.toggle-status');
+    Route::get('/gerencias/{gerencia}/subgerencias', [GerenciaController::class, 'subgerencias'])->name('gerencias.subgerencias');
+
+    // Tipos de Trámite Routes (Web Views)
+    Route::resource('tipos-tramite', TipoTramiteController::class)->names([
+        'index' => 'tipos-tramite.index',
+        'create' => 'tipos-tramite.create',
+        'store' => 'tipos-tramite.store',
+        'show' => 'tipos-tramite.show',
+        'edit' => 'tipos-tramite.edit',
+        'update' => 'tipos-tramite.update',
+        'destroy' => 'tipos-tramite.destroy'
+    ]);
+    Route::patch('/tipos-tramite/{tipoTramite}/toggle-status', [TipoTramiteController::class, 'toggleStatus'])->name('tipos-tramite.toggle-status');
+    Route::get('/gerencias/{gerencia}/tipos-tramite', [TipoTramiteController::class, 'byGerencia'])->name('tipos-tramite.by-gerencia');
+
+    // Workflows Routes (Web Views)
+    Route::resource('workflows', \App\Http\Controllers\WorkflowController::class)->names([
+        'index' => 'workflows.index',
+        'create' => 'workflows.create',
+        'store' => 'workflows.store',
+        'show' => 'workflows.show',
+        'edit' => 'workflows.edit',
+        'update' => 'workflows.update',
+        'destroy' => 'workflows.destroy'
+    ]);
+
+    // Flujos Seleccionables Routes
+    Route::prefix('flujos')->name('flujos.')->group(function () {
+        Route::get('/crear', [\App\Http\Controllers\SelectableWorkflowController::class, 'create'])->name('create');
+        Route::post('/crear', [\App\Http\Controllers\SelectableWorkflowController::class, 'store'])->name('store');
+        Route::get('/api/gerencias', [\App\Http\Controllers\SelectableWorkflowController::class, 'getGerencias'])->name('api.gerencias');
+        Route::get('/api/gerencias/{gerencia}/usuarios', [\App\Http\Controllers\SelectableWorkflowController::class, 'getUsersByGerencia'])->name('api.usuarios');
+    });
+
     // Mesa de Partes Routes (Web Views)
     Route::prefix('mesa-partes')->name('mesa-partes.')->group(function () {
         Route::get('/', [WebController::class, 'mesaPartes'])->name('index');
@@ -83,9 +121,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings', [WebController::class, 'settings'])->name('settings');
     
     // Admin Routes
-    Route::middleware(['role:super_admin|admin'])->group(function () {
-        Route::get('/usuarios', [WebController::class, 'usuarios'])->name('usuarios.index');
-        Route::get('/roles', [WebController::class, 'roles'])->name('roles.index');
+    Route::middleware(['role:superadministrador|administrador'])->group(function () {
+        // Usuarios CRUD
+        Route::resource('usuarios', UsuarioController::class);
+        Route::patch('/usuarios/{usuario}/toggle-status', [UsuarioController::class, 'toggleStatus'])->name('usuarios.toggle-status');
+        
+        // Roles CRUD
+        Route::resource('roles', RoleController::class);
+        Route::post('/roles/{role}/assign-permissions', [RoleController::class, 'assignPermissions'])->name('roles.assign-permissions');
+        
         Route::get('/permisos', [WebController::class, 'permisos'])->name('permisos.index');
         Route::get('/configuracion', [WebController::class, 'configuracion'])->name('configuracion.index');
         

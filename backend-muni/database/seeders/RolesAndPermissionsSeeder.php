@@ -6,6 +6,8 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
@@ -16,19 +18,19 @@ class RolesAndPermissionsSeeder extends Seeder
     {
         // Crear permisos para el sistema de trámites municipales
         $permissions = [
-            // Permisos de expedientes
+            // Permisos de expedientes (siguiendo el patrón de las rutas API)
             'ver_expedientes',
-            'crear_expedientes',
-            'editar_expedientes',
-            'eliminar_expedientes',
+            'registrar_expediente',
+            'editar_expediente',
+            'eliminar_expediente',
             'derivar_expediente',
-            'aprobar_expediente',
+            'emitir_resolucion',
             'rechazar_expediente',
             'finalizar_expediente',
             'archivar_expediente',
             'subir_documento',
             'eliminar_documento',
-            'ver_expedientes_todos', // Para ver expedientes de todas las gerencias
+            'ver_todos_expedientes', // Para ver expedientes de todas las gerencias
             
             // Permisos de usuarios
             'gestionar_usuarios',
@@ -37,7 +39,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'eliminar_usuarios',
             'asignar_roles',
             'gestionar_permisos',
-            'ver_usuarios_todos',
+            'ver_todos_usuarios',
             
             // Permisos de gerencias
             'gestionar_gerencias',
@@ -52,6 +54,14 @@ class RolesAndPermissionsSeeder extends Seeder
             'editar_procedimientos',
             'eliminar_procedimientos',
             
+            // Permisos de tipos de trámite
+            'gestionar_tipos_tramite',
+            'crear_tipos_tramite',
+            'editar_tipos_tramite',
+            'eliminar_tipos_tramite',
+            'activar_tipos_tramite',
+            'ver_tipos_tramite',
+            
             // Permisos de reportes y estadísticas
             'ver_reportes',
             'exportar_datos',
@@ -61,7 +71,7 @@ class RolesAndPermissionsSeeder extends Seeder
             // Permisos de configuración
             'configurar_sistema',
             'gestionar_respaldos',
-            'ver_logs_sistema',
+            'ver_logs',
             
             // Permisos de notificaciones
             'enviar_notificaciones',
@@ -77,7 +87,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'responder_quejas',
             'escalar_quejas',
             
-            // Permisos de gestión de flujos de trabajo (para gerencias)
+            // Permisos de gestión de flujos de trabajo
             'crear_reglas_flujo',
             'editar_reglas_flujo',
             'eliminar_reglas_flujo',
@@ -105,29 +115,29 @@ class RolesAndPermissionsSeeder extends Seeder
 
         // Crear roles y asignar permisos
         
-        // ROL: Super Administrador
-        $superAdmin = Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
+        // ROL: Superadministrador
+        $superAdmin = Role::firstOrCreate(['name' => 'superadministrador', 'guard_name' => 'web']);
         $superAdmin->givePermissionTo(Permission::all()); // Todos los permisos
 
         // ROL: Administrador
-        $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        $admin = Role::firstOrCreate(['name' => 'administrador', 'guard_name' => 'web']);
         $admin->givePermissionTo([
             'ver_expedientes',
-            'crear_expedientes',
-            'editar_expedientes',
+            'registrar_expediente',
+            'editar_expediente',
             'derivar_expediente',
-            'aprobar_expediente',
+            'emitir_resolucion',
             'rechazar_expediente',
             'finalizar_expediente',
             'archivar_expediente',
             'subir_documento',
-            'ver_expedientes_todos',
+            'ver_todos_expedientes',
             'gestionar_usuarios',
             'crear_usuarios',
             'editar_usuarios',
             'asignar_roles',
             'gestionar_permisos',
-            'ver_usuarios_todos',
+            'ver_todos_usuarios',
             'gestionar_gerencias',
             'gestionar_procedimientos',
             'ver_reportes',
@@ -155,10 +165,10 @@ class RolesAndPermissionsSeeder extends Seeder
         $jefeGerencia = Role::firstOrCreate(['name' => 'jefe_gerencia', 'guard_name' => 'web']);
         $jefeGerencia->givePermissionTo([
             'ver_expedientes',
-            'crear_expedientes',
-            'editar_expedientes',
+            'registrar_expediente',
+            'editar_expediente',
             'derivar_expediente',
-            'aprobar_expediente',
+            'emitir_resolucion',
             'rechazar_expediente',
             'finalizar_expediente',
             'subir_documento',
@@ -194,8 +204,8 @@ class RolesAndPermissionsSeeder extends Seeder
         $funcionario = Role::firstOrCreate(['name' => 'funcionario', 'guard_name' => 'web']);
         $funcionario->givePermissionTo([
             'ver_expedientes',
-            'crear_expedientes',
-            'editar_expedientes',
+            'registrar_expediente',
+            'editar_expediente',
             'derivar_expediente',
             'subir_documento',
             'ver_reportes',
@@ -210,7 +220,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $funcionarioJunior = Role::firstOrCreate(['name' => 'funcionario_junior', 'guard_name' => 'web']);
         $funcionarioJunior->givePermissionTo([
             'ver_expedientes',
-            'editar_expedientes',
+            'editar_expediente',
             'subir_documento',
             'enviar_notificaciones',
             'ver_pagos',
@@ -220,7 +230,7 @@ class RolesAndPermissionsSeeder extends Seeder
         // ROL: Ciudadano
         $ciudadano = Role::firstOrCreate(['name' => 'ciudadano', 'guard_name' => 'web']);
         $ciudadano->givePermissionTo([
-            'crear_expedientes',
+            'registrar_expediente',
             'ver_expedientes', // Solo sus propios expedientes
             'subir_documento', // Solo a sus expedientes
             'ver_pagos', // Solo sus pagos
@@ -231,9 +241,9 @@ class RolesAndPermissionsSeeder extends Seeder
         $supervisor = Role::firstOrCreate(['name' => 'supervisor', 'guard_name' => 'web']);
         $supervisor->givePermissionTo([
             'ver_expedientes',
-            'editar_expedientes',
+            'editar_expediente',
             'derivar_expediente',
-            'aprobar_expediente',
+            'emitir_resolucion',
             'rechazar_expediente',
             'finalizar_expediente',
             'subir_documento',
@@ -249,8 +259,74 @@ class RolesAndPermissionsSeeder extends Seeder
             'ver_workflows'
         ]);
 
-        $this->command->info('Roles y permisos creados exitosamente');
-        $this->command->info('Roles creados: super_admin, admin, jefe_gerencia, funcionario, funcionario_junior, ciudadano, supervisor');
+        // ==========================================
+        // CREACIÓN DE USUARIOS DE PRUEBA
+        // ==========================================
+
+        // Crear usuario super administrador
+        $superAdminUser = User::firstOrCreate(
+            ['email' => 'superadmin@muni.gob.pe'],
+            [
+                'name' => 'Super Administrador',
+                'password' => Hash::make('password123'),
+                'gerencia_id' => 1, // Será asignado a la primera gerencia
+                'estado' => 'activo'
+            ]
+        );
+        $superAdminUser->assignRole('superadministrador');
+
+        // Crear usuario administrador
+        $adminUser = User::firstOrCreate(
+            ['email' => 'admin@muni.gob.pe'],
+            [
+                'name' => 'Administrador del Sistema',
+                'password' => Hash::make('password123'),
+                'gerencia_id' => 1,
+                'estado' => 'activo'
+            ]
+        );
+        $adminUser->assignRole('administrador');
+
+        // Crear jefe de gerencia
+        $jefeUser = User::firstOrCreate(
+            ['email' => 'jefe@muni.gob.pe'],
+            [
+                'name' => 'Jefe de Gerencia',
+                'password' => Hash::make('password123'),
+                'gerencia_id' => 2, // Segunda gerencia
+                'estado' => 'activo'
+            ]
+        );
+        $jefeUser->assignRole('jefe_gerencia');
+
+        // Crear funcionario
+        $funcionarioUser = User::firstOrCreate(
+            ['email' => 'funcionario@muni.gob.pe'],
+            [
+                'name' => 'Funcionario Municipal',
+                'password' => Hash::make('password123'),
+                'gerencia_id' => 2,
+                'estado' => 'activo'
+            ]
+        );
+        $funcionarioUser->assignRole('funcionario');
+
+        // Crear ciudadano de prueba
+        $ciudadanoUser = User::firstOrCreate(
+            ['email' => 'ciudadano@email.com'],
+            [
+                'name' => 'Ciudadano de Prueba',
+                'password' => Hash::make('password123'),
+                'gerencia_id' => null, // Los ciudadanos no tienen gerencia
+                'estado' => 'activo'
+            ]
+        );
+        $ciudadanoUser->assignRole('ciudadano');
+
+        $this->command->info('Roles y permisos creados exitosamente en español');
+        $this->command->info('Roles creados: superadministrador, administrador, jefe_gerencia, funcionario, funcionario_junior, ciudadano, supervisor');
         $this->command->info('Total de permisos: ' . count($permissions));
+        $this->command->info('Usuarios de prueba creados con sus roles asignados');
+        $this->command->info('Credenciales: password123 para todos los usuarios');
     }
 }

@@ -17,9 +17,9 @@ class DatabaseSeeder extends Seeder
 
         // Ejecutar seeders en orden específico debido a dependencias
         $this->call([
-            RolesAndPermissionsSeeder::class,  // Primero: roles y permisos
-            GerenciasSeeder::class,            // Segundo: gerencias
-            UsersSeeder::class,                // Tercero: usuarios
+            GerenciasSeeder::class,            // Primero: gerencias (necesario para usuarios)
+            RolesAndPermissionsSeeder::class,  // Segundo: roles y permisos del sistema (crea usuarios)
+            // UsersSeeder::class,                // Tercero: usuarios adicionales (desactivado para evitar duplicados)
             ProceduresSeeder::class,           // Cuarto: procedimientos TUPA (necesita gerencias)
             WorkflowRulesSeeder::class,        // Quinto: reglas de flujo (necesita gerencias y usuarios)
             // WorkflowStepsSeeder::class,        // Sexto: etapas de flujo por gerencia (tabla removida)
@@ -32,10 +32,10 @@ class DatabaseSeeder extends Seeder
         $this->command->info('✅ ¡Datos de prueba creados exitosamente!');
         $this->command->info('');
         $this->command->info('🎯 RESUMEN DE DATOS CREADOS:');
-        $this->command->info('📋 Roles: 7 (super_admin, admin, jefe_gerencia, funcionario, funcionario_junior, ciudadano, supervisor)');
-        $this->command->info('🔑 Permisos: 50+ permisos específicos del sistema (incluye gestión de flujos)');
+        $this->command->info('📋 Roles: 7 (superadministrador, administrador, jefe_gerencia, funcionario, funcionario_junior, ciudadano, supervisor)');
+        $this->command->info('🔑 Permisos: 59 permisos específicos del sistema en español (incluye gestión de flujos)');
         $this->command->info('🏢 Gerencias: 15 gerencias con estructura jerárquica');
-        $this->command->info('👥 Usuarios: 15+ usuarios con diferentes roles y asignaciones');
+        $this->command->info('👥 Usuarios: 5 usuarios de prueba con diferentes roles y asignaciones');
         $this->command->info('📋 Procedimientos TUPA: 11 procedimientos de diferentes gerencias');
         $this->command->info('🔄 Reglas de flujo: 12+ reglas automáticas para asignación de trámites');
         $this->command->info('⚙️ Etapas de flujo: Etapas secuenciales por gerencia configuradas');
@@ -43,9 +43,10 @@ class DatabaseSeeder extends Seeder
         $this->command->info('');
         $this->command->info('🔐 CREDENCIALES PRINCIPALES:');
         $this->command->info('Super Admin: superadmin@muni.gob.pe / password123');
-        $this->command->info('Alcalde: alcalde@muni.gob.pe / alcalde123');
-        $this->command->info('Gerente Municipal: gerente.municipal@muni.gob.pe / gerente123');
-        $this->command->info('Ciudadano Test: juan.ciudadano@gmail.com / ciudadano123');
+        $this->command->info('Administrador: admin@muni.gob.pe / password123');
+        $this->command->info('Jefe Gerencia: jefe@muni.gob.pe / password123');
+        $this->command->info('Funcionario: funcionario@muni.gob.pe / password123');
+        $this->command->info('Ciudadano: ciudadano@email.com / password123');
         $this->command->info('');
         $this->command->info('🧪 CASOS DE PRUEBA INCLUIDOS:');
         $this->command->info('✓ Usuarios con diferentes niveles de acceso');

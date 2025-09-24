@@ -30,6 +30,17 @@ class UsersSeeder extends Seeder
         $ambiente = Gerencia::where('codigo', 'SGMA')->first();
         $transportes = Gerencia::where('codigo', 'SGT')->first();
 
+        // Verificar que las gerencias principales existan
+        if (!$gerenciaMunicipal) {
+            $this->command->error('Gerencia Municipal no encontrada. Ejecute primero GerenciasSeeder.');
+            return;
+        }
+
+        $this->command->info("Gerencias encontradas para asignar usuarios:");
+        $this->command->info("- Alcaldía: " . ($alcaldia ? $alcaldia->nombre : 'No encontrada'));
+        $this->command->info("- Gerencia Municipal: " . ($gerenciaMunicipal ? $gerenciaMunicipal->nombre : 'No encontrada'));
+        $this->command->info("- Desarrollo Urbano: " . ($desarrolloUrbano ? $desarrolloUrbano->nombre : 'No encontrada'));
+
         // Usuarios del sistema
         $users = [
             // Super Administrador
@@ -38,7 +49,7 @@ class UsersSeeder extends Seeder
                 'email' => 'superadmin@muni.gob.pe',
                 'password' => Hash::make('password123'),
                 'gerencia_id' => $gerenciaMunicipal->id,
-                'role' => 'super_admin'
+                'role' => 'superadministrador'
             ],
             
             // Alcalde
@@ -47,7 +58,7 @@ class UsersSeeder extends Seeder
                 'email' => 'alcalde@muni.gob.pe',
                 'password' => Hash::make('alcalde123'),
                 'gerencia_id' => $alcaldia->id,
-                'role' => 'admin'
+                'role' => 'administrador'
             ],
             
             // Gerente Municipal
@@ -56,7 +67,7 @@ class UsersSeeder extends Seeder
                 'email' => 'gerente.municipal@muni.gob.pe',
                 'password' => Hash::make('gerente123'),
                 'gerencia_id' => $gerenciaMunicipal->id,
-                'role' => 'admin'
+                'role' => 'administrador'
             ],
             
             // Jefe de Desarrollo Urbano
@@ -161,17 +172,23 @@ class UsersSeeder extends Seeder
                 'password' => Hash::make('ciudadana456'),
                 'gerencia_id' => null,
                 'role' => 'ciudadano'
-            ],
+            ]
         ];
 
         foreach ($users as $userData) {
             $role = $userData['role'];
             unset($userData['role']);
 
-            $user = User::create($userData);
+            // Usar firstOrCreate para evitar duplicados
+            $user = User::firstOrCreate(
+                ['email' => $userData['email']], // Buscar por email
+                $userData // Datos para crear si no existe
+            );
             
-            // Asignar rol al usuario
-            $user->assignRole($role);
+            // Asignar rol al usuario si no lo tiene
+            if (!$user->hasAnyRole($role)) {
+                $user->assignRole($role);
+            }
         }
 
         $this->command->info('Usuarios creados exitosamente');

@@ -17,6 +17,8 @@ class Gerencia extends Model
         'descripcion',
         'tipo', // 'gerencia' o 'subgerencia'
         'gerencia_padre_id', // null para gerencias principales, ID para subgerencias
+        'responsable_id', // Usuario responsable de la gerencia
+        'cargo_responsable', // Cargo del responsable (Alcalde, Gerente, etc.)
         'activo',
         'orden',
         'flujos_permitidos', // JSON con tipos de trámite que puede procesar
@@ -55,6 +57,11 @@ class Gerencia extends Model
         return $this->belongsTo(Gerencia::class, 'gerencia_padre_id');
     }
 
+    public function responsable(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'responsable_id');
+    }
+
     public function subgerencias(): HasMany
     {
         return $this->hasMany(Gerencia::class, 'gerencia_padre_id');
@@ -62,12 +69,27 @@ class Gerencia extends Model
 
     public function users(): HasMany
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(User::class, 'gerencia_id');
+    }
+
+    public function usuarios(): HasMany
+    {
+        return $this->hasMany(User::class, 'gerencia_id');
     }
 
     public function expedientes(): HasMany
     {
         return $this->hasMany(Expediente::class);
+    }
+
+    public function tipoTramites(): HasMany
+    {
+        return $this->hasMany(TipoTramite::class, 'gerencia_id');
+    }
+
+    public function customWorkflows(): HasMany
+    {
+        return $this->hasMany(CustomWorkflow::class, 'gerencia_id');
     }
 
     public function workflowSteps(): HasMany

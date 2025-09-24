@@ -2,160 +2,262 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Gerencia;
 
 class GerenciasSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Gerencias principales
-        $alcaldia = Gerencia::create([
-            'nombre' => 'Alcaldía',
-            'codigo' => 'ALC',
-            'descripcion' => 'Despacho de Alcaldía - Máxima autoridad municipal',
-            'tipo' => 'gerencia',
-            'gerencia_padre_id' => null,
-            'activo' => true,
-            'orden' => 1,
-        ]);
-
-        $gerenciaMunicipal = Gerencia::create([
-            'nombre' => 'Gerencia Municipal',
-            'codigo' => 'GM',
-            'descripcion' => 'Gerencia Municipal - Administración general',
-            'tipo' => 'gerencia',
-            'gerencia_padre_id' => $alcaldia->id,
-            'activo' => true,
-            'orden' => 2,
-        ]);
-
-        // Sub-gerencias
-        $gerencias = [
+        // Crear gerencias principales con códigos simples
+        $gerenciasEstructura = [
+            // ALCALDÍA
             [
-                'nombre' => 'Sub Gerencia de Servicios Públicos',
-                'codigo' => 'SGSP',
-                'descripcion' => 'Gestión de servicios públicos municipales',
-                'tipo' => 'subgerencia',
-                'gerencia_padre_id' => $gerenciaMunicipal->id,
-                'orden' => 1,
+                'nombre' => 'Alcaldía',
+                'descripcion' => 'Despacho de Alcaldía',
+                'codigo' => 'ALC',
+                'tipo' => 'gerencia',
+                'activo' => true,
+                'subgerencias' => []
             ],
+            
+            // GERENCIA MUNICIPAL
+            [
+                'nombre' => 'Gerencia Municipal',
+                'descripcion' => 'Gerencia Municipal General',
+                'codigo' => 'GM',
+                'tipo' => 'gerencia',
+                'activo' => true,
+                'subgerencias' => []
+            ],
+            
+            // DESARROLLO URBANO
             [
                 'nombre' => 'Sub Gerencia de Desarrollo Urbano',
+                'descripcion' => 'Desarrollo urbano y obras',
                 'codigo' => 'SGDU',
-                'descripcion' => 'Planificación y desarrollo urbano',
-                'tipo' => 'subgerencia',
-                'gerencia_padre_id' => $gerenciaMunicipal->id,
-                'orden' => 2,
+                'tipo' => 'gerencia',
+                'activo' => true,
+                'subgerencias' => [
+                    [
+                        'nombre' => 'Área de Obras Privadas',
+                        'descripcion' => 'Licencias de edificación',
+                        'codigo' => 'AOP'
+                    ],
+                    [
+                        'nombre' => 'Área de Catastro',
+                        'descripcion' => 'Catastro urbano',
+                        'codigo' => 'ACAT'
+                    ]
+                ]
             ],
+            
+            // LICENCIAS Y AUTORIZACIONES
             [
                 'nombre' => 'Sub Gerencia de Licencias y Autorizaciones',
+                'descripcion' => 'Licencias de funcionamiento',
                 'codigo' => 'SGLA',
-                'descripcion' => 'Otorgamiento de licencias y autorizaciones',
-                'tipo' => 'subgerencia',
-                'gerencia_padre_id' => $gerenciaMunicipal->id,
-                'orden' => 3,
+                'tipo' => 'gerencia',
+                'activo' => true,
+                'subgerencias' => [
+                    [
+                        'nombre' => 'Área de Comercio',
+                        'descripcion' => 'Licencias comerciales',
+                        'codigo' => 'ACOM'
+                    ],
+                    [
+                        'nombre' => 'Área de Espectáculos',
+                        'descripcion' => 'Autorizaciones de eventos',
+                        'codigo' => 'AESP'
+                    ]
+                ]
             ],
+            
+            // SERVICIOS PÚBLICOS
+            [
+                'nombre' => 'Sub Gerencia de Servicios Públicos',
+                'descripcion' => 'Servicios públicos locales',
+                'codigo' => 'SGSP',
+                'tipo' => 'gerencia',
+                'activo' => true,
+                'subgerencias' => [
+                    [
+                        'nombre' => 'Área de Limpieza Pública',
+                        'descripcion' => 'Gestión de residuos',
+                        'codigo' => 'ALP'
+                    ],
+                    [
+                        'nombre' => 'Área de Parques y Jardines',
+                        'descripcion' => 'Mantenimiento de áreas verdes',
+                        'codigo' => 'APJ'
+                    ]
+                ]
+            ],
+            
+            // FISCALIZACIÓN
             [
                 'nombre' => 'Sub Gerencia de Fiscalización',
+                'descripcion' => 'Fiscalización municipal',
                 'codigo' => 'SGF',
-                'descripcion' => 'Fiscalización y control municipal',
-                'tipo' => 'subgerencia',
-                'gerencia_padre_id' => $gerenciaMunicipal->id,
-                'orden' => 4,
+                'tipo' => 'gerencia',
+                'activo' => true,
+                'subgerencias' => [
+                    [
+                        'nombre' => 'Área de Control Urbano',
+                        'descripcion' => 'Control de construcciones',
+                        'codigo' => 'ACU'
+                    ]
+                ]
             ],
+            
+            // ADMINISTRACIÓN TRIBUTARIA
             [
                 'nombre' => 'Sub Gerencia de Rentas',
+                'descripcion' => 'Administración tributaria',
                 'codigo' => 'SGR',
-                'descripcion' => 'Gestión de ingresos municipales',
-                'tipo' => 'subgerencia',
-                'gerencia_padre_id' => $gerenciaMunicipal->id,
-                'orden' => 5,
+                'tipo' => 'gerencia',
+                'activo' => true,
+                'subgerencias' => [
+                    [
+                        'nombre' => 'Área de Recaudación',
+                        'descripcion' => 'Cobranza de tributos',
+                        'codigo' => 'AREC'
+                    ],
+                    [
+                        'nombre' => 'Área de Fiscalización Tributaria',
+                        'descripcion' => 'Fiscalización de tributos',
+                        'codigo' => 'AFT'
+                    ]
+                ]
             ],
+            
+            // REGISTRO CIVIL
             [
                 'nombre' => 'Sub Gerencia de Registro Civil',
+                'descripcion' => 'Registro civil y RENIEC',
                 'codigo' => 'SGRC',
-                'descripcion' => 'Servicios de registro civil',
-                'tipo' => 'subgerencia',
-                'gerencia_padre_id' => $gerenciaMunicipal->id,
-                'orden' => 6,
+                'tipo' => 'gerencia',
+                'activo' => true,
+                'subgerencias' => [
+                    [
+                        'nombre' => 'Área de Nacimientos',
+                        'descripcion' => 'Inscripción de nacimientos',
+                        'codigo' => 'ANAC'
+                    ],
+                    [
+                        'nombre' => 'Área de Defunciones',
+                        'descripcion' => 'Inscripción de defunciones',
+                        'codigo' => 'ADEF'
+                    ],
+                    [
+                        'nombre' => 'Área de Matrimonios',
+                        'descripcion' => 'Inscripción de matrimonios',
+                        'codigo' => 'AMAT'
+                    ]
+                ]
             ],
+            
+            // PARTICIPACIÓN CIUDADANA
             [
                 'nombre' => 'Sub Gerencia de Participación Ciudadana',
+                'descripcion' => 'Participación vecinal',
                 'codigo' => 'SGPC',
-                'descripcion' => 'Promoción de la participación ciudadana',
-                'tipo' => 'subgerencia',
-                'gerencia_padre_id' => $gerenciaMunicipal->id,
-                'orden' => 7,
+                'tipo' => 'gerencia',
+                'activo' => true,
+                'subgerencias' => []
             ],
+            
+            // SEGURIDAD CIUDADANA
             [
                 'nombre' => 'Sub Gerencia de Seguridad Ciudadana',
+                'descripcion' => 'Seguridad y serenazgo',
                 'codigo' => 'SGSC',
-                'descripcion' => 'Seguridad y orden público',
-                'tipo' => 'subgerencia',
-                'gerencia_padre_id' => $gerenciaMunicipal->id,
-                'orden' => 8,
+                'tipo' => 'gerencia',
+                'activo' => true,
+                'subgerencias' => [
+                    [
+                        'nombre' => 'Área de Serenazgo',
+                        'descripcion' => 'Patrullaje y vigilancia',
+                        'codigo' => 'ASER'
+                    ],
+                    [
+                        'nombre' => 'Área de Defensa Civil',
+                        'descripcion' => 'Prevención de desastres',
+                        'codigo' => 'ADC'
+                    ]
+                ]
             ],
+            
+            // MEDIO AMBIENTE
             [
                 'nombre' => 'Sub Gerencia de Medio Ambiente',
+                'descripcion' => 'Gestión ambiental',
                 'codigo' => 'SGMA',
-                'descripcion' => 'Gestión ambiental municipal',
-                'tipo' => 'subgerencia',
-                'gerencia_padre_id' => $gerenciaMunicipal->id,
-                'orden' => 9,
+                'tipo' => 'gerencia',
+                'activo' => true,
+                'subgerencias' => [
+                    [
+                        'nombre' => 'Área de Ecología',
+                        'descripcion' => 'Conservación ambiental',
+                        'codigo' => 'AECO'
+                    ]
+                ]
             ],
+            
+            // TRANSPORTES Y TRÁNSITO
             [
                 'nombre' => 'Sub Gerencia de Transportes',
+                'descripcion' => 'Transporte y tránsito',
                 'codigo' => 'SGT',
-                'descripcion' => 'Gestión del transporte urbano',
-                'tipo' => 'subgerencia',
-                'gerencia_padre_id' => $gerenciaMunicipal->id,
-                'orden' => 10,
-            ],
-            [
-                'nombre' => 'Sub Gerencia de Defensa Civil',
-                'codigo' => 'SGDC',
-                'descripcion' => 'Gestión de riesgos y emergencias',
-                'tipo' => 'subgerencia',
-                'gerencia_padre_id' => $gerenciaMunicipal->id,
-                'orden' => 11,
-            ],
-            [
-                'nombre' => 'Sub Gerencia de Tecnologías de la Información',
-                'codigo' => 'SGTI',
-                'descripcion' => 'Gestión tecnológica municipal',
-                'tipo' => 'subgerencia',
-                'gerencia_padre_id' => $gerenciaMunicipal->id,
-                'orden' => 12,
-            ],
-            [
-                'nombre' => 'Sub Gerencia de Recursos Humanos',
-                'codigo' => 'SGRH',
-                'descripcion' => 'Gestión del talento humano',
-                'tipo' => 'subgerencia',
-                'gerencia_padre_id' => $gerenciaMunicipal->id,
-                'orden' => 13,
+                'tipo' => 'gerencia',
+                'activo' => true,
+                'subgerencias' => [
+                    [
+                        'nombre' => 'Área de Control de Tránsito',
+                        'descripcion' => 'Control vehicular',
+                        'codigo' => 'ACT'
+                    ]
+                ]
             ],
         ];
 
-        foreach ($gerencias as $gerenciaData) {
-            Gerencia::create([
-                'nombre' => $gerenciaData['nombre'],
-                'codigo' => $gerenciaData['codigo'],
-                'descripcion' => $gerenciaData['descripcion'],
-                'tipo' => $gerenciaData['tipo'],
-                'gerencia_padre_id' => $gerenciaData['gerencia_padre_id'],
-                'activo' => true,
-                'orden' => $gerenciaData['orden'],
-            ]);
+        // Crear gerencias principales y subgerencias
+        foreach ($gerenciasEstructura as $gerenciaData) {
+            // Crear gerencia principal
+            $gerencia = Gerencia::firstOrCreate(
+                ['codigo' => $gerenciaData['codigo']],
+                [
+                    'nombre' => $gerenciaData['nombre'],
+                    'descripcion' => $gerenciaData['descripcion'],
+                    'tipo' => $gerenciaData['tipo'],
+                    'activo' => $gerenciaData['activo'],
+                    'gerencia_padre_id' => null
+                ]
+            );
+
+            // Crear subgerencias si existen
+            if (isset($gerenciaData['subgerencias']) && !empty($gerenciaData['subgerencias'])) {
+                foreach ($gerenciaData['subgerencias'] as $subData) {
+                    Gerencia::firstOrCreate(
+                        ['codigo' => $subData['codigo']],
+                        [
+                            'nombre' => $subData['nombre'],
+                            'descripcion' => $subData['descripcion'],
+                            'tipo' => 'subgerencia',
+                            'activo' => true,
+                            'gerencia_padre_id' => $gerencia->id
+                        ]
+                    );
+                }
+            }
         }
 
-        $this->command->info('Gerencias creadas exitosamente');
-        $this->command->info('Total de gerencias: ' . Gerencia::count());
-        $this->command->info('Estructura jerárquica establecida');
+        $gerenciasPrincipales = Gerencia::whereNull('gerencia_padre_id')->count();
+        $subgerencias = Gerencia::whereNotNull('gerencia_padre_id')->count();
+        
+        $this->command->info("Gerencias creadas exitosamente:");
+        $this->command->info("- {$gerenciasPrincipales} gerencias principales");
+        $this->command->info("- {$subgerencias} subgerencias");
+        $this->command->info("- Total: " . Gerencia::count() . " gerencias");
     }
 }

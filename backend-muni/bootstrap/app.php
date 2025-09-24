@@ -25,5 +25,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Manejar errores CSRF con redirección
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            if ($e->getStatusCode() === 419) {
+                return redirect()->back()->with('error', 'Su sesión ha expirado. Por favor, intente nuevamente.');
+            }
+        });
     })->create();

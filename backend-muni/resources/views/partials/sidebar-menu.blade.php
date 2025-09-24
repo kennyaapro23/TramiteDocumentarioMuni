@@ -86,12 +86,36 @@
 </div>
 
 <!-- Trámites -->
-<a href="{{ route('tramites.index') }}" 
-   class="@if(str_contains($currentRoute, 'tramites')) bg-municipal-100 text-municipal-700 border-r-4 border-municipal-600 @else text-gray-700 hover:bg-municipal-50 hover:text-municipal-700 @endif group flex items-center {{ $mobilePadding }} {{ $mobileClass }} rounded-md transition duration-200">
-    <svg class="@if(str_contains($currentRoute, 'tramites')) text-municipal-500 @else text-gray-400 group-hover:text-municipal-500 @endif mr-3 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+<div x-data="{ open: {{ str_contains($currentRoute, 'tipos-tramite') || str_contains($currentRoute, 'tramites') ? 'true' : 'false' }} }">
+    <button @click="open = !open" 
+            class="@if(str_contains($currentRoute, 'tipos-tramite') || str_contains($currentRoute, 'tramites')) text-municipal-700 @else text-gray-700 hover:text-municipal-700 @endif group flex items-center w-full {{ $mobilePadding }} {{ $mobileClass }} rounded-md transition duration-200">
+        <svg class="@if(str_contains($currentRoute, 'tipos-tramite') || str_contains($currentRoute, 'tramites')) text-municipal-500 @else text-gray-400 group-hover:text-municipal-500 @endif mr-3 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+        </svg>
+        Gestión de Trámites
+        <svg class="ml-auto h-4 w-4 transform transition-transform duration-200" :class="{ 'rotate-90': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+    </button>
+    <div x-show="open" x-transition class="ml-6 mt-1 space-y-1">
+        <a href="{{ route('tipos-tramite.index') }}" 
+           class="@if(str_contains($currentRoute, 'tipos-tramite')) text-municipal-600 bg-municipal-50 @else text-gray-600 hover:text-municipal-600 @endif group flex items-center py-2 px-2 text-sm rounded-md">
+            Tipos de Trámites
+        </a>
+        <a href="{{ route('tramites.index') }}" 
+           class="@if($currentRoute == 'tramites.index') text-municipal-600 bg-municipal-50 @else text-gray-600 hover:text-municipal-600 @endif group flex items-center py-2 px-2 text-sm rounded-md">
+            Procesos de Trámites
+        </a>
+    </div>
+</div>
+
+<!-- Workflows -->
+<a href="{{ route('workflows.index') }}" 
+   class="@if(str_contains($currentRoute, 'workflows')) bg-municipal-100 text-municipal-700 border-r-4 border-municipal-600 @else text-gray-700 hover:bg-municipal-50 hover:text-municipal-700 @endif group flex items-center {{ $mobilePadding }} {{ $mobileClass }} rounded-md transition duration-200">
+    <svg class="@if(str_contains($currentRoute, 'workflows')) text-municipal-500 @else text-gray-400 group-hover:text-municipal-500 @endif mr-3 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
     </svg>
-    Tipos de Trámites
+    Flujos de Trabajo
 </a>
 
 <!-- Gerencias -->

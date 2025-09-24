@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Test Eliminación Gerencia</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Test Eliminación de Gerencia</h1>
+    
+    <div id="result"></div>
+    
+    <button id="test-delete" data-gerencia-id="15">
+        Eliminar Gerencia ID 15 (Sub Gerencia de Recursos Humanos)
+    </button>
+    
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+        
+        $('#test-delete').on('click', function() {
+            const gerenciaId = $(this).data('gerencia-id');
+            
+            if (confirm('¿Estás seguro de que deseas eliminar esta gerencia?')) {
+                $.ajax({
+                    url: `/gerencias/${gerenciaId}`,
+                    type: 'DELETE',
+                    success: function(response) {
+                        $('#result').html(`
+                            <div style="color: green; padding: 10px; border: 1px solid green; margin: 10px 0;">
+                                <strong>¡Éxito!</strong><br>
+                                ${JSON.stringify(response, null, 2)}
+                            </div>
+                        `);
+                    },
+                    error: function(xhr, status, error) {
+                        $('#result').html(`
+                            <div style="color: red; padding: 10px; border: 1px solid red; margin: 10px 0;">
+                                <strong>Error:</strong><br>
+                                Status: ${xhr.status}<br>
+                                Response: ${xhr.responseText}<br>
+                                Error: ${error}
+                            </div>
+                        `);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
