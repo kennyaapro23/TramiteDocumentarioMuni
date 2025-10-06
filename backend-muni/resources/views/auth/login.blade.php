@@ -17,7 +17,7 @@
         </div>
 
         <!-- Login Form -->
-        <form class="mt-8 space-y-6" method="POST" action="{{ route('login') }}" x-data="loginForm()">
+        <form class="mt-8 space-y-6" method="POST" action="{{ route('login.post') }}" x-data="loginForm()">
             @csrf
             
             <!-- Alerts -->
@@ -151,9 +151,13 @@
                     </svg>
                     <div class="ml-3">
                         <h3 class="text-sm font-medium text-blue-800">Credenciales de prueba</h3>
-                        <div class="mt-2 text-sm text-blue-700">
-                            <p><strong>Email:</strong> admin@municipalidad.com</p>
-                            <p><strong>Contraseña:</strong> admin123</p>
+                        <div class="mt-2 text-xs text-blue-700 space-y-1">
+                            <p><strong>Super Admin:</strong> superadmin@muni.gob.pe / password123</p>
+                            <p><strong>Alcalde:</strong> alcalde@muni.gob.pe / alcalde123</p>
+                            <p><strong>Gerente:</strong> gerente.municipal@muni.gob.pe / gerente123</p>
+                            <p><strong>Jefe Urbano:</strong> jefe.urbano@muni.gob.pe / urbano123</p>
+                            <p><strong>Funcionario:</strong> ana.licencias@muni.gob.pe / licencias123</p>
+                            <p><strong>ciudadano:</strong> juan.ciudadano@gmail.com / ciudadano123</p>
                         </div>
                     </div>
                 </div>

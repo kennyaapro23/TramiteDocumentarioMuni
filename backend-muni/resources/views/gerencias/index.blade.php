@@ -126,11 +126,141 @@
         </div>
         @endif
 
+        <!-- Filtros de Búsqueda -->
+        <div class="bg-white shadow rounded-lg mb-6 p-6">
+            <form method="GET" action="{{ route('gerencias.index') }}" class="space-y-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                        </svg>
+                        Filtros de Búsqueda
+                    </h3>
+                    @if(request()->hasAny(['search', 'tipo', 'estado', 'gerencia_padre']))
+                        <a href="{{ route('gerencias.index') }}" 
+                           class="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Limpiar Filtros
+                        </a>
+                    @endif
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Búsqueda por nombre o código -->
+                    <div>
+                        <label for="search" class="block text-sm font-medium text-gray-700 mb-1">
+                            Buscar
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+                            <input type="text" 
+                                   name="search" 
+                                   id="search" 
+                                   value="{{ request('search') }}"
+                                   class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
+                                   placeholder="Nombre o código...">
+                        </div>
+                    </div>
+
+                    <!-- Filtro por tipo -->
+                    <div>
+                        <label for="tipo" class="block text-sm font-medium text-gray-700 mb-1">
+                            Tipo
+                        </label>
+                        <select name="tipo" 
+                                id="tipo" 
+                                class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                            <option value="">Todos</option>
+                            <option value="gerencia" {{ request('tipo') === 'gerencia' ? 'selected' : '' }}>
+                                Gerencias
+                            </option>
+                            <option value="subgerencia" {{ request('tipo') === 'subgerencia' ? 'selected' : '' }}>
+                                Subgerencias
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Filtro por estado -->
+                    <div>
+                        <label for="estado" class="block text-sm font-medium text-gray-700 mb-1">
+                            Estado
+                        </label>
+                        <select name="estado" 
+                                id="estado" 
+                                class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                            <option value="">Todos</option>
+                            <option value="1" {{ request('estado') === '1' ? 'selected' : '' }}>
+                                Activas
+                            </option>
+                            <option value="0" {{ request('estado') === '0' ? 'selected' : '' }}>
+                                Inactivas
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Filtro por gerencia padre (solo para subgerencias) -->
+                    <div>
+                        <label for="gerencia_padre" class="block text-sm font-medium text-gray-700 mb-1">
+                            Gerencia Padre
+                        </label>
+                        <select name="gerencia_padre" 
+                                id="gerencia_padre" 
+                                class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                            <option value="">Todas las gerencias</option>
+                            @foreach(\App\Models\Gerencia::where('tipo', 'gerencia')->where('activo', true)->orderBy('nombre')->get() as $gp)
+                                <option value="{{ $gp->id }}" {{ request('gerencia_padre') == $gp->id ? 'selected' : '' }}>
+                                    {{ $gp->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="flex items-center space-x-3 pt-2">
+                    <button type="submit" 
+                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        Buscar
+                    </button>
+                    
+                    @if(request()->hasAny(['search', 'tipo', 'estado', 'gerencia_padre']))
+                        <span class="text-sm text-gray-600">
+                            Mostrando resultados filtrados
+                        </span>
+                    @endif
+                </div>
+            </form>
+        </div>
+
         <!-- Tabla de Gerencias -->
         <div class="bg-white shadow overflow-hidden sm:rounded-md">
             <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">Lista de Gerencias</h3>
-                <p class="mt-1 max-w-2xl text-sm text-gray-500">Gerencias principales y subgerencias del sistema</p>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg leading-6 font-medium text-gray-900">Lista de Gerencias</h3>
+                        <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                            @if(request()->hasAny(['search', 'tipo', 'estado', 'gerencia_padre']))
+                                Mostrando {{ $gerencias->total() }} resultado(s) de {{ $gerencias->total() }} filtrado(s)
+                            @else
+                                Gerencias principales y subgerencias del sistema ({{ $gerencias->total() }} total)
+                            @endif
+                        </p>
+                    </div>
+                    @if($gerencias->total() > 0)
+                        <div class="text-sm text-gray-500">
+                            Página {{ $gerencias->currentPage() }} de {{ $gerencias->lastPage() }}
+                        </div>
+                    @endif
+                </div>
             </div>
 
             @if($gerencias->count() > 0)

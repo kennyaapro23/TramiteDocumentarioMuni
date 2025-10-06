@@ -116,7 +116,7 @@
         <!-- Filters -->
         <div class="bg-white shadow rounded-lg mb-6">
             <div class="px-4 py-5 sm:p-6">
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
                     <!-- Búsqueda -->
                     <div>
                         <label for="permission-search" class="block text-sm font-medium text-gray-700">Buscar Permiso</label>
@@ -129,30 +129,51 @@
                             <input type="text" 
                                    id="permission-search" 
                                    class="focus:ring-municipal-500 focus:border-municipal-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md" 
-                                   placeholder="Buscar por nombre o descripción...">
+                                   placeholder="Buscar por nombre..."
+                                   onkeyup="filterPermissions()">
                         </div>
                     </div>
 
                     <!-- Filtro por Módulo -->
                     <div>
                         <label for="module-filter" class="block text-sm font-medium text-gray-700">Módulo</label>
-                        <select id="module-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-municipal-500 focus:border-municipal-500 sm:text-sm rounded-md">
+                        <select id="module-filter" 
+                                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-municipal-500 focus:border-municipal-500 sm:text-sm rounded-md"
+                                onchange="filterPermissions()">
                             <option value="">Todos los módulos</option>
                             @foreach($permisosPorModulo as $modulo => $permisos)
-                                <option value="{{ $modulo }}">{{ ucfirst($modulo) }} ({{ $permisos->count() }})</option>
+                                <option value="{{ $modulo }}">{{ ucfirst(str_replace('_', ' ', $modulo)) }} ({{ $permisos->count() }})</option>
                             @endforeach
                         </select>
                     </div>
 
-                    <!-- Filtro por Estado -->
+                    <!-- Filtro por Tipo -->
                     <div>
-                        <label for="status-filter" class="block text-sm font-medium text-gray-700">Estado</label>
-                        <select id="status-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-municipal-500 focus:border-municipal-500 sm:text-sm rounded-md">
-                            <option value="">Todos los estados</option>
-                            <option value="active">Activo</option>
-                            <option value="inactive">Inactivo</option>
-                            <option value="deprecated">Deprecado</option>
+                        <label for="type-filter" class="block text-sm font-medium text-gray-700">Tipo</label>
+                        <select id="type-filter" 
+                                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-municipal-500 focus:border-municipal-500 sm:text-sm rounded-md"
+                                onchange="filterPermissions()">
+                            <option value="">Todos los tipos</option>
+                            <option value="ver">Ver / Consultar</option>
+                            <option value="crear">Crear / Registrar</option>
+                            <option value="editar">Editar / Modificar</option>
+                            <option value="eliminar">Eliminar</option>
+                            <option value="gestionar">Gestionar / Administrar</option>
+                            <option value="asignar">Asignar</option>
+                            <option value="exportar">Exportar</option>
                         </select>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="flex items-end space-x-2">
+                        <button type="button" 
+                                onclick="clearFilters()"
+                                class="flex-1 inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-municipal-500">
+                            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Limpiar
+                        </button>
                     </div>
                 </div>
             </div>
@@ -310,6 +331,106 @@ function toggleModule(moduleName) {
     }
 }
 
+function filterPermissions() {
+    const searchText = document.getElementById('permission-search').value.toLowerCase();
+    const moduleFilter = document.getElementById('module-filter').value.toLowerCase();
+    const typeFilter = document.getElementById('type-filter').value.toLowerCase();
+    
+    let visibleCount = 0;
+    let totalCount = 0;
+    
+    // Iterar por cada módulo
+    document.querySelectorAll('[id$="-permissions"]').forEach(moduleContainer => {
+        const moduleName = moduleContainer.id.replace('-permissions', '');
+        let moduleHasVisibleItems = false;
+        
+        // Filtrar permisos dentro del módulo
+        moduleContainer.querySelectorAll('[class*="hover:bg-gray-50"]').forEach(permissionRow => {
+            totalCount++;
+            const permissionName = permissionRow.querySelector('.text-sm.font-medium').textContent.toLowerCase();
+            
+            let visible = true;
+            
+            // Filtro de búsqueda
+            if (searchText && !permissionName.includes(searchText)) {
+                visible = false;
+            }
+            
+            // Filtro de módulo
+            if (moduleFilter && moduleName !== moduleFilter) {
+                visible = false;
+            }
+            
+            // Filtro de tipo
+            if (typeFilter) {
+                const hasType = permissionName.includes(typeFilter);
+                if (!hasType) {
+                    visible = false;
+                }
+            }
+            
+            if (visible) {
+                permissionRow.style.display = '';
+                moduleHasVisibleItems = true;
+                visibleCount++;
+            } else {
+                permissionRow.style.display = 'none';
+            }
+        });
+        
+        // Mostrar/ocultar módulo completo
+        const moduleCard = moduleContainer.closest('.bg-white.shadow');
+        if (moduleHasVisibleItems) {
+            moduleCard.style.display = '';
+            // Auto-expandir el módulo si hay filtros activos
+            if (searchText || typeFilter) {
+                moduleContainer.classList.remove('hidden');
+                const chevron = document.getElementById(moduleName + '-chevron');
+                if (chevron) {
+                    chevron.classList.add('rotate-180');
+                }
+            }
+        } else {
+            moduleCard.style.display = 'none';
+        }
+    });
+    
+    // Actualizar contador de resultados
+    updateResultsCounter(visibleCount, totalCount);
+}
+
+function clearFilters() {
+    document.getElementById('permission-search').value = '';
+    document.getElementById('module-filter').value = '';
+    document.getElementById('type-filter').value = '';
+    filterPermissions();
+}
+
+function updateResultsCounter(visible, total) {
+    // Buscar o crear el contador
+    let counter = document.getElementById('results-counter');
+    if (!counter) {
+        counter = document.createElement('div');
+        counter.id = 'results-counter';
+        counter.className = 'bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 mb-4 text-sm text-blue-800';
+        
+        const container = document.querySelector('.space-y-6');
+        container.parentNode.insertBefore(counter, container);
+    }
+    
+    if (visible === total) {
+        counter.style.display = 'none';
+    } else {
+        counter.style.display = 'block';
+        counter.innerHTML = `
+            <svg class="inline-block h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Mostrando <strong>${visible}</strong> de <strong>${total}</strong> permisos
+        `;
+    }
+}
+
 // Event listeners para actualizar vista previa del nombre
 document.addEventListener('DOMContentLoaded', function() {
     const moduleSelect = document.getElementById('permission-module');
@@ -319,6 +440,9 @@ document.addEventListener('DOMContentLoaded', function() {
         moduleSelect.addEventListener('change', updatePermissionPreview);
         actionSelect.addEventListener('change', updatePermissionPreview);
     }
+    
+    // Inicializar contador de resultados
+    filterPermissions();
 });
 </script>
 @endpush

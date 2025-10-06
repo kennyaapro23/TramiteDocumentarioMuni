@@ -10,6 +10,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Gerencia extends Model
 {
     use HasFactory;
+    // Explicit table name to avoid incorrect pluralization (Doctrine inflector may
+    // produce unexpected results for Spanish nouns). The migration creates
+    // the `gerencias` table.
+    protected $table = 'gerencias';
 
     protected $fillable = [
         'nombre',
@@ -87,9 +91,9 @@ class Gerencia extends Model
         return $this->hasMany(TipoTramite::class, 'gerencia_id');
     }
 
-    public function customWorkflows(): HasMany
+    public function workflows(): HasMany
     {
-        return $this->hasMany(CustomWorkflow::class, 'gerencia_id');
+        return $this->hasMany(Workflow::class, 'gerencia_id');
     }
 
     public function workflowSteps(): HasMany
@@ -135,6 +139,18 @@ class Gerencia extends Model
     public function scopeActivas($query)
     {
         return $query->where('activo', true);
+    }
+
+    /**
+     * Use a custom Eloquent builder to transparently fix legacy/cached queries
+     * that reference the wrong column name `activa`.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \App\Models\Builders\GerenciaBuilder
+     */
+    public function newEloquentBuilder($query)
+    {
+        return new \App\Models\Builders\GerenciaBuilder($query);
     }
 
     public function scopeGerencias($query)

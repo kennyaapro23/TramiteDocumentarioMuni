@@ -311,7 +311,7 @@
                                 {{-- Acciones para Administradores --}}
                                 @role('superadministrador|administrador')
                                     @can('gestionar_usuarios')
-                                        <a href="{{ route('users.index') ?? '#' }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-md text-sm font-medium transition duration-150 ease-in-out flex items-center justify-center">
+                                        <a href="{{ route('usuarios.index') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-md text-sm font-medium transition duration-150 ease-in-out flex items-center justify-center">
                                             <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
                                             </svg>
@@ -422,7 +422,7 @@
                                 {{-- Acciones para Ciudadanos --}}
                                 @role('ciudadano')
                                     @can('registrar_expediente')
-                                        <a href="#" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-md text-sm font-medium transition duration-150 ease-in-out flex items-center justify-center">
+                                        <a href="{{ route('ciudadano.tramites.index') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-md text-sm font-medium transition duration-150 ease-in-out flex items-center justify-center">
                                             <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                             </svg>
@@ -430,21 +430,21 @@
                                         </a>
                                     @endcan
 
-                                    <a href="#" class="bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-md text-sm font-medium transition duration-150 ease-in-out flex items-center justify-center">
+                                    <a href="{{ route('ciudadano.tramites.mis-tramites') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-md text-sm font-medium transition duration-150 ease-in-out flex items-center justify-center">
                                         <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                         </svg>
                                         Mis Trámites
                                     </a>
 
-                                    <a href="#" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-3 rounded-md text-sm font-medium transition duration-150 ease-in-out flex items-center justify-center">
+                                    <a href="{{ route('ciudadano.tramites.mis-tramites') }}" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-3 rounded-md text-sm font-medium transition duration-150 ease-in-out flex items-center justify-center">
                                         <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                         </svg>
                                         Consultar Estado
                                     </a>
 
-                                    <a href="#" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-md text-sm font-medium transition duration-150 ease-in-out flex items-center justify-center">
+                                    <a href="{{ route('ciudadano.tramites.index') }}" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-md text-sm font-medium transition duration-150 ease-in-out flex items-center justify-center">
                                         <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
                                         </svg>

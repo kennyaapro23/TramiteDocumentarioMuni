@@ -13,7 +13,7 @@ class Expediente extends Model
 
     protected $table = 'expedientes';
 
-    // Estados del expediente
+    // Estados del expediente (compatibilidad con nombres anteriores en el código)
     const STATUS_INICIADO = 'iniciado';
     const STATUS_EN_PROCESO = 'en_proceso';
     const STATUS_OBSERVADO = 'observado';
@@ -22,12 +22,33 @@ class Expediente extends Model
     const STATUS_FINALIZADO = 'finalizado';
     const STATUS_ARCHIVADO = 'archivado';
 
+    // Constantes usadas por el resto del código (nomenclatura en español)
+    const ESTADO_PENDIENTE = 'pendiente';
+    const ESTADO_EN_PROCESO = 'en_proceso';
+    const ESTADO_OBSERVADO = 'observado';
+    const ESTADO_APROBADO = 'aprobado';
+    const ESTADO_RECHAZADO = 'rechazado';
+    const ESTADO_FINALIZADO = 'finalizado';
+    const ESTADO_ARCHIVADO = 'archivado';
+    const ESTADO_EN_REVISION = 'en_revision';
+    const ESTADO_REVISION_TECNICA = 'revision_tecnica';
+    const ESTADO_REVISION_LEGAL = 'revision_legal';
+    const ESTADO_RESOLUCION_EMITIDA = 'resolucion_emitida';
+    const ESTADO_PENDIENTE_FIRMA = 'pendiente_firma';
+    const ESTADO_FIRMADO = 'firmado';
+    const ESTADO_NOTIFICADO = 'notificado';
+
     protected $fillable = [
         'tracking_number',
         'citizen_id',
         'procedure_id',
+        'tipo_tramite_id',
         'gerencia_id',
+        'gerencia_padre_id',
+        'responsable_id',
+        'usuario_registro_id',
         'status',
+        'estado',
         'priority',
         'subject',
         'description',
@@ -37,7 +58,17 @@ class Expediente extends Model
         'total_amount',
         'payment_status',
         'assigned_to',
-        'metadata'
+        'metadata',
+        // Campos adicionales para ciudadanos
+        'numero_expediente',
+        'solicitante_id',
+        'asunto',
+        'descripcion',
+        'prioridad',
+        'fecha_ingreso',
+        'requiere_pago',
+        'monto',
+        'pagado'
     ];
 
     protected $casts = [
@@ -56,14 +87,34 @@ class Expediente extends Model
         return $this->belongsTo(User::class, 'citizen_id');
     }
 
+    public function solicitante()
+    {
+        return $this->belongsTo(User::class, 'solicitante_id');
+    }
+
     public function procedure()
     {
         return $this->belongsTo(Procedure::class);
     }
 
+    public function tipoTramite()
+    {
+        return $this->belongsTo(TipoTramite::class, 'tipo_tramite_id');
+    }
+
     public function gerencia()
     {
         return $this->belongsTo(Gerencia::class);
+    }
+
+    public function responsable()
+    {
+        return $this->belongsTo(User::class, 'responsable_id');
+    }
+
+    public function usuarioRegistro()
+    {
+        return $this->belongsTo(User::class, 'usuario_registro_id');
     }
 
     public function assignedUser()
@@ -73,7 +124,14 @@ class Expediente extends Model
 
     public function files()
     {
-        return $this->hasMany(ExpedientFile::class);
+        // Relación hacia documentos subidos del expediente
+        return $this->hasMany(\App\Models\DocumentoExpediente::class, 'expediente_id');
+    }
+
+    // Alias para compatibilidad: algunos lugares usan 'documentos' en lugar de 'files'
+    public function documentos()
+    {
+        return $this->files();
     }
 
     public function payments()
@@ -155,6 +213,29 @@ class Expediente extends Model
     public function scopeByTrackingNumber($query, $trackingNumber)
     {
         return $query->where('tracking_number', $trackingNumber);
+    }
+
+    /**
+     * Devuelve el array de estados (clave => etiqueta) usado por las vistas.
+     */
+    public static function getEstados(): array
+    {
+        return [
+            self::ESTADO_PENDIENTE => 'Pendiente',
+            self::ESTADO_EN_PROCESO => 'En proceso',
+            self::ESTADO_OBSERVADO => 'Observado',
+            self::ESTADO_APROBADO => 'Aprobado',
+            self::ESTADO_RECHAZADO => 'Rechazado',
+            self::ESTADO_FINALIZADO => 'Finalizado',
+            self::ESTADO_ARCHIVADO => 'Archivado',
+            self::ESTADO_EN_REVISION => 'En revisión',
+            self::ESTADO_REVISION_TECNICA => 'Revisión técnica',
+            self::ESTADO_REVISION_LEGAL => 'Revisión legal',
+            self::ESTADO_RESOLUCION_EMITIDA => 'Resolución emitida',
+            self::ESTADO_PENDIENTE_FIRMA => 'Pendiente de firma',
+            self::ESTADO_FIRMADO => 'Firmado',
+            self::ESTADO_NOTIFICADO => 'Notificado',
+        ];
     }
 
     /**

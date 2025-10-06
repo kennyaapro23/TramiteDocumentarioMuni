@@ -9,7 +9,7 @@ use App\Http\Controllers\TramiteController;
 use App\Http\Controllers\RolePermissionController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\RoleController;
-use App\Http\Controllers\CustomWorkflowController;
+use App\Http\Controllers\WorkflowController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,7 +25,7 @@ Route::get('/', function () {
 // Authentication Routes (Web)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [WebController::class, 'showLogin'])->name('login');
-    Route::post('/login', [WebController::class, 'login']);
+    Route::post('/login', [WebController::class, 'login'])->name('login.post');
 });
 
 Route::middleware('auth')->group(function () {
@@ -58,7 +58,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/gerencias/{gerencia}/subgerencias', [GerenciaController::class, 'subgerencias'])->name('gerencias.subgerencias');
 
     // Tipos de Trámite Routes (Web Views)
-    Route::resource('tipos-tramite', TipoTramiteController::class)->names([
+    Route::resource('tipos-tramite', TipoTramiteController::class)->parameters([
+        'tipos-tramite' => 'tipoTramite'
+    ])->names([
         'index' => 'tipos-tramite.index',
         'create' => 'tipos-tramite.create',
         'store' => 'tipos-tramite.store',
@@ -81,22 +83,36 @@ Route::middleware('auth')->group(function () {
         'destroy' => 'workflows.destroy'
     ]);
 
-    // Flujos Seleccionables Routes
-    Route::prefix('flujos')->name('flujos.')->group(function () {
-        Route::get('/crear', [\App\Http\Controllers\SelectableWorkflowController::class, 'create'])->name('create');
-        Route::post('/crear', [\App\Http\Controllers\SelectableWorkflowController::class, 'store'])->name('store');
-        Route::get('/api/gerencias', [\App\Http\Controllers\SelectableWorkflowController::class, 'getGerencias'])->name('api.gerencias');
-        Route::get('/api/gerencias/{gerencia}/usuarios', [\App\Http\Controllers\SelectableWorkflowController::class, 'getUsersByGerencia'])->name('api.usuarios');
+    // Workflow Steps Routes (nested under workflows)
+    Route::prefix('workflows/{workflow}')->name('workflow-steps.')->group(function () {
+        Route::get('/steps', [\App\Http\Controllers\WorkflowStepController::class, 'index'])->name('index');
+        Route::get('/steps/create', [\App\Http\Controllers\WorkflowStepController::class, 'create'])->name('create');
+        Route::post('/steps', [\App\Http\Controllers\WorkflowStepController::class, 'store'])->name('store');
+        Route::get('/steps/{step}', [\App\Http\Controllers\WorkflowStepController::class, 'show'])->name('show');
+        Route::get('/steps/{step}/edit', [\App\Http\Controllers\WorkflowStepController::class, 'edit'])->name('edit');
+        Route::put('/steps/{step}', [\App\Http\Controllers\WorkflowStepController::class, 'update'])->name('update');
+        Route::delete('/steps/{step}', [\App\Http\Controllers\WorkflowStepController::class, 'destroy'])->name('destroy');
     });
 
-    // Mesa de Partes Routes (Web Views)
-    Route::prefix('mesa-partes')->name('mesa-partes.')->group(function () {
-        Route::get('/', [WebController::class, 'mesaPartes'])->name('index');
-        Route::get('/derivacion', [WebController::class, 'mesaPartesDerivacion'])->name('derivacion');
-        Route::get('/registro', [WebController::class, 'mesaPartesRegistro'])->name('registro');
+    // Workflow Transitions Routes (nested under workflows)
+    Route::prefix('workflows/{workflow}')->name('workflow-transitions.')->group(function () {
+        Route::get('/transitions', [\App\Http\Controllers\WorkflowTransitionController::class, 'index'])->name('index');
+        Route::get('/transitions/create', [\App\Http\Controllers\WorkflowTransitionController::class, 'create'])->name('create');
+        Route::post('/transitions', [\App\Http\Controllers\WorkflowTransitionController::class, 'store'])->name('store');
+        Route::get('/transitions/{transition}', [\App\Http\Controllers\WorkflowTransitionController::class, 'show'])->name('show');
+        Route::get('/transitions/{transition}/edit', [\App\Http\Controllers\WorkflowTransitionController::class, 'edit'])->name('edit');
+        Route::put('/transitions/{transition}', [\App\Http\Controllers\WorkflowTransitionController::class, 'update'])->name('update');
+        Route::delete('/transitions/{transition}', [\App\Http\Controllers\WorkflowTransitionController::class, 'destroy'])->name('destroy');
     });
+
+    // Mesa de Partes ELIMINADO - Sistema usa Workflows automáticos
+    // Route::prefix('mesa-partes')->name('mesa-partes.')->group(function () {
+    //     Route::get('/', [WebController::class, 'mesaPartes'])->name('index');
+    //     Route::get('/derivacion', [WebController::class, 'mesaPartesDerivacion'])->name('derivacion');
+    //     Route::get('/registro', [WebController::class, 'mesaPartesRegistro'])->name('registro');
+    // });
     
-    // Trámites Routes
+    // Trámites Routes (Admin)
     Route::resource('tramites', \App\Http\Controllers\TramiteController::class)->names([
         'index' => 'tramites.index',
         'create' => 'tramites.create',
@@ -107,6 +123,15 @@ Route::middleware('auth')->group(function () {
         'destroy' => 'tramites.destroy'
     ]);
     
+    // Rutas para Ciudadanos - Solicitar Trámites
+    Route::prefix('ciudadano')->name('ciudadano.')->middleware(['role:ciudadano'])->group(function () {
+        Route::get('/tramites', [\App\Http\Controllers\CiudadanoTramiteController::class, 'index'])->name('tramites.index');
+        Route::get('/tramites/solicitar', [\App\Http\Controllers\CiudadanoTramiteController::class, 'create'])->name('tramites.create');
+        Route::post('/tramites/solicitar', [\App\Http\Controllers\CiudadanoTramiteController::class, 'store'])->name('tramites.store');
+        Route::get('/mis-tramites', [\App\Http\Controllers\CiudadanoTramiteController::class, 'misTramites'])->name('tramites.mis-tramites');
+        Route::get('/mis-tramites/{id}', [\App\Http\Controllers\CiudadanoTramiteController::class, 'show'])->name('tramites.show');
+    });
+    
     // Reportes Routes
     Route::prefix('reportes')->name('reportes.')->group(function () {
         Route::get('/', [WebController::class, 'reportes'])->name('index');
@@ -116,7 +141,7 @@ Route::middleware('auth')->group(function () {
     });
     
     // Profile Routes
-    Route::get('/profile', [WebController::class, 'profile'])->name('profile');
+    Route::get('/profile', [WebController::class, 'profile'])->name('profile.show');
     Route::patch('/profile', [WebController::class, 'updateProfile'])->name('profile.update');
     Route::get('/settings', [WebController::class, 'settings'])->name('settings');
     

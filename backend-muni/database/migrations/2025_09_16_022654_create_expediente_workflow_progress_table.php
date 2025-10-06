@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('expediente_workflow_progress', function (Blueprint $table) {
             $table->id();
             $table->foreignId('expediente_id')->constrained('expedientes')->comment('Expediente en proceso');
-            $table->unsignedBigInteger('custom_workflow_step_id')->nullable()->comment('Etapa del flujo');
+            $table->unsignedBigInteger('workflow_step_id')->nullable()->comment('Etapa del flujo');
             $table->enum('estado', ['pendiente', 'en_proceso', 'aprobado', 'rechazado', 'observado'])->default('pendiente');
             $table->foreignId('asignado_a')->nullable()->constrained('users')->comment('Usuario responsable de esta etapa');
             $table->datetime('fecha_inicio')->nullable()->comment('Cuándo se inició esta etapa');
@@ -31,7 +31,7 @@ return new class extends Migration
             $table->index(['expediente_id', 'estado']);
             $table->index(['asignado_a', 'estado']);
             $table->index('fecha_limite');
-            $table->index(['expediente_id', 'custom_workflow_step_id'], 'idx_exp_workflow_step');
+            $table->index(['expediente_id', 'workflow_step_id'], 'idx_exp_workflow_step');
         });
     }
 

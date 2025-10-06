@@ -17,13 +17,13 @@
 
 {{-- MOSTRAR SOLO PARA PERMISOS ESPECÍFICOS --}}
 @can('gestionar_usuarios')
-    <a href="{{ route('users.index') }}" class="btn btn-primary">
+    <a href="{{ route('usuarios.index') }}" class="btn btn-primary">
         Gestionar Usuarios
     </a>
 @endcan
 
 @can('crear_usuarios')
-    <a href="{{ route('users.create') }}" class="btn btn-success">
+    <a href="{{ route('usuarios.create') }}" class="btn btn-success">
         Crear Usuario
     </a>
 @endcan
@@ -88,7 +88,7 @@
                 <a href="#" class="dropdown-toggle">Administración</a>
                 <ul class="dropdown-menu">
                     @can('gestionar_usuarios')
-                        <li><a href="{{ route('users.index') }}">Usuarios</a></li>
+                        <li><a href="{{ route('usuarios.index') }}">Usuarios</a></li>
                     @endcan
                     
                     @can('gestionar_gerencias')

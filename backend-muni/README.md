@@ -1,505 +1,1008 @@
-# 🏛️ Sistema de Trámite Documentario Municipal - Backend
+# 🏛️ Sistema de Trámite Documentario Municipal# 🏛️ Sistema de Trámite Documentario Municipal - Backend
 
-## 📋 Descripción
 
-**Backend API REST** desarrollado en **Laravel 11** para la gestión integral de expedientes municipales con workflows personalizables, sistema de roles granular y arquitectura escalable. Diseñado para municipalidades que requieren digitalizar sus procesos administrativos según normativas peruanas.
 
----
+Sistema integral de gestión documental para gobiernos locales, desarrollado con Laravel 11 y Tailwind CSS.## 📋 Descripción
 
-## 🏗️ Arquitectura Técnica del Backend
 
-### **Stack Tecnológico Principal**
-```php
-Framework: Laravel 11.x LTS
-PHP: 8.1+ (Recomendado 8.2+)
-Base de Datos: MySQL 8.0+ / PostgreSQL 13+ / SQLite (desarrollo)
-Cache: Redis 6.0+ / Memcached
+
+---**Backend API REST** desarrollado en **Laravel 11** para la gestión integral de expedientes municipales con workflows personalizables, sistema de roles granular y arquitectura escalable. Diseñado para municipalidades que requieren digitalizar sus procesos administrativos según normativas peruanas.
+
+
+
+## 📊 Estado del Proyecto: **85% COMPLETADO**---
+
+
+
+### ✅ Módulos Completados (100%)## 🏗️ Arquitectura Técnica del Backend
+
+
+
+#### 🔐 **1. Autenticación y Seguridad** ### **Stack Tecnológico Principal**
+
+- ✅ Sistema de login/logout```php
+
+- ✅ Gestión de sesionesFramework: Laravel 11.x LTS
+
+- ✅ Middleware de autenticaciónPHP: 8.1+ (Recomendado 8.2+)
+
+- ✅ Protección CSRFBase de Datos: MySQL 8.0+ / PostgreSQL 13+ / SQLite (desarrollo)
+
+- ✅ Sanctum para API tokensCache: Redis 6.0+ / Memcached
+
 Queue: Redis / Database / Amazon SQS
-Storage: Local / Amazon S3 / Google Cloud Storage
-Web Server: Nginx / Apache
-Container: Docker + Docker Compose
-```
 
-### **Dependencias Principales**
+#### 👥 **2. Gestión de Usuarios**Storage: Local / Amazon S3 / Google Cloud Storage
+
+- ✅ CRUD completo de usuariosWeb Server: Nginx / Apache
+
+- ✅ Perfiles de usuarioContainer: Docker + Docker Compose
+
+- ✅ Asignación de roles```
+
+- ✅ Gestión de permisos (Spatie Permissions)
+
+- ✅ Estados de usuario (activo/inactivo)### **Dependencias Principales**
+
 ```json
-{
-    "laravel/sanctum": "Autenticación API con tokens",
-    "spatie/laravel-permission": "Roles y permisos granulares",
-    "laravel/telescope": "Debug y monitoring (desarrollo)",
-    "barryvdh/laravel-dompdf": "Generación de PDFs",
-    "maatwebsite/excel": "Exportación Excel/CSV",
+
+#### 🏢 **3. Gerencias y Subgerencias**{
+
+- ✅ CRUD de gerencias    "laravel/sanctum": "Autenticación API con tokens",
+
+- ✅ Estructura jerárquica (gerencias padre/hijas)    "spatie/laravel-permission": "Roles y permisos granulares",
+
+- ✅ Asignación de responsables    "laravel/telescope": "Debug y monitoring (desarrollo)",
+
+- ✅ 67 gerencias y subgerencias seeded    "barryvdh/laravel-dompdf": "Generación de PDFs",
+
+- ✅ Asociación con tipos de trámite    "maatwebsite/excel": "Exportación Excel/CSV",
+
     "intervention/image": "Procesamiento de imágenes",
-    "pusher/pusher-php-server": "Notificaciones real-time",
-    "predis/predis": "Cliente Redis para cache",
-    "sentry/sentry-laravel": "Error tracking producción"
-}
-```
 
-### **Patrones de Diseño Implementados**
-- **Repository Pattern**: Abstracción de acceso a datos
-- **Service Layer**: Lógica de negocio separada de controladores
-- **Observer Pattern**: Para eventos y notificaciones automáticas
-- **Factory Pattern**: Para creación de modelos en tests
-- **Middleware Pattern**: Para validación de permisos y rate limiting
+#### 🔑 **4. Roles y Permisos**    "pusher/pusher-php-server": "Notificaciones real-time",
+
+- ✅ 7 roles predefinidos:    "predis/predis": "Cliente Redis para cache",
+
+  - Superadministrador (todos los permisos)    "sentry/sentry-laravel": "Error tracking producción"
+
+  - Administrador}
+
+  - Jefe de Gerencia```
+
+  - Funcionario
+
+  - Funcionario Junior### **Patrones de Diseño Implementados**
+
+  - Supervisor- **Repository Pattern**: Abstracción de acceso a datos
+
+  - Ciudadano- **Service Layer**: Lógica de negocio separada de controladores
+
+- ✅ 65 permisos granulares- **Observer Pattern**: Para eventos y notificaciones automáticas
+
+- ✅ Middleware de autorización- **Factory Pattern**: Para creación de modelos en tests
+
+- ✅ Políticas de acceso por rol- **Middleware Pattern**: Para validación de permisos y rate limiting
+
 - **Command Pattern**: Para operaciones complejas en artisan commands
-- **Strategy Pattern**: Para diferentes tipos de workflows
 
-### **Estructura de Directorios Backend**
-```
-app/
-├── Http/
-│   ├── Controllers/          # Controladores API y Web
-│   │   ├── Api/             # Controladores específicos de API
+#### 📋 **5. Tipos de Trámite**- **Strategy Pattern**: Para diferentes tipos de workflows
+
+- ✅ CRUD completo
+
+- ✅ Códigos únicos autogenerados### **Estructura de Directorios Backend**
+
+- ✅ Asociación con gerencias```
+
+- ✅ Documentos requeridosapp/
+
+- ✅ Costos y tiempo estimado├── Http/
+
+- ✅ Estados (activo/inactivo)│   ├── Controllers/          # Controladores API y Web
+
+- ✅ Estadísticas por tipo│   │   ├── Api/             # Controladores específicos de API
+
 │   │   ├── Auth/            # Autenticación y autorización
-│   │   └── Web/             # Controladores para vistas Blade
-│   ├── Middleware/          # Middleware personalizado
-│   ├── Requests/            # Form Request Validation
-│   └── Resources/           # API Resources para transformación JSON
-├── Models/                  # Modelos Eloquent
-├── Services/               # Servicios de lógica de negocio
-├── Repositories/           # Repositorios para acceso a datos
-├── Events/                 # Eventos del sistema
-├── Listeners/              # Listeners para eventos
-├── Jobs/                   # Jobs para colas asíncronas
-├── Mail/                   # Templates de email
-├── Notifications/          # Notificaciones del sistema
-└── Traits/                # Traits reutilizables
 
-database/
-├── migrations/             # Migraciones de base de datos
-├── seeders/               # Seeders para datos iniciales
+#### 📄 **6. Tipos de Documentos**│   │   └── Web/             # Controladores para vistas Blade
+
+- ✅ Catálogo de documentos│   ├── Middleware/          # Middleware personalizado
+
+- ✅ Relación many-to-many con tipos de trámite│   ├── Requests/            # Form Request Validation
+
+- ✅ Marcado de documentos obligatorios/opcionales│   └── Resources/           # API Resources para transformación JSON
+
+- ✅ Validación de formatos permitidos├── Models/                  # Modelos Eloquent
+
+├── Services/               # Servicios de lógica de negocio
+
+#### 📦 **7. Expedientes**├── Repositories/           # Repositorios para acceso a datos
+
+- ✅ Registro de expedientes├── Events/                 # Eventos del sistema
+
+- ✅ Numeración automática correlativa├── Listeners/              # Listeners para eventos
+
+- ✅ Estados del expediente: pendiente, en_proceso, derivado, resuelto, rechazado, archivado├── Jobs/                   # Jobs para colas asíncronas
+
+- ✅ Trazabilidad completa├── Mail/                   # Templates de email
+
+- ✅ Asignación de responsables├── Notifications/          # Notificaciones del sistema
+
+- ✅ Soft deletes└── Traits/                # Traits reutilizables
+
+- ✅ Historial de cambios
+
+- ✅ Filtrado por gerencia, estado, tipo de trámitedatabase/
+
+- ✅ Vista con iconos y colores por estado├── migrations/             # Migraciones de base de datos
+
+- ✅ Estadísticas en tiempo real├── seeders/               # Seeders para datos iniciales
+
 └── factories/             # Factories para tests
 
-tests/
-├── Feature/               # Tests de integración
-├── Unit/                  # Tests unitarios
-└── TestCase.php          # Configuración base de tests
+#### 🔄 **8. Flujos de Trabajo (Workflows)**
 
-routes/
-├── api.php               # Rutas API REST
-├── web.php               # Rutas web Blade
-└── console.php           # Comandos Artisan
+- ✅ Creación de workflows personalizadostests/
 
-config/
-├── auth.php              # Configuración autenticación
-├── permission.php        # Configuración Spatie Permission
-├── sanctum.php           # Configuración tokens API
-├── queue.php             # Configuración colas
-├── mail.php              # Configuración email
+- ✅ Definición de etapas/pasos├── Feature/               # Tests de integración
+
+- ✅ Transiciones entre etapas├── Unit/                  # Tests unitarios
+
+- ✅ Asignación de responsables por etapa└── TestCase.php          # Configuración base de tests
+
+- ✅ Tipos de pasos: inicio, proceso, fin
+
+- ✅ Asociación workflow ↔ tipo de trámite (1:1)routes/
+
+- ✅ Visualización gráfica del flujo├── api.php               # Rutas API REST
+
+- ✅ Indicadores de progreso├── web.php               # Rutas web Blade
+
+- ✅ Clonación de workflows└── console.php           # Comandos Artisan
+
+
+
+#### 📊 **9. Visualización de Procesos**config/
+
+- ✅ Vista de trámites con sus flujos├── auth.php              # Configuración autenticación
+
+- ✅ Diagrama horizontal de etapas├── permission.php        # Configuración Spatie Permission
+
+- ✅ Colores por tipo de etapa (verde=inicio, azul=proceso, morado=fin)├── sanctum.php           # Configuración tokens API
+
+- ✅ Información de responsables por etapa├── queue.php             # Configuración colas
+
+- ✅ Iconos y badges visuales├── mail.php              # Configuración email
+
 └── filesystems.php       # Configuración storage
-```
 
----
+#### 📎 **10. Gestión Documental**```
 
-## 📊 Base de Datos - Esquema Técnico
+- ✅ Carga de archivos por expediente
+
+- ✅ Almacenamiento en storage---
+
+- ✅ Validación de tipos de archivo
+
+- ✅ Tamaño máximo configurable## 📊 Base de Datos - Esquema Técnico
+
+- ✅ Descarga de documentos
 
 ### **Tablas de Autenticación y Seguridad**
-```sql
--- Usuarios del sistema
-users (
-    id BIGINT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
+
+#### 📜 **11. Historial y Auditoría**```sql
+
+- ✅ Registro de todas las acciones-- Usuarios del sistema
+
+- ✅ Tabla historial_expedientesusers (
+
+- ✅ Tabla action_logs para auditoría    id BIGINT PRIMARY KEY,
+
+- ✅ Timestamps automáticos    name VARCHAR(255) NOT NULL,
+
+- ✅ Usuario que realizó la acción    email VARCHAR(255) UNIQUE NOT NULL,
+
     email_verified_at TIMESTAMP NULL,
-    password VARCHAR(255) NOT NULL,
+
+---    password VARCHAR(255) NOT NULL,
+
     gerencia_id BIGINT NULL,
-    telefono VARCHAR(20) NULL,
+
+### 🚧 Módulos en Desarrollo (50-90%)    telefono VARCHAR(20) NULL,
+
     cargo VARCHAR(100) NULL,
-    activo BOOLEAN DEFAULT TRUE,
-    remember_token VARCHAR(100) NULL,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    
-    FOREIGN KEY (gerencia_id) REFERENCES gerencias(id)
+
+#### 📝 **12. Notificaciones** - 70%    activo BOOLEAN DEFAULT TRUE,
+
+- ✅ Tabla de notificaciones    remember_token VARCHAR(100) NULL,
+
+- ✅ Modelo creado    created_at TIMESTAMP,
+
+- ⏳ Sistema de envío de notificaciones    updated_at TIMESTAMP,
+
+- ⏳ Notificaciones en tiempo real (pusher/broadcasting)    
+
+- ⏳ Notificaciones por email    FOREIGN KEY (gerencia_id) REFERENCES gerencias(id)
+
 )
 
--- Tokens de acceso API (Sanctum)
-personal_access_tokens (
-    id BIGINT PRIMARY KEY,
-    tokenable_type VARCHAR(255) NOT NULL,
-    tokenable_id BIGINT NOT NULL,
-    name VARCHAR(255) NOT NULL,
+#### 💰 **13. Pagos** - 60%
+
+- ✅ Tabla de pagos-- Tokens de acceso API (Sanctum)
+
+- ✅ Modelo creadopersonal_access_tokens (
+
+- ✅ Asociación con expedientes    id BIGINT PRIMARY KEY,
+
+- ⏳ Pasarela de pagos    tokenable_type VARCHAR(255) NOT NULL,
+
+- ⏳ Confirmación de pagos    tokenable_id BIGINT NOT NULL,
+
+- ⏳ Comprobantes/recibos    name VARCHAR(255) NOT NULL,
+
     token VARCHAR(64) UNIQUE NOT NULL,
-    abilities TEXT NULL,
-    last_used_at TIMESTAMP NULL,
-    expires_at TIMESTAMP NULL,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    
-    INDEX tokenable,
-    INDEX token
-)
 
--- Sesiones web
-sessions (
-    id VARCHAR(255) PRIMARY KEY,
-    user_id BIGINT NULL,
-    ip_address VARCHAR(45) NULL,
+#### 🗣️ **14. Quejas y Reclamos** - 50%    abilities TEXT NULL,
+
+- ✅ Tabla complaints    last_used_at TIMESTAMP NULL,
+
+- ✅ Modelo Complaint    expires_at TIMESTAMP NULL,
+
+- ⏳ Formulario de registro    created_at TIMESTAMP,
+
+- ⏳ Gestión de respuestas    updated_at TIMESTAMP,
+
+- ⏳ Escalamiento de quejas    
+
+- ⏳ Seguimiento    INDEX tokenable,
+
+    INDEX token
+
+#### 📈 **15. Reportes y Estadísticas** - 40%)
+
+- ✅ Estadísticas básicas en dashboard
+
+- ✅ Contadores por estado-- Sesiones web
+
+- ⏳ Reportes exportables (PDF/Excel)sessions (
+
+- ⏳ Gráficos avanzados    id VARCHAR(255) PRIMARY KEY,
+
+- ⏳ Reportes por período    user_id BIGINT NULL,
+
+- ⏳ Métricas de desempeño    ip_address VARCHAR(45) NULL,
+
     user_agent TEXT NULL,
-    payload LONGTEXT NOT NULL,
+
+---    payload LONGTEXT NOT NULL,
+
     last_activity INT NOT NULL,
-    
+
+### ❌ Módulos Pendientes (0-30%)    
+
     INDEX user_id,
-    INDEX last_activity
-)
-```
+
+#### 🔔 **16. Panel de Notificaciones** - 20%    INDEX last_activity
+
+- ⏳ Vista de notificaciones no leídas)
+
+- ⏳ Marcar como leído```
+
+- ⏳ Notificaciones push
 
 ### **Tablas de Roles y Permisos (Spatie)**
-```sql
--- Roles del sistema
-roles (
+
+#### 🧾 **17. Procedimientos Administrativos** - 10%```sql
+
+- ✅ Tabla procedures-- Roles del sistema
+
+- ⏳ Gestión completaroles (
+
     id BIGINT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    guard_name VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    
+
+#### 🌐 **18. Portal Ciudadano** - 30%    name VARCHAR(255) NOT NULL,
+
+- ⏳ Registro de ciudadanos    guard_name VARCHAR(255) NOT NULL,
+
+- ⏳ Seguimiento de trámites    created_at TIMESTAMP,
+
+- ⏳ Consulta de estado    updated_at TIMESTAMP,
+
+- ⏳ Descarga de resoluciones    
+
     UNIQUE KEY name_guard (name, guard_name)
+
+#### 📧 **19. Notificaciones Email** - 0%)
+
+- ⏳ Configuración SMTP
+
+- ⏳ Templates de emails-- Permisos granulares (59+ permisos)
+
+- ⏳ Queue para envíos masivospermissions (
+
+    id BIGINT PRIMARY KEY,
+
+#### 🔍 **20. Búsqueda Avanzada** - 20%    name VARCHAR(255) NOT NULL,
+
+- ✅ Filtros básicos    guard_name VARCHAR(255) NOT NULL,
+
+- ⏳ Búsqueda full-text    created_at TIMESTAMP,
+
+- ⏳ Filtros combinados avanzados    updated_at TIMESTAMP,
+
+    
+
+---    UNIQUE KEY name_guard (name, guard_name)
+
 )
 
--- Permisos granulares (59+ permisos)
-permissions (
-    id BIGINT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    guard_name VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    
-    UNIQUE KEY name_guard (name, guard_name)
-)
+## 🗄️ Base de Datos
 
 -- Relación muchos a muchos: usuarios-roles
-model_has_roles (
-    role_id BIGINT NOT NULL,
-    model_type VARCHAR(255) NOT NULL,
-    model_id BIGINT NOT NULL,
-    
-    PRIMARY KEY (role_id, model_type, model_id),
-    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
-)
 
--- Relación muchos a muchos: usuarios-permisos directos
-model_has_permissions (
-    permission_id BIGINT NOT NULL,
-    model_type VARCHAR(255) NOT NULL,
-    model_id BIGINT NOT NULL,
-    
-    PRIMARY KEY (permission_id, model_type, model_id),
-    FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE
-)
+### Tablas Principales (30)model_has_roles (
 
--- Relación muchos a muchos: roles-permisos
-role_has_permissions (
-    permission_id BIGINT NOT NULL,
-    role_id BIGINT NOT NULL,
-    
-    PRIMARY KEY (permission_id, role_id),
-    FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE,
-    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
-)
-```
+1. ✅ `users` - Usuarios del sistema    role_id BIGINT NOT NULL,
 
-### **Tablas de Estructura Organizacional**
+2. ✅ `roles` - Roles (Spatie)    model_type VARCHAR(255) NOT NULL,
+
+3. ✅ `permissions` - Permisos (Spatie)    model_id BIGINT NOT NULL,
+
+4. ✅ `model_has_roles` - Asignación usuario-rol    
+
+5. ✅ `model_has_permissions` - Asignación usuario-permiso    PRIMARY KEY (role_id, model_type, model_id),
+
+6. ✅ `gerencias` - Gerencias y subgerencias    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
+
+7. ✅ `tipo_tramites` - Tipos de trámite)
+
+8. ✅ `tipo_documentos` - Tipos de documentos
+
+9. ✅ `tipo_tramite_tipo_documento` - Relación many-to-many-- Relación muchos a muchos: usuarios-permisos directos
+
+10. ✅ `expedientes` - Expedientes principalesmodel_has_permissions (
+
+11. ✅ `documentos_expediente` - Documentos adjuntos    permission_id BIGINT NOT NULL,
+
+12. ✅ `historial_expedientes` - Historial de cambios    model_type VARCHAR(255) NOT NULL,
+
+13. ✅ `workflows` - Definición de flujos    model_id BIGINT NOT NULL,
+
+14. ✅ `workflow_steps` - Etapas de flujos    
+
+15. ✅ `workflow_transitions` - Transiciones entre etapas    PRIMARY KEY (permission_id, model_type, model_id),
+
+16. ✅ `workflow_rules` - Reglas de derivación    FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE
+
+17. ✅ `expediente_workflow_progress` - Progreso del expediente)
+
+18. ✅ `expedient_files` - Archivos del expediente
+
+19. ✅ `action_logs` - Registro de acciones-- Relación muchos a muchos: roles-permisos
+
+20. ✅ `notifications` - Notificacionesrole_has_permissions (
+
+21. ✅ `payments` - Pagos    permission_id BIGINT NOT NULL,
+
+22. ✅ `complaints` - Quejas y reclamos    role_id BIGINT NOT NULL,
+
+23. ✅ `procedures` - Procedimientos    
+
+24. ✅ `sessions` - Sesiones    PRIMARY KEY (permission_id, role_id),
+
+25. ✅ `personal_access_tokens` - Tokens API    FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE,
+
+26. ✅ `cache` - Caché    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
+
+27. ✅ `cache_locks` - Bloqueos de caché)
+
+28. ✅ `jobs` - Cola de trabajos```
+
+29. ✅ `job_batches` - Lotes de trabajos
+
+30. ✅ `failed_jobs` - Trabajos fallidos### **Tablas de Estructura Organizacional**
+
 ```sql
--- Gerencias con jerarquía padre-hijo
-gerencias (
-    id BIGINT PRIMARY KEY,
-    nombre VARCHAR(255) NOT NULL,
-    descripcion TEXT NULL,
+
+### Seeders Implementados-- Gerencias con jerarquía padre-hijo
+
+- ✅ GerenciasSeeder (67 gerencias/subgerencias)gerencias (
+
+- ✅ UsersSeeder (21 usuarios de prueba)    id BIGINT PRIMARY KEY,
+
+- ✅ RolesAndPermissionsSeeder (7 roles, 65 permisos)    nombre VARCHAR(255) NOT NULL,
+
+- ✅ TipoDocumentosSeeder (15 tipos de documentos)    descripcion TEXT NULL,
+
     codigo VARCHAR(50) UNIQUE NULL,
-    parent_id BIGINT NULL,
-    nivel INT DEFAULT 1,
-    activa BOOLEAN DEFAULT TRUE,
-    responsable_id BIGINT NULL,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    
-    FOREIGN KEY (parent_id) REFERENCES gerencias(id),
-    FOREIGN KEY (responsable_id) REFERENCES users(id),
-    INDEX parent_nivel (parent_id, nivel),
-    INDEX activa
-)
-```
 
-### **Tablas de Gestión de Expedientes**
-```sql
--- Expedientes principales
-expedientes (
-    id BIGINT PRIMARY KEY,
-    numero_expediente VARCHAR(50) UNIQUE NOT NULL,
-    solicitante_nombre VARCHAR(255) NOT NULL,
-    solicitante_email VARCHAR(255) NOT NULL,
-    solicitante_telefono VARCHAR(20) NULL,
-    solicitante_dni VARCHAR(8) NULL,
-    tipo_tramite_id BIGINT NOT NULL,
-    gerencia_actual_id BIGINT NOT NULL,
-    funcionario_asignado_id BIGINT NULL,
-    estado ENUM('ingresado', 'en_proceso', 'observado', 'aprobado', 'rechazado') DEFAULT 'ingresado',
-    prioridad ENUM('baja', 'normal', 'alta', 'urgente') DEFAULT 'normal',
-    fecha_ingreso DATETIME NOT NULL,
-    fecha_limite DATETIME NULL,
-    observaciones TEXT NULL,
-    workflow_id BIGINT NULL,
-    step_actual_id BIGINT NULL,
-    deleted_at TIMESTAMP NULL,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    
-    FOREIGN KEY (tipo_tramite_id) REFERENCES tipo_tramites(id),
-    FOREIGN KEY (gerencia_actual_id) REFERENCES gerencias(id),
-    FOREIGN KEY (funcionario_asignado_id) REFERENCES users(id),
-    FOREIGN KEY (workflow_id) REFERENCES custom_workflows(id),
-    INDEX numero_expediente,
-    INDEX estado_fecha (estado, fecha_ingreso),
-    INDEX gerencia_funcionario (gerencia_actual_id, funcionario_asignado_id)
+---    parent_id BIGINT NULL,
+
+    nivel INT DEFAULT 1,
+
+## 🎨 Interfaz de Usuario    activa BOOLEAN DEFAULT TRUE,
+
+    responsable_id BIGINT NULL,
+
+### Diseño    created_at TIMESTAMP,
+
+- ✅ Tailwind CSS 3.x    updated_at TIMESTAMP,
+
+- ✅ Alpine.js para interactividad    
+
+- ✅ Diseño responsive    FOREIGN KEY (parent_id) REFERENCES gerencias(id),
+
+- ✅ Componentes reutilizables    FOREIGN KEY (responsable_id) REFERENCES users(id),
+
+- ✅ Iconos SVG personalizados    INDEX parent_nivel (parent_id, nivel),
+
+- ✅ Sistema de colores consistente    INDEX activa
+
 )
+
+### Vistas Implementadas```
+
+1. ✅ Login/Logout
+
+2. ✅ Dashboard (pendiente mejorar)### **Tablas de Gestión de Expedientes**
+
+3. ✅ Usuarios (index, create, edit, show)```sql
+
+4. ✅ Gerencias (index, create, edit, show)-- Expedientes principales
+
+5. ✅ Tipos de Trámite (index, create, edit, show)expedientes (
+
+6. ✅ Expedientes (index, create, edit, show)    id BIGINT PRIMARY KEY,
+
+7. ✅ Workflows (index, create, edit, show)    numero_expediente VARCHAR(50) UNIQUE NOT NULL,
+
+8. ✅ Trámites con visualización de flujos (index)    solicitante_nombre VARCHAR(255) NOT NULL,
+
+9. ⏳ Reportes    solicitante_email VARCHAR(255) NOT NULL,
+
+10. ⏳ Estadísticas avanzadas    solicitante_telefono VARCHAR(20) NULL,
+
+    solicitante_dni VARCHAR(8) NULL,
+
+---    tipo_tramite_id BIGINT NOT NULL,
+
+    gerencia_actual_id BIGINT NOT NULL,
+
+## 🛠️ Tecnologías Utilizadas    funcionario_asignado_id BIGINT NULL,
+
+    estado ENUM('ingresado', 'en_proceso', 'observado', 'aprobado', 'rechazado') DEFAULT 'ingresado',
+
+### Backend    prioridad ENUM('baja', 'normal', 'alta', 'urgente') DEFAULT 'normal',
+
+- **Framework**: Laravel 11.x    fecha_ingreso DATETIME NOT NULL,
+
+- **PHP**: 8.2+    fecha_limite DATETIME NULL,
+
+- **Base de Datos**: MySQL 8.0 / MariaDB 10.x    observaciones TEXT NULL,
+
+- **Autenticación**: Laravel Sanctum    workflow_id BIGINT NULL,
+
+- **Permisos**: Spatie Laravel-Permission    step_actual_id BIGINT NULL,
+
+- **Storage**: Laravel Filesystem    deleted_at TIMESTAMP NULL,
+
+    created_at TIMESTAMP,
+
+### Frontend    updated_at TIMESTAMP,
+
+- **CSS Framework**: Tailwind CSS 3.x    
+
+- **JavaScript**: Alpine.js 3.x    FOREIGN KEY (tipo_tramite_id) REFERENCES tipo_tramites(id),
+
+- **Build Tool**: Vite 5.x    FOREIGN KEY (gerencia_actual_id) REFERENCES gerencias(id),
+
+- **Iconos**: SVG personalizados    FOREIGN KEY (funcionario_asignado_id) REFERENCES users(id),
+
+    FOREIGN KEY (workflow_id) REFERENCES workflows(id),
+
+### Herramientas de Desarrollo    INDEX numero_expediente,
+
+- **Package Manager**: Composer (PHP), NPM (JS)    INDEX estado_fecha (estado, fecha_ingreso),
+
+- **Testing**: PHPUnit    INDEX gerencia_funcionario (gerencia_actual_id, funcionario_asignado_id)
+
+- **Code Style**: PSR-12)
+
+- **Version Control**: Git
 
 -- Documentos adjuntos por expediente
-documentos_expediente (
+
+---documentos_expediente (
+
     id BIGINT PRIMARY KEY,
-    expediente_id BIGINT NOT NULL,
+
+## 📦 Instalación    expediente_id BIGINT NOT NULL,
+
     nombre_original VARCHAR(255) NOT NULL,
-    nombre_almacenado VARCHAR(255) NOT NULL,
-    ruta_archivo VARCHAR(500) NOT NULL,
-    tipo_mime VARCHAR(100) NOT NULL,
-    tamaño_bytes BIGINT NOT NULL,
-    tipo_documento ENUM('requisito', 'adicional', 'respuesta', 'interno') DEFAULT 'requisito',
+
+### Requisitos    nombre_almacenado VARCHAR(255) NOT NULL,
+
+- PHP >= 8.2    ruta_archivo VARCHAR(500) NOT NULL,
+
+- Composer    tipo_mime VARCHAR(100) NOT NULL,
+
+- Node.js >= 18.x    tamaño_bytes BIGINT NOT NULL,
+
+- MySQL >= 8.0 o MariaDB >= 10.x    tipo_documento ENUM('requisito', 'adicional', 'respuesta', 'interno') DEFAULT 'requisito',
+
     es_obligatorio BOOLEAN DEFAULT FALSE,
-    subido_por BIGINT NOT NULL,
+
+### Pasos de Instalación    subido_por BIGINT NOT NULL,
+
     created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    
-    FOREIGN KEY (expediente_id) REFERENCES expedientes(id) ON DELETE CASCADE,
-    FOREIGN KEY (subido_por) REFERENCES users(id),
-    INDEX expediente_tipo (expediente_id, tipo_documento)
+
+1. **Clonar repositorio**    updated_at TIMESTAMP,
+
+```bash    
+
+git clone <repository-url>    FOREIGN KEY (expediente_id) REFERENCES expedientes(id) ON DELETE CASCADE,
+
+cd backend-muni    FOREIGN KEY (subido_por) REFERENCES users(id),
+
+```    INDEX expediente_tipo (expediente_id, tipo_documento)
+
 )
 
--- Historial completo de movimientos
-historial_expedientes (
-    id BIGINT PRIMARY KEY,
+2. **Instalar dependencias PHP**
+
+```bash-- Historial completo de movimientos
+
+composer installhistorial_expedientes (
+
+```    id BIGINT PRIMARY KEY,
+
     expediente_id BIGINT NOT NULL,
-    user_id BIGINT NOT NULL,
-    accion VARCHAR(100) NOT NULL,
-    estado_anterior VARCHAR(50) NULL,
-    estado_nuevo VARCHAR(50) NULL,
+
+3. **Instalar dependencias JavaScript**    user_id BIGINT NOT NULL,
+
+```bash    accion VARCHAR(100) NOT NULL,
+
+npm install    estado_anterior VARCHAR(50) NULL,
+
+```    estado_nuevo VARCHAR(50) NULL,
+
     gerencia_origen_id BIGINT NULL,
-    gerencia_destino_id BIGINT NULL,
-    comentarios TEXT NULL,
-    datos_adicionales JSON NULL,
-    ip_address VARCHAR(45) NULL,
-    user_agent VARCHAR(500) NULL,
-    created_at TIMESTAMP,
-    
-    FOREIGN KEY (expediente_id) REFERENCES expedientes(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (gerencia_origen_id) REFERENCES gerencias(id),
-    FOREIGN KEY (gerencia_destino_id) REFERENCES gerencias(id),
-    INDEX expediente_fecha (expediente_id, created_at),
-    INDEX user_fecha (user_id, created_at)
-)
-```
 
-### **Tablas de Workflows Personalizables**
-```sql
--- Workflows personalizados por tipo de trámite
-custom_workflows (
+4. **Configurar entorno**    gerencia_destino_id BIGINT NULL,
+
+```bash    comentarios TEXT NULL,
+
+cp .env.example .env    datos_adicionales JSON NULL,
+
+php artisan key:generate    ip_address VARCHAR(45) NULL,
+
+```    user_agent VARCHAR(500) NULL,
+
+    created_at TIMESTAMP,
+
+5. **Configurar base de datos en `.env`**    
+
+```env    FOREIGN KEY (expediente_id) REFERENCES expedientes(id) ON DELETE CASCADE,
+
+DB_CONNECTION=mysql    FOREIGN KEY (user_id) REFERENCES users(id),
+
+DB_HOST=127.0.0.1    FOREIGN KEY (gerencia_origen_id) REFERENCES gerencias(id),
+
+DB_PORT=3306    FOREIGN KEY (gerencia_destino_id) REFERENCES gerencias(id),
+
+DB_DATABASE=tramite_muni    INDEX expediente_fecha (expediente_id, created_at),
+
+DB_USERNAME=root    INDEX user_fecha (user_id, created_at)
+
+DB_PASSWORD=)
+
+``````
+
+
+
+6. **Ejecutar migraciones y seeders**### **Tablas de Workflows Personalizables**
+
+```bash```sql
+
+php artisan migrate:fresh --seed-- Workflows personalizados por tipo de trámite
+
+```workflows (
+
     id BIGINT PRIMARY KEY,
-    nombre VARCHAR(255) NOT NULL,
-    descripcion TEXT NULL,
-    tipo_tramite_id BIGINT NULL,
-    version VARCHAR(10) DEFAULT '1.0',
+
+7. **Crear enlace simbólico para storage**    nombre VARCHAR(255) NOT NULL,
+
+```bash    descripcion TEXT NULL,
+
+php artisan storage:link    tipo_tramite_id BIGINT NULL,
+
+```    version VARCHAR(10) DEFAULT '1.0',
+
     activo BOOLEAN DEFAULT TRUE,
-    configuracion JSON NULL,
-    created_by BIGINT NOT NULL,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    
-    FOREIGN KEY (tipo_tramite_id) REFERENCES tipo_tramites(id),
+
+8. **Compilar assets**    configuracion JSON NULL,
+
+```bash    created_by BIGINT NOT NULL,
+
+npm run dev    created_at TIMESTAMP,
+
+# o para producción:    updated_at TIMESTAMP,
+
+npm run build    
+
+```    FOREIGN KEY (tipo_tramite_id) REFERENCES tipo_tramites(id),
+
     FOREIGN KEY (created_by) REFERENCES users(id),
-    INDEX tipo_activo (tipo_tramite_id, activo)
-)
 
--- Pasos individuales de workflows
-custom_workflow_steps (
-    id BIGINT PRIMARY KEY,
-    workflow_id BIGINT NOT NULL,
-    nombre VARCHAR(255) NOT NULL,
-    descripcion TEXT NULL,
-    orden INT NOT NULL,
-    gerencia_responsable_id BIGINT NULL,
+9. **Iniciar servidor**    INDEX tipo_activo (tipo_tramite_id, activo)
+
+```bash)
+
+php artisan serve
+
+```-- Pasos individuales de workflows
+
+workflow_steps (
+
+10. **Acceder al sistema**    id BIGINT PRIMARY KEY,
+
+```    workflow_id BIGINT NOT NULL,
+
+URL: http://127.0.0.1:8000    nombre VARCHAR(255) NOT NULL,
+
+Usuario: superadmin@muni.gob.pe    descripcion TEXT NULL,
+
+Password: password123    orden INT NOT NULL,
+
+```    gerencia_responsable_id BIGINT NULL,
+
     tiempo_estimado_horas INT NULL,
-    es_automatico BOOLEAN DEFAULT FALSE,
+
+---    es_automatico BOOLEAN DEFAULT FALSE,
+
     reglas_validacion JSON NULL,
-    configuracion JSON NULL,
+
+## 👤 Usuarios de Prueba    configuracion JSON NULL,
+
     created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    
-    FOREIGN KEY (workflow_id) REFERENCES custom_workflows(id) ON DELETE CASCADE,
-    FOREIGN KEY (gerencia_responsable_id) REFERENCES gerencias(id),
-    UNIQUE KEY workflow_orden (workflow_id, orden),
+
+### Administración    updated_at TIMESTAMP,
+
+| Email | Password | Rol |    
+
+|-------|----------|-----|    FOREIGN KEY (workflow_id) REFERENCES workflows(id) ON DELETE CASCADE,
+
+| superadmin@muni.gob.pe | password123 | Superadministrador |    FOREIGN KEY (gerencia_responsable_id) REFERENCES gerencias(id),
+
+| admin@muni.gob.pe | password123 | Administrador |    UNIQUE KEY workflow_orden (workflow_id, orden),
+
     INDEX workflow_gerencia (workflow_id, gerencia_responsable_id)
+
+### Jefes de Gerencia)
+
+| Email | Gerencia | Password |
+
+|-------|----------|----------|-- Transiciones entre pasos de workflow
+
+| roberto.sanchez@muni.gob.pe | GDUR | password123 |workflow_transitions (
+
+| maria.gonzalez@muni.gob.pe | GDEL | password123 |    id BIGINT PRIMARY KEY,
+
+| carmen.lopez@muni.gob.pe | GDS | password123 |    step_from_id BIGINT NOT NULL,
+
+    step_to_id BIGINT NOT NULL,
+
+### Funcionarios    condicion VARCHAR(255) NULL,
+
+| Email | Subgerencia | Password |    es_automatica BOOLEAN DEFAULT FALSE,
+
+|-------|-------------|----------|    requiere_documentos JSON NULL,
+
+| carlos.mendoza@muni.gob.pe | SGPUR | password123 |    configuracion JSON NULL,
+
+| laura.ruiz@muni.gob.pe | SGOPL | password123 |    created_at TIMESTAMP,
+
+| juan.torres@muni.gob.pe | SGLCI | password123 |    updated_at TIMESTAMP,
+
+    
+
+---    FOREIGN KEY (step_from_id) REFERENCES workflow_steps(id) ON DELETE CASCADE,
+
+    FOREIGN KEY (step_to_id) REFERENCES workflow_steps(id) ON DELETE CASCADE,
+
+## 🔐 Permisos del Sistema    UNIQUE KEY from_to (step_from_id, step_to_id)
+
 )
 
--- Transiciones entre pasos de workflow
-custom_workflow_transitions (
-    id BIGINT PRIMARY KEY,
-    step_from_id BIGINT NOT NULL,
-    step_to_id BIGINT NOT NULL,
-    condicion VARCHAR(255) NULL,
-    es_automatica BOOLEAN DEFAULT FALSE,
-    requiere_documentos JSON NULL,
-    configuracion JSON NULL,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    
-    FOREIGN KEY (step_from_id) REFERENCES custom_workflow_steps(id) ON DELETE CASCADE,
-    FOREIGN KEY (step_to_id) REFERENCES custom_workflow_steps(id) ON DELETE CASCADE,
-    UNIQUE KEY from_to (step_from_id, step_to_id)
-)
+### Categorías de Permisos (65 total)
 
 -- Progreso de expedientes en workflows
-expediente_workflow_progress (
-    id BIGINT PRIMARY KEY,
-    expediente_id BIGINT NOT NULL,
-    workflow_id BIGINT NOT NULL,
-    step_actual_id BIGINT NOT NULL,
-    fecha_inicio DATETIME NOT NULL,
-    fecha_fin DATETIME NULL,
-    tiempo_transcurrido_horas DECIMAL(8,2) NULL,
-    datos_progreso JSON NULL,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    
-    FOREIGN KEY (expediente_id) REFERENCES expedientes(id) ON DELETE CASCADE,
-    FOREIGN KEY (workflow_id) REFERENCES custom_workflows(id),
-    FOREIGN KEY (step_actual_id) REFERENCES custom_workflow_steps(id),
-    INDEX expediente_workflow (expediente_id, workflow_id),
-    INDEX step_fecha (step_actual_id, fecha_inicio)
-)
-```
 
-### **Tablas de Tipos y Configuración**
-```sql
--- Tipos de trámites configurables
-tipo_tramites (
-    id BIGINT PRIMARY KEY,
-    nombre VARCHAR(255) NOT NULL,
-    descripcion TEXT NULL,
-    codigo VARCHAR(50) UNIQUE NOT NULL,
-    categoria VARCHAR(100) NULL,
-    costo_base DECIMAL(10,2) DEFAULT 0.00,
-    tiempo_estimado_dias INT NULL,
-    documentos_requeridos JSON NULL,
-    requisitos TEXT NULL,
-    activo BOOLEAN DEFAULT TRUE,
-    workflow_default_id BIGINT NULL,
-    created_at TIMESTAMP,
+#### Expedientes (15)expediente_workflow_progress (
+
+- ver_expedientes, registrar_expediente, editar_expediente    id BIGINT PRIMARY KEY,
+
+- derivar_expediente, emitir_resolucion, rechazar_expediente    expediente_id BIGINT NOT NULL,
+
+- finalizar_expediente, archivar_expediente, subir_documento    workflow_id BIGINT NOT NULL,
+
+- ver_todos_expedientes, asignar_expediente, reasignar_expediente    step_actual_id BIGINT NOT NULL,
+
+- consultar_historial, exportar_expedientes, eliminar_expediente    fecha_inicio DATETIME NOT NULL,
+
+    fecha_fin DATETIME NULL,
+
+#### Usuarios (6)    tiempo_transcurrido_horas DECIMAL(8,2) NULL,
+
+- gestionar_usuarios, crear_usuarios, editar_usuarios    datos_progreso JSON NULL,
+
+- eliminar_usuarios, ver_todos_usuarios, asignar_usuarios_gerencia    created_at TIMESTAMP,
+
     updated_at TIMESTAMP,
-    
-    FOREIGN KEY (workflow_default_id) REFERENCES custom_workflows(id),
-    INDEX codigo_activo (codigo, activo),
-    INDEX categoria
-)
+
+#### Roles y Permisos (2)    
+
+- asignar_roles, gestionar_permisos    FOREIGN KEY (expediente_id) REFERENCES expedientes(id) ON DELETE CASCADE,
+
+    FOREIGN KEY (workflow_id) REFERENCES workflows(id),
+
+#### Gerencias (3)    FOREIGN KEY (step_actual_id) REFERENCES workflow_steps(id),
+
+- gestionar_gerencias, crear_gerencias, editar_gerencias    INDEX expediente_workflow (expediente_id, workflow_id),
+
+    INDEX step_fecha (step_actual_id, fecha_inicio)
+
+#### Procedimientos (3))
+
+- gestionar_procedimientos, crear_procedimientos, eliminar_procedimientos```
+
+
+
+#### Tipos de Trámite (6)### **Tablas de Tipos y Configuración**
+
+- gestionar_tipos_tramite, crear_tipos_tramite, editar_tipos_tramite```sql
+
+- eliminar_tipos_tramite, activar_tipos_tramite, ver_tipos_tramite-- Tipos de trámites configurables
+
+tipo_tramites (
+
+#### Reportes (4)    id BIGINT PRIMARY KEY,
+
+- ver_reportes, exportar_datos, ver_estadisticas_gerencia, ver_estadisticas_sistema    nombre VARCHAR(255) NOT NULL,
+
+    descripcion TEXT NULL,
+
+#### Configuración (3)    codigo VARCHAR(50) UNIQUE NOT NULL,
+
+- configurar_sistema, gestionar_respaldos, ver_logs    categoria VARCHAR(100) NULL,
+
+    costo_base DECIMAL(10,2) DEFAULT 0.00,
+
+#### Notificaciones (2)    tiempo_estimado_dias INT NULL,
+
+- enviar_notificaciones, gestionar_notificaciones    documentos_requeridos JSON NULL,
+
+    requisitos TEXT NULL,
+
+#### Pagos (3)    activo BOOLEAN DEFAULT TRUE,
+
+- gestionar_pagos, confirmar_pagos, ver_pagos    workflow_default_id BIGINT NULL,
+
+    created_at TIMESTAMP,
+
+#### Quejas (3)    updated_at TIMESTAMP,
+
+- gestionar_quejas, responder_quejas, escalar_quejas    
+
+    FOREIGN KEY (workflow_default_id) REFERENCES workflows(id),
+
+#### Workflows (11)    INDEX codigo_activo (codigo, activo),
+
+- gestionar_workflows, crear_workflows, editar_workflows, eliminar_workflows    INDEX categoria
+
+- ver_workflows, activar_workflows, clonar_workflows)
+
+- crear_reglas_flujo, editar_reglas_flujo, eliminar_reglas_flujo, ver_reglas_flujo
 
 -- Tipos de documentos aceptados
-tipo_documentos (
+
+---tipo_documentos (
+
     id BIGINT PRIMARY KEY,
-    nombre VARCHAR(255) NOT NULL,
+
+## 🚀 Próximos Pasos (Roadmap)    nombre VARCHAR(255) NOT NULL,
+
     descripcion TEXT NULL,
-    extensiones_permitidas JSON NULL,
-    tamaño_maximo_mb INT DEFAULT 10,
-    es_imagen BOOLEAN DEFAULT FALSE,
-    activo BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    
-    INDEX activo
-)
-```
 
-### **Tablas de Auditoría y Logs**
+### Corto Plazo (1-2 semanas)    extensiones_permitidas JSON NULL,
+
+- [ ] Completar módulo de notificaciones en tiempo real    tamaño_maximo_mb INT DEFAULT 10,
+
+- [ ] Implementar generación de reportes PDF/Excel    es_imagen BOOLEAN DEFAULT FALSE,
+
+- [ ] Portal ciudadano básico    activo BOOLEAN DEFAULT TRUE,
+
+- [ ] Dashboard con gráficos mejorados    created_at TIMESTAMP,
+
+    updated_at TIMESTAMP,
+
+### Mediano Plazo (1 mes)    
+
+- [ ] Sistema de pagos en línea    INDEX activo
+
+- [ ] Notificaciones por email)
+
+- [ ] Búsqueda avanzada full-text```
+
+- [ ] Métricas y KPIs avanzados
+
+- [ ] Firma digital de documentos### **Tablas de Auditoría y Logs**
+
 ```sql
--- Logs de acciones del sistema
-action_logs (
-    id BIGINT PRIMARY KEY,
-    user_id BIGINT NULL,
-    action VARCHAR(100) NOT NULL,
-    model_type VARCHAR(255) NULL,
+
+### Largo Plazo (2-3 meses)-- Logs de acciones del sistema
+
+- [ ] Integración con sistemas externos (RENIEC, SUNAT)action_logs (
+
+- [ ] App móvil (React Native / Flutter)    id BIGINT PRIMARY KEY,
+
+- [ ] OCR para documentos escaneados    user_id BIGINT NULL,
+
+- [ ] Chatbot de atención    action VARCHAR(100) NOT NULL,
+
+- [ ] Panel de Business Intelligence    model_type VARCHAR(255) NULL,
+
     model_id BIGINT NULL,
-    datos_anteriores JSON NULL,
+
+---    datos_anteriores JSON NULL,
+
     datos_nuevos JSON NULL,
-    ip_address VARCHAR(45) NULL,
+
+## 📝 Notas Técnicas    ip_address VARCHAR(45) NULL,
+
     user_agent VARCHAR(500) NULL,
-    created_at TIMESTAMP,
-    
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
-    INDEX user_fecha (user_id, created_at),
-    INDEX model_action (model_type, model_id, action),
-    INDEX fecha_action (created_at, action)
+
+### Arquitectura    created_at TIMESTAMP,
+
+- Patrón MVC (Model-View-Controller)    
+
+- Repository Pattern para lógica de negocio compleja    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+
+- Service Layer para operaciones transaccionales    INDEX user_fecha (user_id, created_at),
+
+- Policy-based authorization    INDEX model_action (model_type, model_id, action),
+
+- Queue para procesos pesados    INDEX fecha_action (created_at, action)
+
 )
 
--- Notificaciones del sistema
-notifications (
-    id CHAR(36) PRIMARY KEY,
-    type VARCHAR(255) NOT NULL,
-    notifiable_type VARCHAR(255) NOT NULL,
+### Optimizaciones Implementadas
+
+- ✅ Eager loading para relaciones-- Notificaciones del sistema
+
+- ✅ Índices en columnas de búsqueda frecuentenotifications (
+
+- ✅ Cache de permisos (Spatie)    id CHAR(36) PRIMARY KEY,
+
+- ✅ Paginación en listados    type VARCHAR(255) NOT NULL,
+
+- ✅ Soft deletes para auditoría    notifiable_type VARCHAR(255) NOT NULL,
+
     notifiable_id BIGINT NOT NULL,
-    data JSON NOT NULL,
-    read_at TIMESTAMP NULL,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    
-    INDEX notifiable (notifiable_type, notifiable_id),
-    INDEX read_at,
+
+### Seguridad    data JSON NOT NULL,
+
+- ✅ Validación de entrada en todos los formularios    read_at TIMESTAMP NULL,
+
+- ✅ Protección CSRF    created_at TIMESTAMP,
+
+- ✅ Sanitización de datos    updated_at TIMESTAMP,
+
+- ✅ Hashing de contraseñas (bcrypt)    
+
+- ✅ Autorización basada en políticas    INDEX notifiable (notifiable_type, notifiable_id),
+
+- ✅ Middleware de autenticación    INDEX read_at,
+
     INDEX created_at
-)
+
+---)
+
 ```
+
+## 🐛 Problemas Conocidos
 
 ### **Índices de Rendimiento Críticos**
-```sql
--- Índices para consultas frecuentes
-CREATE INDEX idx_expedientes_busqueda ON expedientes (numero_expediente, estado, fecha_ingreso);
-CREATE INDEX idx_expedientes_gerencia_funcionario ON expedientes (gerencia_actual_id, funcionario_asignado_id, estado);
-CREATE INDEX idx_historial_expediente_fecha ON historial_expedientes (expediente_id, created_at DESC);
-CREATE INDEX idx_documentos_expediente_tipo ON documentos_expediente (expediente_id, tipo_documento);
-CREATE INDEX idx_users_active_search ON users (activo, name, email);
-CREATE INDEX idx_gerencias_hierarchy ON gerencias (parent_id, nivel, activa);
-CREATE INDEX idx_workflow_progress_active ON expediente_workflow_progress (expediente_id, workflow_id, step_actual_id);
 
--- Índices para reportes y estadísticas
-CREATE INDEX idx_expedientes_stats ON expedientes (estado, gerencia_actual_id, created_at);
-CREATE INDEX idx_action_logs_reports ON action_logs (created_at, action, user_id);
-CREATE INDEX idx_notifications_unread ON notifications (notifiable_type, notifiable_id, read_at);
+1. ~~Workflows no asociados correctamente a tipos de trámite~~ ✅ **RESUELTO**```sql
+
+2. ~~Permisos de editar/eliminar tipos de trámite no asignados~~ ✅ **RESUELTO**-- Índices para consultas frecuentes
+
+3. ~~Variable $gerencias en rojo en IDE~~ ✅ **RESUELTO** (falso positivo)CREATE INDEX idx_expedientes_busqueda ON expedientes (numero_expediente, estado, fecha_ingreso);
+
+4. ⏳ Notificaciones en tiempo real pendientesCREATE INDEX idx_expedientes_gerencia_funcionario ON expedientes (gerencia_actual_id, funcionario_asignado_id, estado);
+
+5. ⏳ Exportación de reportes pendienteCREATE INDEX idx_historial_expediente_fecha ON historial_expedientes (expediente_id, created_at DESC);
+
+CREATE INDEX idx_documentos_expediente_tipo ON documentos_expediente (expediente_id, tipo_documento);
+
+---CREATE INDEX idx_users_active_search ON users (activo, name, email);
+
+CREATE INDEX idx_gerencias_hierarchy ON gerencias (parent_id, nivel, activa);
+
+## 📞 Contacto y SoporteCREATE INDEX idx_workflow_progress_active ON expediente_workflow_progress (expediente_id, workflow_id, step_actual_id);
+
+
+
+**Desarrollador**: Sistema Municipal-- Índices para reportes y estadísticas
+
+**Email**: soporte@muni.gob.peCREATE INDEX idx_expedientes_stats ON expedientes (estado, gerencia_actual_id, created_at);
+
+**Versión**: 1.0.0-betaCREATE INDEX idx_action_logs_reports ON action_logs (created_at, action, user_id);
+
+**Última Actualización**: 06 de Octubre, 2025CREATE INDEX idx_notifications_unread ON notifications (notifiable_type, notifiable_id, read_at);
+
 ```
 
 ---
+
+---
+
+## 📄 Licencia
 
 ## 🎯 Requerimientos Funcionales del Backend
 
-### **RF-001: Sistema de Autenticación y Autorización**
+Este proyecto es propiedad de la Municipalidad y está protegido bajo licencia propietaria.
+
+Todos los derechos reservados © 2025### **RF-001: Sistema de Autenticación y Autorización**
+
 - **RF-001.1** El sistema debe autenticar usuarios mediante email y contraseña con hash seguro
-- **RF-001.2** El sistema debe generar tokens JWT/Sanctum para autenticación stateless
+
+---- **RF-001.2** El sistema debe generar tokens JWT/Sanctum para autenticación stateless
+
 - **RF-001.3** El sistema debe validar tokens en cada request a endpoints protegidos
-- **RF-001.4** El sistema debe mantener sesiones web simultáneas con tokens API
+
+## 🎯 Estado General del Sistema- **RF-001.4** El sistema debe mantener sesiones web simultáneas con tokens API
+
 - **RF-001.5** El sistema debe permitir logout que invalide tokens activos
-- **RF-001.6** El sistema debe implementar rate limiting para prevenir ataques de fuerza bruta
 
-### **RF-002: Gestión de Usuarios y Permisos**
-- **RF-002.1** El sistema debe permitir CRUD completo de usuarios con validaciones
-- **RF-002.2** El sistema debe manejar roles jerárquicos: Super Admin, Admin, Funcionario, Mesa Partes, Ciudadano
-- **RF-002.3** El sistema debe asignar permisos granulares (59+ permisos) por módulo y acción
-- **RF-002.4** El sistema debe validar permisos antes de ejecutar operaciones CRUD
-- **RF-002.5** El sistema debe permitir asignación múltiple de roles y permisos por usuario
-- **RF-002.6** El sistema debe mantener audit trail de cambios en roles y permisos
-- **RF-002.7** El sistema debe permitir activación/desactivación de usuarios sin eliminar datos
+```- **RF-001.6** El sistema debe implementar rate limiting para prevenir ataques de fuerza bruta
 
-### **RF-003: Gestión de Estructura Organizacional**
-- **RF-003.1** El sistema debe permitir CRUD de gerencias con jerarquía padre-hijo ilimitada
-- **RF-003.2** El sistema debe asignar usuarios a múltiples gerencias
-- **RF-003.3** El sistema debe calcular estadísticas por gerencia (usuarios activos, expedientes)
-- **RF-003.4** El sistema debe validar que gerencias padre no puedan ser hijas de sus descendientes
+┌─────────────────────────────────────────────────────┐
+
+│  COMPLETITUD DEL PROYECTO: 85%                      │### **RF-002: Gestión de Usuarios y Permisos**
+
+├─────────────────────────────────────────────────────┤- **RF-002.1** El sistema debe permitir CRUD completo de usuarios con validaciones
+
+│  ████████████████████████████████████████████░░░░░  │- **RF-002.2** El sistema debe manejar roles jerárquicos: Super Admin, Admin, Funcionario, Mesa Partes, Ciudadano
+
+├─────────────────────────────────────────────────────┤- **RF-002.3** El sistema debe asignar permisos granulares (59+ permisos) por módulo y acción
+
+│  ✅ Core del Sistema: 95%                           │- **RF-002.4** El sistema debe validar permisos antes de ejecutar operaciones CRUD
+
+│  ✅ Autenticación y Seguridad: 100%                 │- **RF-002.5** El sistema debe permitir asignación múltiple de roles y permisos por usuario
+
+│  ✅ Gestión Documental: 90%                         │- **RF-002.6** El sistema debe mantener audit trail de cambios en roles y permisos
+
+│  ✅ Workflows: 85%                                   │- **RF-002.7** El sistema debe permitir activación/desactivación de usuarios sin eliminar datos
+
+│  ⏳ Notificaciones: 70%                             │
+
+│  ⏳ Reportes: 40%                                    │### **RF-003: Gestión de Estructura Organizacional**
+
+│  ⏳ Portal Ciudadano: 30%                           │- **RF-003.1** El sistema debe permitir CRUD de gerencias con jerarquía padre-hijo ilimitada
+
+│  ❌ Pagos en Línea: 60%                             │- **RF-003.2** El sistema debe asignar usuarios a múltiples gerencias
+
+└─────────────────────────────────────────────────────┘- **RF-003.3** El sistema debe calcular estadísticas por gerencia (usuarios activos, expedientes)
+
+```- **RF-003.4** El sistema debe validar que gerencias padre no puedan ser hijas de sus descendientes
+
 - **RF-003.5** El sistema debe permitir reorganización de jerarquías manteniendo integridad
-- **RF-003.6** El sistema debe generar reportes de estructura organizacional
+
+**El sistema está listo para ambiente de pruebas y desarrollo.**- **RF-003.6** El sistema debe generar reportes de estructura organizacional
+
+**Requiere completar módulos de notificaciones y reportes para producción.**
 
 ### **RF-004: Gestión de Expedientes**
 - **RF-004.1** El sistema debe generar números únicos de expediente con formato configurable
@@ -790,9 +1293,9 @@ documentos_expediente (id, expediente_id, nombre, ruta, tipo, tamaño)
 historial_expedientes (id, expediente_id, user_id, accion, estado_anterior, estado_nuevo)
 
 -- Workflows Personalizables
-custom_workflows (id, nombre, descripcion, activo)
-custom_workflow_steps (id, workflow_id, nombre, orden, reglas)
-custom_workflow_transitions (id, step_from_id, step_to_id, condiciones)
+workflows (id, nombre, descripcion, activo)
+workflow_steps (id, workflow_id, nombre, orden, reglas)
+workflow_transitions (id, step_from_id, step_to_id, condiciones)
 expediente_workflow_progress (id, expediente_id, workflow_id, step_actual_id)
 
 -- Mesa de Partes
@@ -1261,7 +1764,7 @@ POST /api/custom-workflow-steps
 
 {{
 
-    "gerencia_destino_id": 3,    "custom_workflow_id": 1,
+    "gerencia_destino_id": 3,    "workflow_id": 1,
 
     "usuario_destino_id": 5,    "nombre": "Revisión Inicial",
 
@@ -1297,7 +1800,7 @@ POST /api/custom-workflow-transitions
 
 ### Rechazar Expediente{
 
-```http    "custom_workflow_id": 1,
+```http    "workflow_id": 1,
 
 POST /api/expedientes/{id}/rechazar    "from_step_id": 1,
 
@@ -1547,7 +2050,7 @@ Content-Type: application/json| Jefe de Gerencia | `jefe@example.com` | `passwor
 
 {| Ciudadano | `ciudadano@example.com` | `password` | Creación y consulta |
 
-    "custom_workflow_id": 1,
+    "workflow_id": 1,
 
     "nombre": "Revisión Inicial",---
 
@@ -2183,11 +2686,11 @@ Authorization: Bearer 1|abcd1234efgh5678ijkl9012mnop3456GET    /api/mesa-partes/
 
 | gerente.desarrollo@municipalidad.gob.pe | password123 | jefe_gerencia | Desarrollo Económico |- `expedientes` - Expedientes municipales con workflows
 
-| funcionario.licencias@municipalidad.gob.pe | password123 | funcionario | Desarrollo Económico |- `custom_workflows` ⭐ - Workflows personalizables
+| funcionario.licencias@municipalidad.gob.pe | password123 | funcionario | Desarrollo Económico |- `workflows` ⭐ - Workflows personalizables
 
-| ciudadano@email.com | password123 | ciudadano | N/A |- `custom_workflow_steps` ⭐ - Pasos de workflow
+| ciudadano@email.com | password123 | ciudadano | N/A |- `workflow_steps` ⭐ - Pasos de workflow
 
-- `custom_workflow_transitions` ⭐ - Transiciones de workflow
+- `workflow_transitions` ⭐ - Transiciones de workflow
 
 ---- `gerencias` - Estructura jerárquica de gerencias
 
@@ -2409,9 +2912,9 @@ PUT    /api/mesa-partes/{id}
 ### 📊 **Tablas Principales**
 - `users` - Usuarios del sistema
 - `expedientes` - Expedientes municipales
-- `custom_workflows` ⭐ - Workflows personalizables
-- `custom_workflow_steps` ⭐ - Pasos de workflow
-- `custom_workflow_transitions` ⭐ - Transiciones de workflow
+- `workflows` ⭐ - Workflows personalizables
+- `workflow_steps` ⭐ - Pasos de workflow
+- `workflow_transitions` ⭐ - Transiciones de workflow
 - `gerencias` - Estructura de gerencias
 - `mesa_partes` - Documentos de entrada
 - `roles` / `permissions` - Sistema de permisos

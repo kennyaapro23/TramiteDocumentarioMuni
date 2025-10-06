@@ -30,6 +30,7 @@ return new class extends Migration
             $table->timestamp('fecha_firma')->nullable();
             $table->foreignId('gerencia_id')->nullable()->constrained()->onDelete('set null');
             $table->foreignId('gerencia_padre_id')->nullable()->constrained('gerencias')->onDelete('set null'); // Para subgerencias
+            $table->foreignId('responsable_id')->nullable()->constrained('users')->onDelete('set null'); // Usuario responsable actual
             $table->foreignId('usuario_registro_id')->nullable()->constrained('users')->onDelete('set null');
             $table->foreignId('usuario_revision_tecnica_id')->nullable()->constrained('users')->onDelete('set null');
             $table->foreignId('usuario_revision_legal_id')->nullable()->constrained('users')->onDelete('set null');
@@ -49,6 +50,7 @@ return new class extends Migration
             $table->index(['estado']);
             $table->index(['gerencia_id']);
             $table->index(['gerencia_padre_id']);
+            $table->index(['responsable_id']);
             $table->index(['usuario_registro_id']);
             $table->index(['fecha_registro']);
             $table->index(['numero']);

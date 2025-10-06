@@ -3,310 +3,277 @@
 namespace App\Http\Controllers;
 
 use App\Models\Workflow;
-use App\Models\CustomWorkflow;
-use App\Models\Gerencia;
-use App\Models\TipoTramite;
-use App\Models\User;
-use App\Models\WorkflowStep;
+use App\Repositories\WorkflowRepository;
+use App\Actions\CreateWorkflowAction;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class WorkflowController extends Controller
 {
-    public function __construct()
+    protected WorkflowRepository $workflowRepo;
+    protected CreateWorkflowAction $createAction;
+
+    public function __construct(WorkflowRepository $workflowRepo, CreateWorkflowAction $createAction)
     {
-        $this->middleware('permission:gestionar_workflows')->only('index');
-        $this->middleware('permission:crear_workflows')->only(['create', 'store']);
-        $this->middleware('permission:editar_workflows')->only(['edit', 'update']);
-        $this->middleware('permission:eliminar_workflows')->only('destroy');
+        $this->workflowRepo = $workflowRepo;
+        $this->createAction = $createAction;
+        $this->authorizeResource(Workflow::class, 'workflow');
     }
 
-    /**
-     * Display a listing of workflows.
-     */
+    // Hybrid methods (support both JSON and web responses)
     public function index(Request $request)
     {
-        // Solo usar CustomWorkflow ya que no existe tabla workflows estándar
-        $query = CustomWorkflow::with(['gerencia', 'steps'])
-            ->when($request->search, function($q, $search) {
-                $q->where('nombre', 'like', "%{$search}%")
-                  ->orWhere('descripcion', 'like', "%{$search}%")
-                  ->orWhere('codigo', 'like', "%{$search}%");
-            })
-            ->when($request->gerencia, function($q, $gerencia) {
-                $q->where('gerencia_id', $gerencia);
-            })
-            ->when($request->status !== null, function($q) use ($request) {
-                $q->where('activo', $request->status);
-            })
-            ->orderBy('created_at', 'desc');
-
-        $workflows = $query->paginate(10);
-
-        // Estadísticas
+        $filters = $request->only(['tipo', 'gerencia_id', 'activo', 'search', 'gerencia', 'status']);
+        $perPage = $request->wantsJson() ? (int)$request->get('per_page', 15) : 10;
+        $workflows = $this->workflowRepo->paginate($filters, $perPage);
+        
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'data' => $workflows]);
+        }
+        
+        // Estadísticas para la vista
         $stats = [
-            'total' => CustomWorkflow::count(),
-            'activos' => CustomWorkflow::where('activo', true)->count(),
-            'en_progreso' => 0, // Placeholder - ajustar según expedientes
-            'total_pasos' => CustomWorkflow::with('steps')->get()->sum(function($workflow) {
-                return $workflow->steps->count();
-            })
+            'total' => Workflow::count(),
+            'activos' => Workflow::where('activo', true)->count(),
+            'inactivos' => Workflow::where('activo', false)->count(),
+            'en_progreso' => \DB::table('expediente_workflow_progress')
+                ->whereIn('estado', ['pendiente', 'en_proceso'])
+                ->whereNull('fecha_completado')
+                ->distinct('expediente_id')
+                ->count('expediente_id'),
         ];
-
-        $gerencias = Gerencia::orderBy('nombre')->get();
-
-        return view('workflows.index', compact('workflows', 'stats', 'gerencias'));
+        
+        $options = $this->workflowRepo->getOptions();
+        $gerencias = $options['gerencias'] ?? [];
+        
+        return view('workflows.index', compact('workflows', 'options', 'stats', 'gerencias'));
     }
 
-    /**
-     * Show the form for creating a new workflow.
-     */
-    public function create()
-    {
-        // Gerencias principales (sin padre)
-        $gerenciasPrincipales = Gerencia::with(['responsable', 'subgerencias.responsable'])
-                                      ->whereNull('gerencia_padre_id')
-                                      ->where('activo', true)
-                                      ->orderBy('nombre')
-                                      ->get();
-        
-        // Todas las gerencias para el JavaScript
-        $todasGerencias = Gerencia::with('responsable')
-                                ->where('activo', true)
-                                ->orderBy('nombre')
-                                ->get();
-        
-        $tiposTramite = \App\Models\TipoTramite::with('gerencia.responsable')
-                                            ->where('activo', true)
-                                            ->orderBy('nombre')
-                                            ->get();
-        
-        $usuarios = User::select('id', 'name', 'email')->orderBy('name')->get();
-        
-        return view('workflows.create', compact('gerenciasPrincipales', 'todasGerencias', 'usuarios', 'tiposTramite'));
-    }
-
-    /**
-     * Store a newly created workflow.
-     */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'nombre' => 'required|string|max:255',
-            'descripcion' => 'nullable|string',
-            'tipo' => 'required|in:expediente,tramite,proceso',
-            'gerencia_id' => 'required|exists:gerencias,id',
-            'activo' => 'boolean',
-            'steps' => 'required|array|min:1',
-            'steps.*.nombre' => 'required|string|max:255',
-            'steps.*.descripcion' => 'nullable|string',
-            'steps.*.orden' => 'required|integer|min:1',
-            'steps.*.usuario_responsable' => 'nullable|exists:users,id',
-            'steps.*.tiempo_limite_dias' => 'nullable|integer|min:1',
-        ]);
-
-        DB::beginTransaction();
-        try {
-            // Crear el workflow personalizado
-            $workflow = CustomWorkflow::create([
-                'nombre' => $validated['nombre'],
-                'descripcion' => $validated['descripcion'],
-                'gerencia_id' => $validated['gerencia_id'],
-                'activo' => $validated['activo'] ?? true,
-                'created_by' => auth()->id(),
-                'codigo' => 'CW' . str_pad(CustomWorkflow::max('id') + 1, 4, '0', STR_PAD_LEFT),
-                'tipo' => $validated['tipo']
-            ]);
-
-            // Crear los pasos
-            foreach ($validated['steps'] as $stepData) {
-                $workflow->steps()->create([
-                    'nombre' => $stepData['nombre'],
-                    'descripcion' => $stepData['descripcion'],
-                    'orden' => $stepData['orden'],
-                    'usuario_responsable_id' => $stepData['usuario_responsable'],
-                    'tiempo_estimado' => $stepData['tiempo_limite_dias'],
+        // Si viene tipo_tramite_id, es el flujo de creación desde la vista
+        if ($request->has('tipo_tramite_id')) {
+            try {
+                $tipoTramite = \App\Models\TipoTramite::findOrFail($request->tipo_tramite_id);
+                
+                // Validar datos mínimos
+                $request->validate([
+                    'tipo_tramite_id' => 'required|exists:tipo_tramites,id',
+                    'steps' => 'required|array|min:1',
+                    'steps.*.nombre' => 'required|string',
+                    'steps.*.gerencia_id' => 'required|exists:gerencias,id',
+                    'steps.*.orden' => 'required|integer|min:1',
                 ]);
+                
+                // Preparar datos para crear el workflow
+                $workflowData = [
+                    'nombre' => 'Flujo para ' . $tipoTramite->nombre,
+                    'codigo' => 'WF-' . strtoupper(substr(uniqid(), -8)),
+                    'tipo' => 'tramite',
+                    'gerencia_id' => $tipoTramite->gerencia_id,
+                    'descripcion' => 'Workflow generado automáticamente para el trámite: ' . $tipoTramite->nombre,
+                    'configuracion' => [
+                        'tipo_tramite_id' => $tipoTramite->id,
+                        'tipo_tramite_nombre' => $tipoTramite->nombre,
+                    ],
+                    'activo' => true,
+                    'created_by' => auth()->id(),
+                ];
+                
+                DB::beginTransaction();
+                
+                // Crear el workflow
+                $workflow = Workflow::create($workflowData);
+                
+                // Crear los pasos
+                foreach ($request->steps as $stepData) {
+                    $workflow->steps()->create([
+                        'nombre' => $stepData['nombre'],
+                        'codigo' => 'STEP-' . strtoupper(substr(uniqid(), -6)),
+                        'orden' => $stepData['orden'],
+                        'gerencia_id' => $stepData['gerencia_id'],
+                        'tiempo_limite_dias' => $stepData['tiempo_limite_dias'] ?? 3,
+                        'tipo' => 'normal',
+                        'activo' => true,
+                    ]);
+                }
+                
+                DB::commit();
+                
+                return redirect()->route('workflows.show', $workflow)
+                    ->with('success', 'Workflow creado exitosamente con ' . count($request->steps) . ' pasos');
+                    
+            } catch (\Illuminate\Validation\ValidationException $e) {
+                return redirect()->back()
+                    ->withErrors($e->validator)
+                    ->withInput();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                \Log::error('Error al crear workflow: ' . $e->getMessage(), [
+                    'exception' => $e,
+                    'request' => $request->all()
+                ]);
+                return redirect()->back()
+                    ->withErrors(['error' => 'Error al crear el workflow: ' . $e->getMessage()])
+                    ->withInput();
             }
-
-            DB::commit();
-
-            if (request()->wantsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Workflow creado exitosamente.',
-                    'data' => $workflow
-                ], 201);
-            }
-
-            return redirect()->route('workflows.index')
-                           ->with('success', 'Workflow creado exitosamente.');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            
-            if (request()->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Error al crear el workflow: ' . $e->getMessage()
-                ], 500);
-            }
-
-            return back()->withInput()
-                         ->with('error', 'Error al crear el workflow: ' . $e->getMessage());
         }
+        
+        // Flujo normal con validación estricta (para API o formulario avanzado)
+        $validator = $this->validateWorkflow($request);
+        if ($validator->fails()) {
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            }
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+        
+        $workflow = $this->createAction->execute($request->all());
+        
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Workflow creado exitosamente', 'data' => $workflow], 201);
+        }
+        
+        return redirect()->route('workflows.index')->with('success', 'Workflow creado exitosamente');
     }
 
-    /**
-     * Display the specified workflow.
-     */
-    public function show($id)
+    public function show(Workflow $workflow)
     {
-        // Solo buscar en CustomWorkflow
-        $workflow = CustomWorkflow::with(['gerencia', 'steps.usuarioResponsable', 'creador'])->findOrFail($id);
-
-        // Estadísticas específicas del workflow
+        if (request()->wantsJson()) {
+            return response()->json(['success' => true, 'data' => $workflow]);
+        }
+        
+        // Calcular estadísticas para el workflow específico
         $stats = [
-            'expedientes_procesados' => 0, // Placeholder
-            'expedientes_activos' => 0, // Placeholder
-            'tiempo_promedio' => 0, // Placeholder
-            'total_pasos' => $workflow->steps->count(),
+            'total_pasos' => $workflow->steps()->count(),
+            'expedientes_procesados' => \DB::table('expediente_workflow_progress')
+                ->join('workflow_steps', 'expediente_workflow_progress.workflow_step_id', '=', 'workflow_steps.id')
+                ->where('workflow_steps.workflow_id', $workflow->id)
+                ->distinct('expediente_workflow_progress.expediente_id')
+                ->count('expediente_workflow_progress.expediente_id'),
+            'expedientes_activos' => \DB::table('expediente_workflow_progress')
+                ->join('workflow_steps', 'expediente_workflow_progress.workflow_step_id', '=', 'workflow_steps.id')
+                ->where('workflow_steps.workflow_id', $workflow->id)
+                ->whereIn('expediente_workflow_progress.estado', ['pendiente', 'en_proceso'])
+                ->whereNull('expediente_workflow_progress.fecha_completado')
+                ->distinct('expediente_workflow_progress.expediente_id')
+                ->count('expediente_workflow_progress.expediente_id'),
+            'tiempo_promedio' => round(\DB::table('expediente_workflow_progress')
+                ->join('workflow_steps', 'expediente_workflow_progress.workflow_step_id', '=', 'workflow_steps.id')
+                ->where('workflow_steps.workflow_id', $workflow->id)
+                ->whereNotNull('expediente_workflow_progress.fecha_completado')
+                ->whereNotNull('expediente_workflow_progress.fecha_inicio')
+                ->selectRaw('AVG(DATEDIFF(fecha_completado, fecha_inicio)) as promedio')
+                ->value('promedio') ?? 0, 1),
         ];
-
+        
         return view('workflows.show', compact('workflow', 'stats'));
     }
 
-    /**
-     * Show the form for editing the workflow.
-     */
-    public function edit($id)
+    public function update(Request $request, Workflow $workflow)
     {
-        // Solo buscar en CustomWorkflow
-        $workflow = CustomWorkflow::with(['steps'])->findOrFail($id);
-        $isCustom = true; // Siempre será true ya que solo manejamos CustomWorkflow
-
-        $gerencias = Gerencia::orderBy('nombre')->get();
+        $validator = $this->validateWorkflow($request, $workflow->id);
+        if ($validator->fails()) {
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            }
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
         
-        return view('workflows.edit', compact('workflow', 'gerencias', 'isCustom'));
+        $workflow = $this->workflowRepo->update($workflow->id, $request->all());
+        
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Workflow actualizado exitosamente', 'data' => $workflow]);
+        }
+        
+        return redirect()->route('workflows.index')->with('success', 'Workflow actualizado exitosamente');
     }
 
-    /**
-     * Update the specified workflow.
-     */
-    public function update(Request $request, $id)
+    public function destroy(Workflow $workflow)
     {
-        // Solo buscar en CustomWorkflow
-        $workflow = CustomWorkflow::findOrFail($id);
+        $this->workflowRepo->delete($workflow->id);
+        
+        if (request()->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Workflow eliminado exitosamente']);
+        }
+        
+        return redirect()->route('workflows.index')->with('success', 'Workflow eliminado exitosamente');
+    }
 
-        $validated = $request->validate([
+    public function duplicate($id): JsonResponse
+    {
+        $newWorkflow = $this->workflowRepo->duplicate($id);
+        return response()->json(['success' => true, 'message' => 'Workflow duplicado exitosamente', 'data' => $newWorkflow]);
+    }
+
+    public function getOptions(): JsonResponse
+    {
+        $options = $this->workflowRepo->getOptions();
+        return response()->json(['success' => true, 'data' => $options]);
+    }
+
+    public function create()
+    {
+        $options = $this->workflowRepo->getOptions();
+        
+        // Datos adicionales para la vista de crear workflow
+        $tiposTramite = \App\Models\TipoTramite::with('gerencia')->get();
+        
+        // Cargar gerencias con responsables y usuarios asignados
+        $gerenciasPrincipales = \App\Models\Gerencia::whereNull('gerencia_padre_id')
+            ->with([
+                'subgerencias.responsable', 
+                'subgerencias.usuarios', // Usuarios asignados a cada subgerencia
+                'responsable',
+                'usuarios' // Usuarios asignados a la gerencia principal
+            ])
+            ->get();
+            
+        $todasGerencias = \App\Models\Gerencia::with(['responsable', 'usuarios'])->get();
+        
+        // Cargar todos los usuarios con su gerencia asignada y sus roles
+        $usuarios = \App\Models\User::with('roles:id,name')
+            ->select('id', 'name', 'email', 'gerencia_id')
+            ->get()
+            ->map(function($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'gerencia_id' => $user->gerencia_id,
+                    'rol' => $user->roles->first()?->name ?? 'sin_rol'
+                ];
+            });
+        
+        return view('workflows.create', compact('options', 'tiposTramite', 'gerenciasPrincipales', 'todasGerencias', 'usuarios'));
+    }
+
+    public function edit(Workflow $workflow)
+    {
+        $options = $this->workflowRepo->getOptions();
+        
+        // Datos adicionales para la vista de editar
+        $gerencias = \App\Models\Gerencia::all();
+        $usuarios = \App\Models\User::select('id', 'name', 'email')->get();
+        $isCustom = $workflow->tipo === 'personalizado';
+        
+        return view('workflows.edit', compact('workflow', 'options', 'gerencias', 'usuarios', 'isCustom'));
+    }
+
+    private function validateWorkflow(Request $request, $id = null)
+    {
+        return Validator::make($request->all(), [
             'nombre' => 'required|string|max:255',
+            'codigo' => $id ? ['required', 'string', 'max:100', Rule::unique('workflows')->ignore($id)] 
+                            : 'required|string|max:100|unique:workflows,codigo',
             'descripcion' => 'nullable|string',
-            'tipo' => 'required|in:expediente,tramite,proceso',
-            'gerencia_id' => 'required|exists:gerencias,id',
-            'activo' => 'boolean',
-            'steps' => 'required|array|min:1',
-            'steps.*.nombre' => 'required|string|max:255',
-            'steps.*.descripcion' => 'nullable|string',
-            'steps.*.orden' => 'required|integer|min:1',
-            'steps.*.usuario_responsable' => 'nullable|exists:users,id',
-            'steps.*.tiempo_limite_dias' => 'nullable|integer|min:1',
+            'tipo' => 'required|string|in:expediente,tramite,proceso',
+            'configuracion' => 'nullable|array',
+            'gerencia_id' => 'nullable|exists:gerencias,id',
+            'activo' => 'boolean'
         ]);
-
-        DB::beginTransaction();
-        try {
-            $workflow->update([
-                'nombre' => $validated['nombre'],
-                'descripcion' => $validated['descripcion'],
-                'tipo' => $validated['tipo'],
-                'gerencia_id' => $validated['gerencia_id'],
-                'activo' => $validated['activo'] ?? true,
-            ]);
-
-            // Eliminar pasos existentes y crear nuevos
-            $workflow->steps()->delete();
-            
-            foreach ($validated['steps'] as $stepData) {
-                $workflow->steps()->create([
-                    'nombre' => $stepData['nombre'],
-                    'descripcion' => $stepData['descripcion'],
-                    'orden' => $stepData['orden'],
-                    'usuario_responsable_id' => $stepData['usuario_responsable'],
-                    'tiempo_estimado' => $stepData['tiempo_limite_dias'],
-                ]);
-            }
-
-            DB::commit();
-
-            if (request()->wantsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Workflow actualizado exitosamente.',
-                    'data' => $workflow->fresh(['steps'])
-                ]);
-            }
-
-            return redirect()->route('workflows.index')
-                           ->with('success', 'Workflow actualizado exitosamente.');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            
-            if (request()->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Error al actualizar el workflow: ' . $e->getMessage()
-                ], 500);
-            }
-
-            return back()->withInput()
-                         ->with('error', 'Error al actualizar el workflow: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Remove the specified workflow.
-     */
-    public function destroy($id)
-    {
-        // Solo buscar en CustomWorkflow
-        $workflow = CustomWorkflow::findOrFail($id);
-
-        try {
-            // Verificar si hay expedientes utilizando este workflow
-            $expedientesCount = $workflow->expedientes()->count();
-            
-            if ($expedientesCount > 0) {
-                if (request()->wantsJson()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => "No se puede eliminar el workflow porque tiene {$expedientesCount} expediente(s) asociado(s)."
-                    ], 422);
-                }
-
-                return back()->with('error', "No se puede eliminar el workflow porque tiene {$expedientesCount} expediente(s) asociado(s).");
-            }
-
-            $workflow->delete();
-
-            if (request()->wantsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Workflow eliminado exitosamente.'
-                ]);
-            }
-
-            return redirect()->route('workflows.index')
-                           ->with('success', 'Workflow eliminado exitosamente.');
-
-        } catch (\Exception $e) {
-            if (request()->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Error al eliminar el workflow: ' . $e->getMessage()
-                ], 500);
-            }
-
-            return back()->with('error', 'Error al eliminar el workflow: ' . $e->getMessage());
-        }
     }
 }

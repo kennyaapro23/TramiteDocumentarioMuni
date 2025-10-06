@@ -17,7 +17,24 @@ class TramiteController extends Controller
      */
     public function index()
     {
-        $tramites = TipoTramite::orderBy('nombre')->paginate(15);
+        $tramites = TipoTramite::with(['gerencia', 'expedientes'])
+            ->orderBy('nombre')
+            ->paginate(15);
+        
+        // Obtener workflows asociados a cada tipo de trámite
+        foreach ($tramites as $tramite) {
+            // Buscar workflow específico por tipo_tramite_id en configuración
+            $tramite->workflow = \App\Models\Workflow::where('activo', true)
+                ->where(function($query) use ($tramite) {
+                    $query->whereJsonContains('configuracion->tipo_tramite_id', $tramite->id)
+                          ->orWhere('configuracion->tipo_tramite_id', (string)$tramite->id);
+                })
+                ->with(['steps' => function($query) {
+                    $query->orderBy('orden');
+                }, 'gerencia'])
+                ->first();
+        }
+        
         return view('tramites.index', compact('tramites'));
     }
 

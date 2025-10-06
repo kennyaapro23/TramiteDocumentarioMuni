@@ -30,7 +30,25 @@
             @endrole
         </div>
 
-        <form method="POST" action="{{ route('workflows.store') }}" class="space-y-8">
+        <!-- Mensajes de Error -->
+        @if ($errors->any())
+            <div class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                <strong class="font-bold">¡Hay errores en el formulario!</strong>
+                <ul class="mt-2 list-disc list-inside">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('workflows.store') }}" class="space-y-8" @submit="onFormSubmit">
             @csrf
             
             <!-- Formulario Principal -->
@@ -259,19 +277,27 @@ function tramiteFlowForm() {
             };
             this.tramiteName = tipoTramite.nombre;
 
-            // Si el trámite tiene una gerencia específica, mostrar solo esa
+            // Si el trámite tiene una gerencia específica, mostrar solo esa CON SUS SUBGERENCIAS
             if (tipoTramite.gerencia_id) {
-                const gerenciaEspecifica = this.todasGerencias.find(g => g.id == tipoTramite.gerencia_id);
-                if (gerenciaEspecifica) {
-                    // Si es una subgerencia, incluir también su gerencia padre
-                    if (gerenciaEspecifica.gerencia_padre_id) {
-                        const gerenciaPadre = this.todasGerencias.find(g => g.id == gerenciaEspecifica.gerencia_padre_id);
+                // Buscar primero en gerencias principales
+                let gerenciaEspecifica = this.gerenciasPrincipales.find(g => g.id == tipoTramite.gerencia_id);
+                
+                // Si no la encuentra, buscar en todas las gerencias (puede ser una subgerencia)
+                if (!gerenciaEspecifica) {
+                    gerenciaEspecifica = this.todasGerencias.find(g => g.id == tipoTramite.gerencia_id);
+                    
+                    // Si es una subgerencia, obtener su gerencia padre
+                    if (gerenciaEspecifica && gerenciaEspecifica.gerencia_padre_id) {
+                        const gerenciaPadre = this.gerenciasPrincipales.find(g => g.id == gerenciaEspecifica.gerencia_padre_id);
                         this.gerenciasDisponibles = gerenciaPadre ? [gerenciaPadre] : [];
-                    } else {
-                        // Es una gerencia principal
-                        this.gerenciasDisponibles = [gerenciaEspecifica];
                     }
+                } else {
+                    // Es una gerencia principal, incluir con sus subgerencias
+                    this.gerenciasDisponibles = [gerenciaEspecifica];
                 }
+                
+                console.log('Gerencia específica encontrada:', gerenciaEspecifica);
+                console.log('Gerencias disponibles:', this.gerenciasDisponibles);
             } else {
                 // Si no tiene gerencia específica, mostrar todas
                 this.gerenciasDisponibles = this.gerenciasPrincipales;
@@ -282,12 +308,40 @@ function tramiteFlowForm() {
         },
         
         elegirGerencia(gerencia) {
+            console.log('=== ELIGIENDO GERENCIA ===');
+            console.log('Gerencia:', gerencia);
+            console.log('Responsable directo:', gerencia.responsable);
+            console.log('Responsable ID:', gerencia.responsable_id);
+            console.log('Usuarios de la gerencia:', gerencia.usuarios);
+            
             if (!this.isGerenciaSelected(gerencia.id)) {
+                // Buscar responsable en este orden:
+                // 1. Responsable directo (campo responsable_id)
+                // 2. Primer usuario asignado a esta gerencia
+                // 3. Buscar en lista global de usuarios por gerencia_id
+                let responsable = gerencia.responsable;
+                
+                // Si no tiene responsable directo, tomar el primer usuario de la gerencia
+                if (!responsable && gerencia.usuarios && gerencia.usuarios.length > 0) {
+                    responsable = gerencia.usuarios[0];
+                    console.log('Responsable tomado del primer usuario de la gerencia:', responsable);
+                }
+                
+                // Si aún no hay responsable, buscar en la lista global de usuarios por gerencia_id
+                if (!responsable) {
+                    responsable = this.usuarios.find(u => u.gerencia_id == gerencia.id);
+                    console.log('Responsable encontrado en lista global por gerencia_id:', responsable);
+                }
+                
                 this.areasSeleccionadas.push({
                     id: gerencia.id,
                     nombre: gerencia.nombre,
-                    responsable: gerencia.responsable
+                    gerencia_padre_id: gerencia.gerencia_padre_id || null,
+                    responsable: responsable || null,
+                    cargo_responsable: responsable ? this.getRolNombre(responsable.rol) : 'Sin asignar'
                 });
+                
+                console.log('Área agregada:', this.areasSeleccionadas[this.areasSeleccionadas.length - 1]);
             }
         },
         
@@ -316,6 +370,42 @@ function tramiteFlowForm() {
                 return area.responsable.name;
             }
             return 'Sin responsable asignado';
+        },
+        
+        getRolNombre(rol) {
+            const roles = {
+                'superadministrador': 'Super Administrador',
+                'administrador': 'Administrador',
+                'jefe_gerencia': 'Jefe de Gerencia',
+                'funcionario': 'Funcionario',
+                'funcionario_junior': 'Funcionario Junior',
+                'supervisor': 'Supervisor',
+                'ciudadano': 'Ciudadano',
+                'sin_rol': 'Sin rol asignado'
+            };
+            return roles[rol] || rol;
+        },
+        
+        onFormSubmit(event) {
+            console.log('=== FORMULARIO ENVIÁNDOSE ===');
+            console.log('Tipo de Trámite ID:', this.selectedTipoTramite);
+            console.log('Áreas Seleccionadas:', this.areasSeleccionadas);
+            console.log('Cantidad de pasos:', this.areasSeleccionadas.length);
+            
+            if (!this.selectedTipoTramite) {
+                event.preventDefault();
+                alert('Por favor seleccione un tipo de trámite');
+                return false;
+            }
+            
+            if (this.areasSeleccionadas.length === 0) {
+                event.preventDefault();
+                alert('Por favor seleccione al menos una gerencia para el flujo');
+                return false;
+            }
+            
+            console.log('Formulario válido, enviando...');
+            // El formulario se enviará normalmente
         }
     }
 }

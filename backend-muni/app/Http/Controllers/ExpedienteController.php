@@ -32,15 +32,14 @@ class ExpedienteController extends Controller
         
         $query = Expediente::with([
             'gerencia', 
-            'gerenciaPadre', 
+            'gerencia.gerenciaPadre', 
             'usuarioRegistro',
-            'documentos'
+            'files'
         ]);
 
         // Filtros por permisos y gerencia del usuario
-        if ($user->hasRole('mesa_partes')) {
-            $query->where('usuario_registro_id', $user->id);
-        } elseif ($user->hasRole('gerente_urbano') || $user->hasRole('inspector')) {
+        // NOTA: mesa_partes eliminado - sistema usa workflows
+        if ($user->hasRole('gerente_urbano') || $user->hasRole('inspector')) {
             if ($user->gerencia_id) {
                 $query->where(function($q) use ($user) {
                     $q->where('gerencia_id', $user->gerencia_id)
@@ -91,7 +90,8 @@ class ExpedienteController extends Controller
 
         $gerencias = Gerencia::where('activo', true)->get();
         $tipos_tramite = \App\Models\TipoTramite::where('activo', true)->get();
-        $workflows = \App\Models\WorkflowRule::where('activo', true)->get();
+    // Usar el scope definido en el modelo para filtrar reglas activas
+    $workflows = \App\Models\WorkflowRule::activas()->get();
 
         return view('expedientes.index', compact(
             'expedientes', 
@@ -111,15 +111,14 @@ class ExpedienteController extends Controller
         
         $query = Expediente::with([
             'gerencia', 
-            'gerenciaPadre', 
+            'gerencia.gerenciaPadre', 
             'usuarioRegistro',
-            'documentos'
+            'files'
         ]);
 
         // Filtros por permisos y gerencia del usuario
-        if ($user->hasRole('mesa_partes')) {
-            $query->where('usuario_registro_id', $user->id);
-        } elseif ($user->hasRole('gerente_urbano') || $user->hasRole('inspector')) {
+        // NOTA: mesa_partes eliminado - sistema usa workflows
+        if ($user->hasRole('gerente_urbano') || $user->hasRole('inspector')) {
             // Usuarios de gerencia solo ven expedientes de su gerencia
             if ($user->gerencia_id) {
                 $query->where(function($q) use ($user) {
@@ -374,7 +373,8 @@ class ExpedienteController extends Controller
     }
 
     /**
-     * Derivar expediente a gerencia (Mesa de Partes).
+     * Derivar expediente a gerencia.
+     * NOTA: Con workflows esto debería ser automático, pero se mantiene para casos especiales
      */
     public function derivar(Request $request, Expediente $expediente): JsonResponse
     {
@@ -733,9 +733,8 @@ class ExpedienteController extends Controller
         $query = Expediente::query();
         
         // Filtrar por permisos del usuario
-        if ($user->hasRole('mesa_partes')) {
-            $query->where('usuario_registro_id', $user->id);
-        } elseif ($user->hasRole('gerente_urbano')) {
+        // NOTA: mesa_partes eliminado - sistema usa workflows
+        if ($user->hasRole('gerente_urbano')) {
             $query->where('gerencia_id', $user->gerencia_id ?? 0);
         }
         

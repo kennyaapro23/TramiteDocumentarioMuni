@@ -10,6 +10,12 @@ class DocumentoExpediente extends Model
 {
     use HasFactory;
 
+    /**
+     * Explicit table name: migration created 'documentos_expediente'
+     * (note pluralization differs from Eloquent default for this class name).
+     */
+    protected $table = 'documentos_expediente';
+
     protected $fillable = [
         'expediente_id',
         'nombre',

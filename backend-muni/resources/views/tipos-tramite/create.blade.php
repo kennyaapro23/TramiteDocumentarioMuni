@@ -120,12 +120,15 @@
                     <div class="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded-md p-3">
                         @foreach($tiposDocumento as $tipoDoc)
                             <div class="flex items-center">
-                                <input type="checkbox" name="documentos_requeridos[]" id="doc_{{ $tipoDoc->id }}" 
+                                <input type="checkbox" name="documentos[]" id="doc_{{ $tipoDoc->id }}" 
                                        value="{{ $tipoDoc->id }}"
-                                       {{ in_array($tipoDoc->id, old('documentos_requeridos', [])) ? 'checked' : '' }}
+                                       {{ in_array($tipoDoc->id, old('documentos', [])) ? 'checked' : '' }}
                                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                                 <label for="doc_{{ $tipoDoc->id }}" class="ml-2 text-sm text-gray-700">
                                     {{ $tipoDoc->nombre }}
+                                    @if($tipoDoc->descripcion)
+                                        <span class="text-gray-500 text-xs">- {{ $tipoDoc->descripcion }}</span>
+                                    @endif
                                 </label>
                             </div>
                         @endforeach

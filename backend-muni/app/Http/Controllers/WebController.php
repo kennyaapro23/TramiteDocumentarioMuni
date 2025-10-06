@@ -35,8 +35,16 @@ class WebController extends Controller
             'password' => ['required'],
         ]);
 
+        // Log para debug
+        \Log::info('Intento de login', [
+            'email' => $credentials['email'],
+            'ip' => $request->ip()
+        ]);
+
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
+            
+            \Log::info('Login exitoso', ['user_id' => Auth::id()]);
             
             // Si es una request AJAX, devolver JSON
             if ($request->ajax() || $request->wantsJson()) {
@@ -49,6 +57,8 @@ class WebController extends Controller
             
             return redirect()->intended(route('dashboard'));
         }
+
+        \Log::warning('Login fallido', ['email' => $credentials['email']]);
 
         // Si es una request AJAX, devolver JSON con errores
         if ($request->ajax() || $request->wantsJson()) {
@@ -134,19 +144,53 @@ class WebController extends Controller
         // Obtener todos los permisos agrupados por módulo
         $permisos = \Spatie\Permission\Models\Permission::all();
         
-        // Agrupar permisos por módulo (primera parte antes del punto)
-        $permisosPorModulo = $permisos->groupBy(function($permiso) {
-            $parts = explode('.', $permiso->name);
-            return $parts[0] ?? 'otros';
+        // Definir categorías de módulos
+        $modulosMap = [
+            'expedientes' => ['ver_expedientes', 'registrar_expediente', 'editar_expediente', 'derivar_expediente', 'emitir_resolucion', 'rechazar_expediente', 'finalizar_expediente', 'archivar_expediente', 'subir_documento', 'ver_todos_expedientes', 'asignar_expediente', 'reasignar_expediente', 'consultar_historial', 'exportar_expedientes', 'eliminar_expediente'],
+            'usuarios' => ['gestionar_usuarios', 'crear_usuarios', 'editar_usuarios', 'eliminar_usuarios', 'ver_todos_usuarios', 'asignar_usuarios_gerencia'],
+            'roles_permisos' => ['asignar_roles', 'gestionar_permisos'],
+            'gerencias' => ['gestionar_gerencias', 'crear_gerencias', 'editar_gerencias'],
+            'procedimientos' => ['gestionar_procedimientos', 'crear_procedimientos', 'eliminar_procedimientos'],
+            'tipos_tramite' => ['gestionar_tipos_tramite', 'crear_tipos_tramite', 'editar_tipos_tramite', 'eliminar_tipos_tramite', 'activar_tipos_tramite', 'ver_tipos_tramite'],
+            'reportes' => ['ver_reportes', 'exportar_datos', 'ver_estadisticas_gerencia', 'ver_estadisticas_sistema'],
+            'configuracion' => ['configurar_sistema', 'gestionar_respaldos', 'ver_logs'],
+            'notificaciones' => ['enviar_notificaciones', 'gestionar_notificaciones'],
+            'pagos' => ['gestionar_pagos', 'confirmar_pagos', 'ver_pagos'],
+            'quejas' => ['gestionar_quejas', 'responder_quejas', 'escalar_quejas'],
+            'workflows' => ['gestionar_workflows', 'crear_workflows', 'editar_workflows', 'eliminar_workflows', 'ver_workflows', 'activar_workflows', 'clonar_workflows', 'crear_reglas_flujo', 'editar_reglas_flujo', 'eliminar_reglas_flujo', 'ver_reglas_flujo', 'activar_desactivar_reglas', 'crear_etapas_flujo', 'editar_etapas_flujo', 'eliminar_etapas_flujo', 'ver_etapas_flujo'],
+        ];
+        
+        // Agrupar permisos por módulo
+        $permisosPorModulo = collect();
+        foreach ($modulosMap as $modulo => $permisosNombres) {
+            $permisosModulo = $permisos->filter(function($permiso) use ($permisosNombres) {
+                return in_array($permiso->name, $permisosNombres);
+            });
+            
+            if ($permisosModulo->count() > 0) {
+                $permisosPorModulo->put($modulo, $permisosModulo);
+            }
+        }
+        
+        // Agregar permisos no categorizados
+        $permisosCategorizados = collect($modulosMap)->flatten()->toArray();
+        $permisosOtros = $permisos->filter(function($permiso) use ($permisosCategorizados) {
+            return !in_array($permiso->name, $permisosCategorizados);
         });
+        
+        if ($permisosOtros->count() > 0) {
+            $permisosPorModulo->put('otros', $permisosOtros);
+        }
         
         // Estadísticas
         $stats = [
             'total_permisos' => $permisos->count(),
-            'permisos_activos' => $permisos->count(), // Todos activos por defecto
+            'permisos_activos' => $permisos->count(),
             'total_modulos' => $permisosPorModulo->count(),
             'permisos_criticos' => $permisos->filter(function($permiso) {
-                return str_contains($permiso->name, 'delete') || str_contains($permiso->name, 'admin');
+                return str_contains($permiso->name, 'eliminar') || 
+                       str_contains($permiso->name, 'gestionar_respaldos') ||
+                       str_contains($permiso->name, 'configurar_sistema');
             })->count()
         ];
         

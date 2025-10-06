@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Builders\WorkflowRuleBuilder;
 
 class WorkflowRule extends Model
 {
@@ -47,6 +48,15 @@ class WorkflowRule extends Model
     public function scopeActivas($query)
     {
         return $query->where('activa', true);
+    }
+
+    /**
+     * Use custom Eloquent builder for this model so we can transparently
+     * accept legacy calls using "activo" as column name.
+     */
+    public function newEloquentBuilder($query)
+    {
+        return new WorkflowRuleBuilder($query);
     }
 
     /**

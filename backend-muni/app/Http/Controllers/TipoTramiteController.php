@@ -72,8 +72,8 @@ class TipoTramiteController extends Controller
             'codigo' => 'nullable|string|max:10|unique:tipo_tramites,codigo',
             'descripcion' => 'nullable|string|max:1000',
             'gerencia_id' => 'required|exists:gerencias,id',
-            'documentos_requeridos' => 'nullable|array',
-            'documentos_requeridos.*' => 'integer|exists:tipo_documentos,id',
+            'documentos' => 'nullable|array',
+            'documentos.*' => 'integer|exists:tipo_documentos,id',
             'costo' => 'required|numeric|min:0',
             'tiempo_estimado_dias' => 'required|integer|min:1|max:365',
             'requiere_pago' => 'boolean',
@@ -88,6 +88,11 @@ class TipoTramiteController extends Controller
         DB::beginTransaction();
         try {
             $tipoTramite = TipoTramite::create($validated);
+
+            // Sincronizar relación many-to-many con documentos requeridos
+            if (isset($validated['documentos'])) {
+                $tipoTramite->documentos()->sync($validated['documentos']);
+            }
 
             DB::commit();
 
@@ -121,13 +126,31 @@ class TipoTramiteController extends Controller
      */
     public function show(TipoTramite $tipoTramite)
     {
-        $tipoTramite->load(['gerencia', 'expedientes']);
+        $tipoTramite->load(['gerencia', 'expedientes', 'documentos']);
+        
+        // Calcular tiempo promedio real de procesamiento
+        $tiempoPromedioReal = 0;
+        $expedientesFinalizados = $tipoTramite->expedientes()
+            ->whereIn('estado', ['resuelto', 'archivado'])
+            ->whereNotNull('fecha_registro')
+            ->whereNotNull('fecha_resolucion')
+            ->get();
+        
+        if ($expedientesFinalizados->count() > 0) {
+            $totalDias = 0;
+            foreach ($expedientesFinalizados as $exp) {
+                $diasProcesamiento = $exp->fecha_registro->diffInDays($exp->fecha_resolucion);
+                $totalDias += $diasProcesamiento;
+            }
+            $tiempoPromedioReal = round($totalDias / $expedientesFinalizados->count(), 1);
+        }
         
         $stats = [
             'expedientes_procesados' => $tipoTramite->expedientes()->count(),
-            'expedientes_completados' => $tipoTramite->expedientes()->where('estado', 'finalizado')->count(),
-            'tiempo_promedio_real' => 0, // Se calculará cuando tengamos más data
-            'ingresos_generados' => $tipoTramite->expedientes()->sum('monto_pagado') ?? 0
+            'expedientes_completados' => $tipoTramite->expedientes()->whereIn('estado', ['resuelto', 'archivado'])->count(),
+            'tiempo_promedio_real' => $tiempoPromedioReal,
+            'expedientes_en_proceso' => $tipoTramite->expedientes()->where('estado', 'en_proceso')->count(),
+            'expedientes_pendientes' => $tipoTramite->expedientes()->where('estado', 'pendiente')->count(),
         ];
 
         // Si es una solicitud de API, devolver JSON
@@ -163,8 +186,8 @@ class TipoTramiteController extends Controller
             'codigo' => 'nullable|string|max:10|unique:tipo_tramites,codigo,' . $tipoTramite->id,
             'descripcion' => 'nullable|string|max:1000',
             'gerencia_id' => 'required|exists:gerencias,id',
-            'documentos_requeridos' => 'nullable|array',
-            'documentos_requeridos.*' => 'integer|exists:tipo_documentos,id',
+            'documentos' => 'nullable|array',
+            'documentos.*' => 'integer|exists:tipo_documentos,id',
             'costo' => 'required|numeric|min:0',
             'tiempo_estimado_dias' => 'required|integer|min:1|max:365',
             'requiere_pago' => 'boolean',
@@ -174,6 +197,11 @@ class TipoTramiteController extends Controller
         DB::beginTransaction();
         try {
             $tipoTramite->update($validated);
+
+            // Sincronizar relación many-to-many con documentos requeridos
+            if (isset($validated['documentos'])) {
+                $tipoTramite->documentos()->sync($validated['documentos']);
+            }
 
             DB::commit();
 

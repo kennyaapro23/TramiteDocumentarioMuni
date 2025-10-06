@@ -166,32 +166,85 @@
                 @if($role->permissions->count() > 0)
                     <div class="px-4 py-5 sm:p-6">
                         @php
-                            $permissionsByModule = $role->permissions->groupBy(function($permission) {
-                                $parts = explode('.', $permission->name);
-                                return $parts[0] ?? 'general';
+                            // Definir categorías de módulos (igual que en WebController)
+                            $modulosMap = [
+                                'expedientes' => ['ver_expedientes', 'registrar_expediente', 'editar_expediente', 'derivar_expediente', 'emitir_resolucion', 'rechazar_expediente', 'finalizar_expediente', 'archivar_expediente', 'subir_documento', 'ver_todos_expedientes', 'asignar_expediente', 'reasignar_expediente', 'consultar_historial', 'exportar_expedientes', 'eliminar_expediente'],
+                                'usuarios' => ['gestionar_usuarios', 'crear_usuarios', 'editar_usuarios', 'eliminar_usuarios', 'ver_todos_usuarios', 'asignar_usuarios_gerencia'],
+                                'roles_permisos' => ['asignar_roles', 'gestionar_permisos'],
+                                'gerencias' => ['gestionar_gerencias', 'crear_gerencias', 'editar_gerencias'],
+                                'procedimientos' => ['gestionar_procedimientos', 'crear_procedimientos', 'eliminar_procedimientos'],
+                                'tipos_tramite' => ['gestionar_tipos_tramite', 'crear_tipos_tramite', 'editar_tipos_tramite', 'eliminar_tipos_tramite', 'activar_tipos_tramite', 'ver_tipos_tramite'],
+                                'reportes' => ['ver_reportes', 'exportar_datos', 'ver_estadisticas_gerencia', 'ver_estadisticas_sistema'],
+                                'configuracion' => ['configurar_sistema', 'gestionar_respaldos', 'ver_logs'],
+                                'notificaciones' => ['enviar_notificaciones', 'gestionar_notificaciones'],
+                                'pagos' => ['gestionar_pagos', 'confirmar_pagos', 'ver_pagos'],
+                                'quejas' => ['gestionar_quejas', 'responder_quejas', 'escalar_quejas'],
+                                'workflows' => ['gestionar_workflows', 'crear_workflows', 'editar_workflows', 'eliminar_workflows', 'ver_workflows', 'activar_workflows', 'clonar_workflows', 'crear_reglas_flujo', 'editar_reglas_flujo', 'eliminar_reglas_flujo', 'ver_reglas_flujo', 'activar_desactivar_reglas', 'crear_etapas_flujo', 'editar_etapas_flujo', 'eliminar_etapas_flujo', 'ver_etapas_flujo'],
+                            ];
+                            
+                            // Colores e iconos por módulo
+                            $moduleColors = [
+                                'expedientes' => 'green',
+                                'usuarios' => 'blue',
+                                'roles_permisos' => 'purple',
+                                'gerencias' => 'indigo',
+                                'procedimientos' => 'pink',
+                                'tipos_tramite' => 'orange',
+                                'reportes' => 'cyan',
+                                'configuracion' => 'red',
+                                'notificaciones' => 'yellow',
+                                'pagos' => 'teal',
+                                'quejas' => 'rose',
+                                'workflows' => 'violet',
+                                'otros' => 'gray'
+                            ];
+                            
+                            // Agrupar permisos del rol por módulo
+                            $permissionsByModule = collect();
+                            foreach ($modulosMap as $modulo => $permisosNombres) {
+                                $permisosModulo = $role->permissions->filter(function($permiso) use ($permisosNombres) {
+                                    return in_array($permiso->name, $permisosNombres);
+                                });
+                                
+                                if ($permisosModulo->count() > 0) {
+                                    $permissionsByModule->put($modulo, $permisosModulo);
+                                }
+                            }
+                            
+                            // Agregar permisos no categorizados
+                            $permisosCategorizados = collect($modulosMap)->flatten()->toArray();
+                            $permisosOtros = $role->permissions->filter(function($permiso) use ($permisosCategorizados) {
+                                return !in_array($permiso->name, $permisosCategorizados);
                             });
+                            
+                            if ($permisosOtros->count() > 0) {
+                                $permissionsByModule->put('otros', $permisosOtros);
+                            }
                         @endphp
                         
-                        <div class="space-y-6">
+                        <div class="space-y-4">
                             @foreach($permissionsByModule as $module => $permissions)
+                                @php
+                                    $color = $moduleColors[$module] ?? 'gray';
+                                @endphp
                                 <div class="border border-gray-200 rounded-lg">
-                                    <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                                    <div class="bg-{{ $color }}-50 px-4 py-3 border-b border-{{ $color }}-100">
                                         <h4 class="text-sm font-medium text-gray-900 capitalize flex items-center">
-                                            <span class="w-2 h-2 bg-municipal-500 rounded-full mr-2"></span>
+                                            <span class="w-2 h-2 bg-{{ $color }}-500 rounded-full mr-2"></span>
                                             {{ str_replace('_', ' ', $module) }}
-                                            <span class="ml-auto text-xs text-gray-500 bg-white px-2 py-1 rounded-full">
+                                            <span class="ml-auto text-xs text-{{ $color }}-700 bg-white px-2 py-1 rounded-full font-semibold">
                                                 {{ $permissions->count() }} permisos
                                             </span>
                                         </h4>
                                     </div>
-                                    <div class="p-4">
-                                        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                    <div class="p-4 bg-white">
+                                        <div class="grid grid-cols-1 gap-2">
                                             @foreach($permissions as $permission)
-                                                <div class="flex items-center">
-                                                    <svg class="h-4 w-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                <div class="flex items-center py-1">
+                                                    <svg class="h-4 w-4 text-{{ $color }}-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                                                     </svg>
-                                                    <span class="text-sm text-gray-700">{{ $permission->name }}</span>
+                                                    <span class="text-sm text-gray-700">{{ str_replace('_', ' ', $permission->name) }}</span>
                                                 </div>
                                             @endforeach
                                         </div>

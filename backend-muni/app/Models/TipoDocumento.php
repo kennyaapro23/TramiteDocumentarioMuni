@@ -36,4 +36,17 @@ class TipoDocumento extends Model
     {
         return $this->hasMany(MesaParte::class);
     }
+
+    /**
+     * Relación many-to-many: tipos de trámite que requieren este documento.
+     */
+    public function tiposTramite(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(
+            TipoTramite::class,
+            'tipo_tramite_tipo_documento',
+            'tipo_documento_id',
+            'tipo_tramite_id'
+        )->withTimestamps();
+    }
 }

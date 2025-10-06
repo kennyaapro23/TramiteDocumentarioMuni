@@ -18,14 +18,15 @@ class DatabaseSeeder extends Seeder
         // Ejecutar seeders en orden específico debido a dependencias
         $this->call([
             GerenciasSeeder::class,            // Primero: gerencias (necesario para usuarios)
-            RolesAndPermissionsSeeder::class,  // Segundo: roles y permisos del sistema (crea usuarios)
-            // UsersSeeder::class,                // Tercero: usuarios adicionales (desactivado para evitar duplicados)
+            RolesAndPermissionsSeeder::class,  // Segundo: roles y permisos del sistema
+            UsersSeeder::class,                // Tercero: usuarios adicionales del sistema
             ProceduresSeeder::class,           // Cuarto: procedimientos TUPA (necesita gerencias)
             WorkflowRulesSeeder::class,        // Quinto: reglas de flujo (necesita gerencias y usuarios)
             // WorkflowStepsSeeder::class,        // Sexto: etapas de flujo por gerencia (tabla removida)
             ExpedientesSeeder::class,          // Séptimo: expedientes (necesita usuarios y procedimientos)
             TipoDocumentoSeeder::class,        // Octavo: tipos de documentos
-            TipoTramiteSeeder::class,          // Noveno: tipos de trámites
+            TipoTramiteSeeder::class,          // Noveno: tipos de trámites (necesita gerencias y TipoDocumento)
+            // MesaPartesSeeder::class,           // Décimo: registros de mesa de partes (necesita TipoTramite y usuarios) - Temporalmente comentado por issue con el modelo
         ]);
 
         $this->command->info('');

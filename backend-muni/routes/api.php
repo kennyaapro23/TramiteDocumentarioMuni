@@ -6,11 +6,11 @@ use App\Http\Controllers\Api\ExpedientController;
 use App\Http\Controllers\ExpedienteController;
 use App\Http\Controllers\AdminGerenciaController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\Api\MesaPartesController;
+// MesaPartesController ELIMINADO - Sistema usa Workflows
 use App\Http\Controllers\RolePermissionController;
-use App\Http\Controllers\CustomWorkflowController;
-use App\Http\Controllers\CustomWorkflowStepController;
-use App\Http\Controllers\CustomWorkflowTransitionController;
+use App\Http\Controllers\WorkflowController;
+use App\Http\Controllers\WorkflowStepController;
+use App\Http\Controllers\WorkflowTransitionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,9 +41,36 @@ Route::get('/version', fn() => response()->json([
 // -------------------------------------------------------------------------
 Route::prefix('public')->group(function () {
     Route::get('/expedients/tracking/{trackingNumber}', [ExpedientController::class, 'getByTrackingNumber']);
-    Route::get('/mesa-partes/seguimiento/{codigoSeguimiento}', [MesaPartesController::class, 'consultarPorCodigo']);
-    Route::get('/tipos-documento', [MesaPartesController::class, 'getTiposDocumento']);
-    Route::get('/tipos-tramite', [MesaPartesController::class, 'getTiposTramite']);
+    // Mesa de Partes ELIMINADO - Sistema usa Workflows automáticos
+    // Route::get('/mesa-partes/seguimiento/{codigoSeguimiento}', [MesaPartesController::class, 'consultarPorCodigo']);
+    // Route::get('/tipos-documento', [MesaPartesController::class, 'getTiposDocumento']);
+    // Route::get('/tipos-tramite', [MesaPartesController::class, 'getTiposTramite']);
+});
+
+// -------------------------------------------------------------------------
+// Rutas para trámites (accesibles con autenticación)
+// -------------------------------------------------------------------------
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/tramites/{id}/documentos', function($id) {
+        $tipoTramite = \App\Models\TipoTramite::with('documentos')->find($id);
+        
+        if (!$tipoTramite) {
+            return response()->json(['error' => 'Trámite no encontrado'], 404);
+        }
+        
+        return response()->json([
+            'success' => true,
+            'documentos' => $tipoTramite->documentos->map(function($doc) {
+                return [
+                    'id' => $doc->id,
+                    'nombre' => $doc->nombre,
+                    'descripcion' => $doc->descripcion,
+                    'codigo' => $doc->codigo,
+                    'requiere_firma' => $doc->requiere_firma
+                ];
+            })
+        ]);
+    });
 });
 
 // -------------------------------------------------------------------------
@@ -116,32 +143,34 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // -------------------- Workflows --------------------
-    Route::prefix('custom-workflows')->group(function () {
-        Route::get('/', [CustomWorkflowController::class, 'index'])->middleware('permission:gestionar_workflows');
-        Route::post('/', [CustomWorkflowController::class, 'store'])->middleware('permission:gestionar_workflows');
-        Route::get('/{id}', [CustomWorkflowController::class, 'show'])->middleware('permission:gestionar_workflows');
-        Route::put('/{id}', [CustomWorkflowController::class, 'update'])->middleware('permission:gestionar_workflows');
-        Route::delete('/{id}', [CustomWorkflowController::class, 'destroy'])->middleware('permission:gestionar_workflows');
+    Route::prefix('workflows')->group(function () {
+        Route::get('/', [WorkflowController::class, 'index'])->middleware('permission:gestionar_workflows');
+        Route::post('/', [WorkflowController::class, 'store'])->middleware('permission:gestionar_workflows');
+        Route::get('/{id}', [WorkflowController::class, 'show'])->middleware('permission:gestionar_workflows');
+        Route::put('/{id}', [WorkflowController::class, 'update'])->middleware('permission:gestionar_workflows');
+        Route::delete('/{id}', [WorkflowController::class, 'destroy'])->middleware('permission:gestionar_workflows');
 
-        Route::post('/{id}/toggle', [CustomWorkflowController::class, 'toggleActive'])->middleware('permission:gestionar_workflows');
-        Route::post('/{id}/clone',  [CustomWorkflowController::class, 'clone'])->middleware('permission:gestionar_workflows');
-        Route::get('/tipo/{tipo}',  [CustomWorkflowController::class, 'getByType'])->middleware('permission:gestionar_workflows');
+        Route::post('/{id}/toggle', [WorkflowController::class, 'toggleActive'])->middleware('permission:gestionar_workflows');
+        Route::post('/{id}/clone',  [WorkflowController::class, 'clone'])->middleware('permission:gestionar_workflows');
+        Route::get('/tipo/{tipo}',  [WorkflowController::class, 'getByType'])->middleware('permission:gestionar_workflows');
     });
 
-    Route::prefix('custom-workflow-steps')->group(function () {
-        Route::get('/', [CustomWorkflowStepController::class, 'index'])->middleware('permission:gestionar_workflows');
-        Route::post('/', [CustomWorkflowStepController::class, 'store'])->middleware('permission:gestionar_workflows');
-        Route::get('/{id}', [CustomWorkflowStepController::class, 'show'])->middleware('permission:gestionar_workflows');
-        Route::put('/{id}', [CustomWorkflowStepController::class, 'update'])->middleware('permission:gestionar_workflows');
-        Route::delete('/{id}', [CustomWorkflowStepController::class, 'destroy'])->middleware('permission:gestionar_workflows');
+    Route::prefix('workflow-steps')->group(function () {
+        Route::get('/', [WorkflowStepController::class, 'index'])->middleware('permission:gestionar_workflows');
+        Route::post('/', [WorkflowStepController::class, 'store'])->middleware('permission:gestionar_workflows');
+        Route::get('/{id}', [WorkflowStepController::class, 'show'])->middleware('permission:gestionar_workflows');
+        Route::put('/{id}', [WorkflowStepController::class, 'update'])->middleware('permission:gestionar_workflows');
+        Route::delete('/{id}', [WorkflowStepController::class, 'destroy'])->middleware('permission:gestionar_workflows');
+
+        Route::post('/reorder', [WorkflowStepController::class, 'reorder'])->middleware('permission:gestionar_workflows');
     });
 
-    Route::prefix('custom-workflow-transitions')->group(function () {
-        Route::get('/', [CustomWorkflowTransitionController::class, 'index'])->middleware('permission:gestionar_workflows');
-        Route::post('/', [CustomWorkflowTransitionController::class, 'store'])->middleware('permission:gestionar_workflows');
-        Route::get('/{id}', [CustomWorkflowTransitionController::class, 'show'])->middleware('permission:gestionar_workflows');
-        Route::put('/{id}', [CustomWorkflowTransitionController::class, 'update'])->middleware('permission:gestionar_workflows');
-        Route::delete('/{id}', [CustomWorkflowTransitionController::class, 'destroy'])->middleware('permission:gestionar_workflows');
+    Route::prefix('workflow-transitions')->group(function () {
+        Route::get('/', [WorkflowTransitionController::class, 'index'])->middleware('permission:gestionar_workflows');
+        Route::post('/', [WorkflowTransitionController::class, 'store'])->middleware('permission:gestionar_workflows');
+        Route::get('/{id}', [WorkflowTransitionController::class, 'show'])->middleware('permission:gestionar_workflows');
+        Route::put('/{id}', [WorkflowTransitionController::class, 'update'])->middleware('permission:gestionar_workflows');
+        Route::delete('/{id}', [WorkflowTransitionController::class, 'destroy'])->middleware('permission:gestionar_workflows');
     });
 
     // -------------------- Gerencias --------------------

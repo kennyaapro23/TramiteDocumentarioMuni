@@ -56,9 +56,8 @@
                                     {{ $workflow->activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                     {{ $workflow->activo ? 'Activo' : 'Inactivo' }}
                                 </span>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                    {{ $workflow instanceof \App\Models\CustomWorkflow ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800' }}">
-                                    {{ $workflow instanceof \App\Models\CustomWorkflow ? 'Personalizado' : 'Estándar' }}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    Workflow
                                 </span>
                             </div>
                         </div>
@@ -66,7 +65,7 @@
                     
                     <div class="border-t border-gray-200">
                         <dl>
-                            @if($workflow instanceof \App\Models\CustomWorkflow && $workflow->codigo)
+                            @if($workflow->codigo)
                             <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                 <dt class="text-sm font-medium text-gray-500">Código</dt>
                                 <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ $workflow->codigo }}</dd>
@@ -86,7 +85,7 @@
                                 <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ $workflow->descripcion }}</dd>
                             </div>
                             @endif
-                            @if($workflow instanceof \App\Models\CustomWorkflow && $workflow->creador)
+                            @if($workflow->creador)
                             <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                 <dt class="text-sm font-medium text-gray-500">Creado por</dt>
                                 <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ $workflow->creador->name }}</dd>

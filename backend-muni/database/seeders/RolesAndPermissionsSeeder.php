@@ -140,6 +140,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'ver_todos_usuarios',
             'gestionar_gerencias',
             'gestionar_procedimientos',
+            'gestionar_tipos_tramite',
+            'crear_tipos_tramite',
+            'editar_tipos_tramite',
+            'eliminar_tipos_tramite',
+            'activar_tipos_tramite',
+            'ver_tipos_tramite',
             'ver_reportes',
             'exportar_datos',
             'ver_estadisticas_gerencia',
@@ -175,6 +181,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'crear_usuarios',
             'editar_usuarios',
             'asignar_usuarios_gerencia',
+            'gestionar_tipos_tramite',
+            'crear_tipos_tramite',
+            'editar_tipos_tramite',
+            'eliminar_tipos_tramite',
+            'activar_tipos_tramite',
+            'ver_tipos_tramite',
             'ver_reportes',
             'ver_estadisticas_gerencia',
             'enviar_notificaciones',
@@ -287,6 +299,10 @@ class RolesAndPermissionsSeeder extends Seeder
         );
         $adminUser->assignRole('administrador');
 
+        // NOTA: Los usuarios de prueba se crean en UsersSeeder para tener control total
+        // de nombres y asignaciones de gerencias
+        
+        /* COMENTADO - Se crean en UsersSeeder
         // Crear jefe de gerencia
         $jefeUser = User::firstOrCreate(
             ['email' => 'jefe@muni.gob.pe'],
@@ -310,6 +326,7 @@ class RolesAndPermissionsSeeder extends Seeder
             ]
         );
         $funcionarioUser->assignRole('funcionario');
+        */
 
         // Crear ciudadano de prueba
         $ciudadanoUser = User::firstOrCreate(

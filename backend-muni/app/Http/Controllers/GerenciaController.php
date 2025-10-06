@@ -25,12 +25,40 @@ class GerenciaController extends Controller
     /**
      * Display a listing of gerencias.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $gerencias = Gerencia::with(['subgerencias', 'users'])
-                            ->withCount('users')
-                            ->orderBy('orden')
-                            ->paginate(15);
+        $query = Gerencia::with(['subgerencias', 'users', 'gerenciaPadre'])
+                        ->withCount('users');
+
+        // Filtro de búsqueda por nombre o código
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nombre', 'like', "%{$search}%")
+                  ->orWhere('codigo', 'like', "%{$search}%")
+                  ->orWhere('descripcion', 'like', "%{$search}%");
+            });
+        }
+
+        // Filtro por tipo
+        if ($request->filled('tipo')) {
+            $query->where('tipo', $request->tipo);
+        }
+
+        // Filtro por estado
+        if ($request->filled('estado')) {
+            $query->where('activo', $request->estado == '1');
+        }
+
+        // Filtro por gerencia padre (para subgerencias)
+        if ($request->filled('gerencia_padre')) {
+            $query->where('gerencia_padre_id', $request->gerencia_padre);
+        }
+
+        $gerencias = $query->orderBy('orden')
+                          ->orderBy('nombre')
+                          ->paginate(15)
+                          ->appends($request->except('page'));
 
         $stats = [
             'total_gerencias' => Gerencia::count(),

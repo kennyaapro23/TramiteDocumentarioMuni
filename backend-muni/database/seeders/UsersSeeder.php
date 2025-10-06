@@ -16,30 +16,38 @@ class UsersSeeder extends Seeder
      */
     public function run(): void
     {
-        // Obtener gerencias para asignar usuarios
-        $alcaldia = Gerencia::where('codigo', 'ALC')->first();
-        $gerenciaMunicipal = Gerencia::where('codigo', 'GM')->first();
-        $desarrolloUrbano = Gerencia::where('codigo', 'SGDU')->first();
-        $licencias = Gerencia::where('codigo', 'SGLA')->first();
-        $serviciosPublicos = Gerencia::where('codigo', 'SGSP')->first();
-        $fiscalizacion = Gerencia::where('codigo', 'SGF')->first();
-        $rentas = Gerencia::where('codigo', 'SGR')->first();
-        $registroCivil = Gerencia::where('codigo', 'SGRC')->first();
-        $participacion = Gerencia::where('codigo', 'SGPC')->first();
-        $seguridad = Gerencia::where('codigo', 'SGSC')->first();
-        $ambiente = Gerencia::where('codigo', 'SGMA')->first();
-        $transportes = Gerencia::where('codigo', 'SGT')->first();
+        // Obtener gerencias principales para asignar usuarios
+        $desarrolloUrbano = Gerencia::where('codigo', 'GDUR')->first();
+        $desarrolloEconomico = Gerencia::where('codigo', 'GDEL')->first();
+        $desarrolloSocial = Gerencia::where('codigo', 'GDS')->first();
+        $serviciosPublicos = Gerencia::where('codigo', 'GSPMA')->first();
+        $administracionFinanzas = Gerencia::where('codigo', 'GAF')->first();
+        $planeamiento = Gerencia::where('codigo', 'GPP')->first();
+        $recursosHumanos = Gerencia::where('codigo', 'GRH')->first();
+        $asesoriaJuridica = Gerencia::where('codigo', 'GAJ')->first();
+        $administracionTributaria = Gerencia::where('codigo', 'GAT')->first();
+        $seguridadCiudadana = Gerencia::where('codigo', 'GSCD')->first();
+        $tecnologias = Gerencia::where('codigo', 'GTI')->first();
+        $controlInterno = Gerencia::where('codigo', 'GCI')->first();
+        
+        // Obtener subgerencias para asignar responsables
+        $subPlaneamientoUrbano = Gerencia::where('codigo', 'SGPUR')->first();
+        $subObrasPrivadas = Gerencia::where('codigo', 'SGOPL')->first();
+        $subCatastro = Gerencia::where('codigo', 'SGC')->first();
+        $subHabilitaciones = Gerencia::where('codigo', 'SGHT')->first();
+        $subControlUrbano = Gerencia::where('codigo', 'SGCUSO')->first();
+        $subOrdenamientoTerritorial = Gerencia::where('codigo', 'OOT')->first();
 
-        // Verificar que las gerencias principales existan
-        if (!$gerenciaMunicipal) {
-            $this->command->error('Gerencia Municipal no encontrada. Ejecute primero GerenciasSeeder.');
+        // Verificar que al menos una gerencia exista
+        if (!$desarrolloUrbano && !$desarrolloEconomico) {
+            $this->command->error('No se encontraron gerencias. Ejecute primero GerenciasSeeder.');
             return;
         }
 
         $this->command->info("Gerencias encontradas para asignar usuarios:");
-        $this->command->info("- Alcaldía: " . ($alcaldia ? $alcaldia->nombre : 'No encontrada'));
-        $this->command->info("- Gerencia Municipal: " . ($gerenciaMunicipal ? $gerenciaMunicipal->nombre : 'No encontrada'));
         $this->command->info("- Desarrollo Urbano: " . ($desarrolloUrbano ? $desarrolloUrbano->nombre : 'No encontrada'));
+        $this->command->info("- Desarrollo Económico: " . ($desarrolloEconomico ? $desarrolloEconomico->nombre : 'No encontrada'));
+        $this->command->info("- Desarrollo Social: " . ($desarrolloSocial ? $desarrolloSocial->nombre : 'No encontrada'));
 
         // Usuarios del sistema
         $users = [
@@ -48,86 +56,114 @@ class UsersSeeder extends Seeder
                 'name' => 'Super Administrador',
                 'email' => 'superadmin@muni.gob.pe',
                 'password' => Hash::make('password123'),
-                'gerencia_id' => $gerenciaMunicipal->id,
+                'gerencia_id' => $administracionFinanzas->id ?? null,
                 'role' => 'superadministrador'
             ],
             
-            // Alcalde
-            [
-                'name' => 'Carlos Mendoza Alcalde',
-                'email' => 'alcalde@muni.gob.pe',
-                'password' => Hash::make('alcalde123'),
-                'gerencia_id' => $alcaldia->id,
-                'role' => 'administrador'
-            ],
-            
-            // Gerente Municipal
-            [
-                'name' => 'María González Gerente',
-                'email' => 'gerente.municipal@muni.gob.pe',
-                'password' => Hash::make('gerente123'),
-                'gerencia_id' => $gerenciaMunicipal->id,
-                'role' => 'administrador'
-            ],
-            
-            // Jefe de Desarrollo Urbano
+            // Jefe de Desarrollo Urbano y Rural
             [
                 'name' => 'Roberto Sánchez Urbano',
                 'email' => 'jefe.urbano@muni.gob.pe',
                 'password' => Hash::make('urbano123'),
-                'gerencia_id' => $desarrolloUrbano->id,
+                'gerencia_id' => $desarrolloUrbano->id ?? null,
                 'role' => 'jefe_gerencia'
             ],
             
-            // Funcionarios de Licencias
+            // Jefe de Desarrollo Económico
             [
-                'name' => 'Ana Pérez Licencias',
-                'email' => 'ana.licencias@muni.gob.pe',
-                'password' => Hash::make('licencias123'),
-                'gerencia_id' => $licencias->id,
+                'name' => 'María González Económico',
+                'email' => 'jefe.economico@muni.gob.pe',
+                'password' => Hash::make('economico123'),
+                'gerencia_id' => $desarrolloEconomico->id ?? null,
+                'role' => 'jefe_gerencia'
+            ],
+            
+            // Jefe de Desarrollo Social
+            [
+                'name' => 'Carmen López Social',
+                'email' => 'jefe.social@muni.gob.pe',
+                'password' => Hash::make('social123'),
+                'gerencia_id' => $desarrolloSocial->id ?? null,
+                'role' => 'jefe_gerencia'
+            ],
+            
+            // Funcionario de Desarrollo Urbano
+            [
+                'name' => 'Ana Pérez Obras',
+                'email' => 'ana.obras@muni.gob.pe',
+                'password' => Hash::make('obras123'),
+                'gerencia_id' => $desarrolloUrbano->id ?? null,
                 'role' => 'funcionario'
             ],
+            
+            // Responsables de Subgerencias de Desarrollo Urbano
+            [
+                'name' => 'Carlos Mendoza Planeamiento',
+                'email' => 'carlos.planeamiento@muni.gob.pe',
+                'password' => Hash::make('plan123'),
+                'gerencia_id' => $subPlaneamientoUrbano->id ?? null,
+                'role' => 'funcionario'
+            ],
+            [
+                'name' => 'Laura Ruiz Obras Privadas',
+                'email' => 'laura.obrasprivadas@muni.gob.pe',
+                'password' => Hash::make('obras123'),
+                'gerencia_id' => $subObrasPrivadas->id ?? null,
+                'role' => 'funcionario'
+            ],
+            [
+                'name' => 'Diego Vargas Catastro',
+                'email' => 'diego.catastro@muni.gob.pe',
+                'password' => Hash::make('catastro123'),
+                'gerencia_id' => $subCatastro->id ?? null,
+                'role' => 'funcionario'
+            ],
+            [
+                'name' => 'Patricia Flores Habilitaciones',
+                'email' => 'patricia.habilitaciones@muni.gob.pe',
+                'password' => Hash::make('habilit123'),
+                'gerencia_id' => $subHabilitaciones->id ?? null,
+                'role' => 'funcionario'
+            ],
+            [
+                'name' => 'Miguel Ángel Control Urbano',
+                'email' => 'miguel.controlurbano@muni.gob.pe',
+                'password' => Hash::make('control123'),
+                'gerencia_id' => $subControlUrbano->id ?? null,
+                'role' => 'funcionario'
+            ],
+            [
+                'name' => 'Sandra Jiménez Ordenamiento',
+                'email' => 'sandra.ordenamiento@muni.gob.pe',
+                'password' => Hash::make('orden123'),
+                'gerencia_id' => $subOrdenamientoTerritorial->id ?? null,
+                'role' => 'funcionario'
+            ],
+            
+            // Funcionario de Desarrollo Económico (Licencias)
             [
                 'name' => 'Pedro Ramírez Licencias',
                 'email' => 'pedro.licencias@muni.gob.pe',
                 'password' => Hash::make('licencias456'),
-                'gerencia_id' => $licencias->id,
-                'role' => 'funcionario_junior'
+                'gerencia_id' => $desarrolloEconomico->id ?? null,
+                'role' => 'funcionario'
             ],
             
             // Funcionarios de Servicios Públicos
             [
-                'name' => 'Carmen López Servicios',
-                'email' => 'carmen.servicios@muni.gob.pe',
+                'name' => 'Luis Torres Servicios',
+                'email' => 'luis.servicios@muni.gob.pe',
                 'password' => Hash::make('servicios123'),
-                'gerencia_id' => $serviciosPublicos->id,
+                'gerencia_id' => $serviciosPublicos->id ?? null,
                 'role' => 'funcionario'
             ],
             
-            // Funcionario de Fiscalización
-            [
-                'name' => 'Luis Torres Fiscalización',
-                'email' => 'luis.fiscalizacion@muni.gob.pe',
-                'password' => Hash::make('fiscal123'),
-                'gerencia_id' => $fiscalizacion->id,
-                'role' => 'funcionario'
-            ],
-            
-            // Funcionario de Rentas
+            // Funcionario de Administración Tributaria
             [
                 'name' => 'Isabel Herrera Rentas',
                 'email' => 'isabel.rentas@muni.gob.pe',
                 'password' => Hash::make('rentas123'),
-                'gerencia_id' => $rentas->id,
-                'role' => 'funcionario'
-            ],
-            
-            // Funcionario de Registro Civil
-            [
-                'name' => 'Fernando Vega Registro',
-                'email' => 'fernando.registro@muni.gob.pe',
-                'password' => Hash::make('registro123'),
-                'gerencia_id' => $registroCivil->id,
+                'gerencia_id' => $administracionTributaria->id ?? null,
                 'role' => 'funcionario'
             ],
             
@@ -136,25 +172,25 @@ class UsersSeeder extends Seeder
                 'name' => 'Ricardo Morales Seguridad',
                 'email' => 'ricardo.seguridad@muni.gob.pe',
                 'password' => Hash::make('seguridad123'),
-                'gerencia_id' => $seguridad->id,
+                'gerencia_id' => $seguridadCiudadana->id ?? null,
                 'role' => 'funcionario'
             ],
             
-            // Funcionario de Transportes
+            // Funcionario de Tecnologías
             [
-                'name' => 'Mónica Castro Transportes',
-                'email' => 'monica.transportes@muni.gob.pe',
-                'password' => Hash::make('transportes123'),
-                'gerencia_id' => $transportes->id,
+                'name' => 'Mónica Castro Sistemas',
+                'email' => 'monica.sistemas@muni.gob.pe',
+                'password' => Hash::make('sistemas123'),
+                'gerencia_id' => $tecnologias->id ?? null,
                 'role' => 'funcionario'
             ],
             
-            // Supervisor
+            // Supervisor General
             [
                 'name' => 'Alberto Ramos Supervisor',
                 'email' => 'alberto.supervisor@muni.gob.pe',
                 'password' => Hash::make('supervisor123'),
-                'gerencia_id' => $gerenciaMunicipal->id,
+                'gerencia_id' => $planeamiento->id ?? null,
                 'role' => 'supervisor'
             ],
             

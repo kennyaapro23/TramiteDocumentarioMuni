@@ -221,9 +221,8 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                    {{ $workflow instanceof \App\Models\CustomWorkflow ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800' }}">
-                                    {{ $workflow instanceof \App\Models\CustomWorkflow ? 'Personalizado' : 'Estándar' }}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    Workflow
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
