@@ -22,11 +22,11 @@ class DatabaseSeeder extends Seeder
             UsersSeeder::class,                // Tercero: usuarios adicionales del sistema
             ProceduresSeeder::class,           // Cuarto: procedimientos TUPA (necesita gerencias)
             WorkflowRulesSeeder::class,        // Quinto: reglas de flujo (necesita gerencias y usuarios)
-            // WorkflowStepsSeeder::class,        // Sexto: etapas de flujo por gerencia (tabla removida)
+            WorkflowsSeeder::class,            // Sexto: workflows completos (necesita gerencias y usuarios)
             ExpedientesSeeder::class,          // Séptimo: expedientes (necesita usuarios y procedimientos)
             TipoDocumentoSeeder::class,        // Octavo: tipos de documentos
             TipoTramiteSeeder::class,          // Noveno: tipos de trámites (necesita gerencias y TipoDocumento)
-            // MesaPartesSeeder::class,           // Décimo: registros de mesa de partes (necesita TipoTramite y usuarios) - Temporalmente comentado por issue con el modelo
+            AsignarWorkflowsSeeder::class,     // Décimo: asignar workflows a tipos de trámite
         ]);
 
         $this->command->info('');

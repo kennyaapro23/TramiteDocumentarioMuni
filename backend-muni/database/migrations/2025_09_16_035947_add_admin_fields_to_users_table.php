@@ -12,9 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->boolean('activo')->default(true)->after('password');
-            $table->string('telefono')->nullable()->after('activo');
-            $table->string('cargo')->nullable()->after('telefono');
+            // telefono, activo y dni ya están en la migración principal de users
+            // Solo agregamos cargo si no existe
+            if (!Schema::hasColumn('users', 'cargo')) {
+                $table->string('cargo')->nullable()->after('telefono');
+            }
         });
     }
 
@@ -24,7 +26,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['activo', 'telefono', 'cargo']);
+            $table->dropColumn(['cargo']);
         });
     }
 };

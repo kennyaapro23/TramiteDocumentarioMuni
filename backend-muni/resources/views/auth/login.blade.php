@@ -143,6 +143,16 @@
                 </button>
             </div>
 
+            <!-- Register Link -->
+            <div class="text-center">
+                <p class="text-sm text-gray-600">
+                    ¿Eres ciudadano y no tienes cuenta? 
+                    <a href="{{ route('register') }}" class="font-medium text-blue-600 hover:text-blue-500 transition duration-200">
+                        Regístrate aquí
+                    </a>
+                </p>
+            </div>
+
             <!-- Demo Credentials -->
             <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
                 <div class="flex">

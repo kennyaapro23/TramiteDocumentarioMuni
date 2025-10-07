@@ -219,7 +219,10 @@ class ProceduresSeeder extends Seeder
         ];
 
         foreach ($procedures as $procedureData) {
-            Procedure::create($procedureData);
+            Procedure::updateOrCreate(
+                ['tupa_code' => $procedureData['tupa_code']], // Buscar por código TUPA
+                $procedureData // Actualizar o crear con estos datos
+            );
         }
 
         $this->command->info('Procedimientos TUPA creados exitosamente');

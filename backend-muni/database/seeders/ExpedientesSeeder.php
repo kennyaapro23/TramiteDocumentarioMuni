@@ -6,6 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
+use App\Models\Expediente;
 use App\Models\Procedure;
 use App\Models\Gerencia;
 use Carbon\Carbon;
@@ -126,11 +127,14 @@ class ExpedientesSeeder extends Seeder
         ];
 
         foreach ($expedientes as $expedienteData) {
-            DB::table('expedientes')->insert($expedienteData);
+            Expediente::updateOrCreate(
+                ['numero' => $expedienteData['numero']], // Buscar por número
+                $expedienteData // Actualizar o crear con estos datos
+            );
         }
 
         $this->command->info('Expedientes de prueba creados exitosamente');
-        $this->command->info('Total de expedientes: ' . DB::table('expedientes')->count());
+        $this->command->info('Total de expedientes: ' . Expediente::count());
         $this->command->info('Expedientes en diferentes estados para testing');
     }
 }

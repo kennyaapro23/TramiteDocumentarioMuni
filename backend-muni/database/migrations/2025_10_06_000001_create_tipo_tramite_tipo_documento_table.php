@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('tipo_tramite_id')->constrained('tipo_tramites')->onDelete('cascade');
             $table->foreignId('tipo_documento_id')->constrained('tipo_documentos')->onDelete('cascade');
+            $table->boolean('requerido')->default(true)->comment('Si el documento es obligatorio u opcional');
+            $table->integer('orden')->default(0)->comment('Orden de visualización');
             $table->timestamps();
 
             $table->unique(['tipo_tramite_id', 'tipo_documento_id'], 'tt_td_unique');

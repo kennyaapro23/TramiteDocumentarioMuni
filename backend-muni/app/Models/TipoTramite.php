@@ -16,6 +16,7 @@ class TipoTramite extends Model
         'descripcion',
         'codigo',
         'gerencia_id',
+        'workflow_id',
         'documentos_requeridos',
         'costo',
         'tiempo_estimado_dias',
@@ -47,6 +48,14 @@ class TipoTramite extends Model
     }
 
     /**
+     * Relación con el workflow a través de la gerencia
+     */
+    public function workflow(): BelongsTo
+    {
+        return $this->belongsTo(Workflow::class, 'workflow_id');
+    }
+
+    /**
      * Relación many-to-many: documentos requeridos para este tipo de trámite.
      */
     public function documentos(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
@@ -56,6 +65,9 @@ class TipoTramite extends Model
             'tipo_tramite_tipo_documento',
             'tipo_tramite_id',
             'tipo_documento_id'
-        )->withTimestamps();
+        )
+        ->withPivot('requerido', 'orden')
+        ->withTimestamps()
+        ->orderBy('orden');
     }
 }

@@ -15,14 +15,18 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('dni', 8)->unique()->nullable();
+            $table->string('telefono', 15)->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->boolean('activo')->default(true);
             $table->foreignId('gerencia_id')->nullable()->constrained()->onDelete('set null'); // Relación con gerencia
             $table->rememberToken();
             $table->timestamps();
 
             // Índices
             $table->index(['gerencia_id']);
+            $table->index(['dni']);
         });
     }
 

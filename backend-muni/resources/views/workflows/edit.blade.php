@@ -219,15 +219,15 @@
 <script>
 function workflowEditForm() {
     return {
-        steps: @json($workflow->steps->map(function($step) {
+        steps: {!! json_encode($workflow->steps->map(function($step) {
             return [
                 'nombre' => $step->nombre,
                 'descripcion' => $step->descripcion ?? '',
                 'orden' => $step->orden,
                 'usuario_responsable' => $step->usuario_responsable_id ?? '',
-                'tiempo_limite_dias' => $step->tiempo_limite_dias ?? $step->dias_limite ?? ''
+                'tiempo_limite_dias' => $step->tiempo_limite_dias ?? ($step->dias_limite ?? '')
             ];
-        })->values()),
+        })->values()) !!},
         
         addStep() {
             this.steps.push({

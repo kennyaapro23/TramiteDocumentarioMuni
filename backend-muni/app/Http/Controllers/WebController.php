@@ -14,7 +14,7 @@ class WebController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth')->except(['showLogin', 'login']);
+        $this->middleware('auth')->except(['showLogin', 'login', 'showRegister', 'register']);
     }
 
     /**
@@ -74,6 +74,70 @@ class WebController extends Controller
         return back()->withErrors([
             'email' => 'Las credenciales proporcionadas no coinciden con nuestros registros.',
         ])->onlyInput('email');
+    }
+
+    /**
+     * Show register form
+     */
+    public function showRegister()
+    {
+        return view('auth.register');
+    }
+
+    /**
+     * Handle registration (siempre con rol ciudadano)
+     */
+    public function register(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => ['required', 'string', 'max:255'],
+            'dni' => ['required', 'string', 'size:8', 'unique:users,dni', 'regex:/^[0-9]{8}$/'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'telefono' => ['nullable', 'string', 'max:15'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ], [
+            'name.required' => 'El nombre completo es obligatorio.',
+            'dni.required' => 'El DNI es obligatorio.',
+            'dni.size' => 'El DNI debe tener 8 dígitos.',
+            'dni.unique' => 'Este DNI ya está registrado.',
+            'dni.regex' => 'El DNI debe contener solo números.',
+            'email.required' => 'El correo electrónico es obligatorio.',
+            'email.email' => 'Debe ingresar un correo electrónico válido.',
+            'email.unique' => 'Este correo electrónico ya está registrado.',
+            'password.required' => 'La contraseña es obligatoria.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.confirmed' => 'Las contraseñas no coinciden.',
+        ]);
+
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator)
+                ->withInput($request->except('password', 'password_confirmation'));
+        }
+
+        try {
+            $user = User::create([
+                'name' => $request->name,
+                'dni' => $request->dni,
+                'email' => $request->email,
+                'telefono' => $request->telefono,
+                'password' => Hash::make($request->password),
+                'email_verified_at' => now(),
+            ]);
+
+            // Asignar rol de ciudadano automáticamente
+            $user->assignRole('ciudadano');
+
+            Auth::login($user);
+
+            return redirect()->route('dashboard')->with('success', '¡Bienvenido! Tu cuenta ha sido creada exitosamente.');
+
+        } catch (\Exception $e) {
+            \Log::error('Error en registro', ['error' => $e->getMessage()]);
+            return back()
+                ->withInput($request->except('password', 'password_confirmation'))
+                ->with('error', 'Ocurrió un error al crear tu cuenta.');
+        }
     }
 
     /**

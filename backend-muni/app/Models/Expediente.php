@@ -39,9 +39,12 @@ class Expediente extends Model
     const ESTADO_NOTIFICADO = 'notificado';
 
     protected $fillable = [
+        'numero',  // Nombre real de la columna en la BD
         'tracking_number',
         'citizen_id',
         'procedure_id',
+        'workflow_id',
+        'current_step_id',
         'tipo_tramite_id',
         'gerencia_id',
         'gerencia_padre_id',
@@ -62,9 +65,15 @@ class Expediente extends Model
         // Campos adicionales para ciudadanos
         'numero_expediente',
         'solicitante_id',
+        'solicitante_nombre',
+        'solicitante_dni',
+        'solicitante_email',
+        'solicitante_telefono',
+        'tipo_tramite',
         'asunto',
         'descripcion',
         'prioridad',
+        'fecha_registro',
         'fecha_ingreso',
         'requiere_pago',
         'monto',
@@ -107,6 +116,11 @@ class Expediente extends Model
         return $this->belongsTo(Gerencia::class);
     }
 
+    public function subgerencia()
+    {
+        return $this->belongsTo(Gerencia::class, 'gerencia_padre_id');
+    }
+
     public function responsable()
     {
         return $this->belongsTo(User::class, 'responsable_id');
@@ -115,6 +129,26 @@ class Expediente extends Model
     public function usuarioRegistro()
     {
         return $this->belongsTo(User::class, 'usuario_registro_id');
+    }
+
+    public function usuarioRevisionTecnica()
+    {
+        return $this->belongsTo(User::class, 'usuario_revision_tecnica_id');
+    }
+
+    public function usuarioRevisionLegal()
+    {
+        return $this->belongsTo(User::class, 'usuario_revision_legal_id');
+    }
+
+    public function usuarioResolucion()
+    {
+        return $this->belongsTo(User::class, 'usuario_resolucion_id');
+    }
+
+    public function usuarioFirma()
+    {
+        return $this->belongsTo(User::class, 'usuario_firma_id');
     }
 
     public function assignedUser()
@@ -293,6 +327,22 @@ class Expediente extends Model
     }
 
     /**
+     * Relación con el workflow asignado
+     */
+    public function workflow()
+    {
+        return $this->belongsTo(Workflow::class, 'workflow_id');
+    }
+
+    /**
+     * Relación con el paso actual del workflow
+     */
+    public function currentStep()
+    {
+        return $this->belongsTo(WorkflowStep::class, 'current_step_id');
+    }
+
+    /**
      * Iniciar el flujo de etapas después de asignar a gerencia
      */
     public function iniciarFlujoEtapas()
@@ -390,18 +440,27 @@ class Expediente extends Model
         parent::boot();
 
         static::creating(function ($expediente) {
-            if (!$expediente->tracking_number) {
+            // Generar tracking_number solo si no se ha establecido numero
+            if (!$expediente->tracking_number && !$expediente->numero) {
                 $expediente->tracking_number = $expediente->generateTrackingNumber();
+            }
+            
+            // Si no existe numero pero si tracking_number, copiar
+            if (!$expediente->numero && $expediente->tracking_number) {
+                $expediente->numero = $expediente->tracking_number;
             }
         });
 
         static::updating(function ($expediente) {
             // Registrar cambios en el historial
-            if ($expediente->isDirty('status')) {
+            if ($expediente->isDirty('status') || $expediente->isDirty('estado')) {
+                $estadoAnterior = $expediente->getOriginal('estado') ?? $expediente->getOriginal('status');
+                $estadoNuevo = $expediente->estado ?? $expediente->status;
+                
                 HistorialExpediente::create([
                     'expediente_id' => $expediente->id,
-                    'previous_status' => $expediente->getOriginal('status'),
-                    'new_status' => $expediente->status,
+                    'previous_status' => $estadoAnterior,
+                    'new_status' => $estadoNuevo,
                     'changed_by' => auth()->id(),
                     'change_reason' => 'Cambio de estado',
                     'change_date' => now()

@@ -50,7 +50,7 @@ Route::prefix('public')->group(function () {
 // -------------------------------------------------------------------------
 // Rutas para trámites (accesibles con autenticación)
 // -------------------------------------------------------------------------
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum,web'])->group(function () {
     Route::get('/tramites/{id}/documentos', function($id) {
         $tipoTramite = \App\Models\TipoTramite::with('documentos')->find($id);
         
@@ -66,7 +66,9 @@ Route::middleware('auth:sanctum')->group(function () {
                     'nombre' => $doc->nombre,
                     'descripcion' => $doc->descripcion,
                     'codigo' => $doc->codigo,
-                    'requiere_firma' => $doc->requiere_firma
+                    'requiere_firma' => $doc->requiere_firma,
+                    'requerido' => $doc->pivot->requerido ?? false,
+                    'orden' => $doc->pivot->orden ?? 0
                 ];
             })
         ]);

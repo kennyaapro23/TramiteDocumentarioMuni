@@ -26,6 +26,8 @@ Route::get('/', function () {
 Route::middleware('guest')->group(function () {
     Route::get('/login', [WebController::class, 'showLogin'])->name('login');
     Route::post('/login', [WebController::class, 'login'])->name('login.post');
+    Route::get('/register', [WebController::class, 'showRegister'])->name('register');
+    Route::post('/register', [WebController::class, 'register'])->name('register.post');
 });
 
 Route::middleware('auth')->group(function () {
@@ -130,6 +132,14 @@ Route::middleware('auth')->group(function () {
         Route::post('/tramites/solicitar', [\App\Http\Controllers\CiudadanoTramiteController::class, 'store'])->name('tramites.store');
         Route::get('/mis-tramites', [\App\Http\Controllers\CiudadanoTramiteController::class, 'misTramites'])->name('tramites.mis-tramites');
         Route::get('/mis-tramites/{id}', [\App\Http\Controllers\CiudadanoTramiteController::class, 'show'])->name('tramites.show');
+        Route::get('/tramites/descargar-documento/{documentoId}', [\App\Http\Controllers\CiudadanoTramiteController::class, 'descargarDocumento'])->name('tramites.descargar-documento');
+    });
+
+    // Rutas para Gerencias - Trámites Asignados
+    Route::prefix('gerencia')->name('gerencia.')->group(function () {
+        Route::get('/mis-asignados', [\App\Http\Controllers\GerenciaTramiteController::class, 'misAsignados'])->name('tramites.mis-asignados');
+        Route::get('/tramites/{id}', [\App\Http\Controllers\GerenciaTramiteController::class, 'show'])->name('tramites.show');
+        Route::post('/tramites/{id}/avanzar', [\App\Http\Controllers\GerenciaTramiteController::class, 'avanzar'])->name('tramites.avanzar');
     });
     
     // Reportes Routes

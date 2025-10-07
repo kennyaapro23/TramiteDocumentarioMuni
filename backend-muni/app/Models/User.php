@@ -26,6 +26,7 @@ class User extends Authenticatable
         'gerencia_id',
         'activo',
         'estado',
+        'dni',
         'telefono',
         'cargo',
         'ultimo_acceso'
